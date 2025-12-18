@@ -41,6 +41,7 @@ export default function Hero() {
                     rotation={0}
                 />
             </div>
+            <div className="pointer-events-none absolute inset-0 bg-black/30" />
 
             {/* Left BIG cube (like reference) */}
             <img
@@ -147,40 +148,64 @@ export default function Hero() {
                         className="
               grid items-center gap-3
               text-white/90
-              text-xs sm:text-sm
+              text-sm sm:text-base md:text-lg
               sm:grid-cols-[auto_1fr_auto_1fr_auto]
             "
                     >
-                        <div
-                            className="justify-self-center sm:justify-self-start font-medium text-white drop-shadow-[0_0_22px_rgba(176,94,194,0.95)]"
-                            style={{ textShadow: "0 0 18px rgba(176,94,194,0.95), 0 0 44px rgba(176,94,194,0.55)" }}
-                        >
+                        <div className="dateGlow justify-self-center sm:justify-self-start font-semibold text-white">
                             30th January 2026
                         </div>
 
 
+
                         <div className="hidden sm:block h-px w-full bg-white/25" />
 
-                        <div
-                            className="justify-self-center font-medium text-white drop-shadow-[0_0_22px_rgba(176,94,194,0.95)]"
-                            style={{ textShadow: "0 0 18px rgba(176,94,194,0.95), 0 0 44px rgba(176,94,194,0.55)" }}
-                        >
+                        <div className="dateGlow justify-self-center font-semibold text-white">
                             31st January 2026
                         </div>
 
 
+
                         <div className="hidden sm:block h-px w-full bg-white/25" />
 
-                        <div
-                            className="justify-self-center sm:justify-self-end font-medium text-white drop-shadow-[0_0_22px_rgba(176,94,194,0.95)]"
-                            style={{ textShadow: "0 0 18px rgba(176,94,194,0.95), 0 0 44px rgba(176,94,194,0.55)" }}
-                        >
+                        <div className="dateGlow justify-self-center sm:justify-self-end font-semibold text-white">
                             1st February 2026
                         </div>
+
 
                     </div>
                 </div>
             </div>
+            <style jsx global>{`
+  @keyframes dateGlowPulse {
+    0%, 100% {
+      text-shadow:
+        0 0 10px rgba(255,255,255,0.85),
+        0 0 24px rgba(255,255,255,0.55),
+        0 0 52px rgba(176,94,194,0.35);
+      filter: brightness(1);
+    }
+    50% {
+      text-shadow:
+        0 0 14px rgba(255,255,255,0.95),
+        0 0 34px rgba(255,255,255,0.75),
+        0 0 72px rgba(176,94,194,0.45);
+      filter: brightness(1.08);
+    }
+  }
+
+  .dateGlow {
+    animation: dateGlowPulse 3.6s ease-in-out infinite;
+    will-change: filter;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dateGlow {
+      animation: none;
+    }
+  }
+`}</style>
+
         </section>
     );
 }
