@@ -97,9 +97,9 @@ export default function Navbar() {
                                 onClick={smoothJump}
                                 className="
                   flex items-center gap-3
-                  rounded-full border border-white/15
-                  bg-white/10 px-5 py-2
-                  backdrop-blur-xl
+                  rounded-full border/5 border-white/15
+                  bg-white/2 px-5 py-2
+                  backdrop-blur-2xl
                   shadow-[0_10px_40px_rgba(0,0,0,0.35)]
                 "
                                 aria-label="Home"
