@@ -3,166 +3,165 @@
 import { useEffect, useState } from "react";
 
 const LINKS = [
-    { label: "Speakers", href: "#speakers" },
-    { label: "Events", href: "#events" },
-    { label: "Venue", href: "#venue" },
-    { label: "Contact", href: "#contact" },
+  { label: "Speakers", href: "#speakers" },
+  { label: "Events", href: "#events" },
+  { label: "Venue", href: "#venue" },
+  { label: "Contact", href: "#contact" },
 ];
 
 function NavPill({ href, children, onClick }) {
-    return (
-        <a href={href} onClick={onClick} className="rb-pill">
-            <span className="rb-bg" aria-hidden="true">
-                <span className="rb-bg-layers">
-                    <span className="rb-bg-layer rb-bg-layer-1 -blue" />
-                    <span className="rb-bg-layer rb-bg-layer-2 -purple" />
-                </span>
-            </span>
+  return (
+    <a href={href} onClick={onClick} className="rb-pill">
+      <span className="rb-bg" aria-hidden="true">
+        <span className="rb-bg-layers">
+          <span className="rb-bg-layer rb-bg-layer-1 -blue" />
+          <span className="rb-bg-layer rb-bg-layer-2 -purple" />
+        </span>
+      </span>
 
-            <span className="rb-inner">
-                <span className="rb-inner-static">{children}</span>
-                <span className="rb-inner-hover">{children}</span>
-            </span>
-        </a>
-    );
+      <span className="rb-inner">
+        <span className="rb-inner-static">{children}</span>
+        <span className="rb-inner-hover">{children}</span>
+      </span>
+    </a>
+  );
 }
 
 export default function Navbar() {
-    const [mounted, setMounted] = useState(false);
-    const [compact, setCompact] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [compact, setCompact] = useState(false);
 
-    useEffect(() => setMounted(true), []);
+  useEffect(() => setMounted(true), []);
 
-    useEffect(() => {
-        const onScroll = () => setCompact(window.scrollY > 18);
-        onScroll();
-        window.addEventListener("scroll", onScroll, { passive: true });
-        return () => window.removeEventListener("scroll", onScroll);
-    }, []);
+  useEffect(() => {
+    const onScroll = () => setCompact(window.scrollY > 18);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-    const smoothJump = (e) => {
-        const href = e.currentTarget.getAttribute("href");
-        if (!href || !href.startsWith("#")) return;
-        const el = document.querySelector(href);
-        if (!el) return;
-        e.preventDefault();
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-    };
+  const smoothJump = (e) => {
+    const href = e.currentTarget.getAttribute("href");
+    if (!href || !href.startsWith("#")) return;
 
-    return (
-        <>
-            <header
-                className={[
-                    "fixed left-0 right-0 z-50",
-                    "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                    mounted ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6",
-                    compact ? "top-3" : "top-0",
-                ].join(" ")}
+    e.preventDefault();
+
+    if (href === "#top") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    const el = document.querySelector(href);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  return (
+    <>
+      <header
+        className={[
+          "fixed left-0 right-0 z-50",
+          "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+          mounted ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6",
+          compact ? "top-3" : "top-0",
+        ].join(" ")}
+      >
+        <div className="mx-auto max-w-6xl px-1 py-4">
+          <div className="relative flex items-center">
+            {/* Left logo (default/top state) */}
+            <a
+              href="#top"
+              onClick={smoothJump}
+              className={[
+                "flex items-center gap-3 -translate-x-4",
+                "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                compact ? "opacity-0 -translate-y-2 pointer-events-none" : "opacity-100 translate-y-0",
+              ].join(" ")}
+              aria-label="Home"
             >
-                <div className="mx-auto max-w-6xl px-1 py-4">
-                    <div className="relative flex items-center">
-                        {/* Left logo (default/top state) */}
-                        <a
-                            href="#top"
-                            onClick={smoothJump}
-                            className={[
-                                "flex items-center gap-3 -translate-x-4",
-                                "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                                compact
-                                    ? "opacity-0 -translate-y-2 pointer-events-none"
-                                    : "opacity-100 translate-y-0",
-                            ].join(" ")}
-                            aria-label="Home"
-                        >
-                            <img
-                                src="/esummit_logo.png"
-                                alt="E-Summit 26"
-                                draggable={false}
-                                className="h-22 w-auto select-none"
-                            />
-                        </a>
+              <img
+                src="/esummit_logo.png"
+                alt="E-Summit 26"
+                draggable={false}
+                className="h-12 w-auto select-none"
+              />
+            </a>
 
-                        {/* Center logo pill (appears on scroll) */}
-                        <div
-                            className={[
-                                "absolute left-1/2 -translate-x-1/2",
-                                "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                                compact
-                                    ? "opacity-100 translate-y-0"
-                                    : "opacity-0 -translate-y-3 pointer-events-none",
-                            ].join(" ")}
-                        >
-                            <a
-                                href="#top"
-                                onClick={smoothJump}
-                                className="
-                  flex items-center gap-3
-                  rounded-full border/5 border-white/15
-                  bg-white/2 px-5 py-2
-                  backdrop-blur-2xl
-                  shadow-[0_10px_40px_rgba(0,0,0,0.35)]
-                "
-                                aria-label="Home"
-                            >
-                                <img
-                                    src="/esummit_logo.png"
-                                    alt="E-Summit 26"
-                                    draggable={false}
-                                    className="h-22 w-auto select-none"
-                                />
-                            </a>
-                        </div>
+            {/* Center logo pill (appears on scroll) */}
+            <div
+              className={[
+                "absolute left-1/2 -translate-x-1/2",
+                "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                compact ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3 pointer-events-none",
+              ].join(" ")}
+            >
+              <a
+                href="#top"
+                onClick={smoothJump}
+                className={[
+                  "flex items-center gap-3",
+                  "rounded-full border border-white/15",
+                  "bg-white/[0.02] px-5 py-2",
+                  "backdrop-blur-2xl",
+                  "shadow-[0_10px_40px_rgba(0,0,0,0.35)]",
+                ].join(" ")}
+                aria-label="Home"
+              >
+                <img
+                  src="/esummit_logo.png"
+                  alt="E-Summit 26"
+                  draggable={false}
+                  className="h-10 w-auto select-none"
+                />
+              </a>
+            </div>
 
-                        {/* Right side controls (nav pills / hamburger) */}
-                        <div className="ml-auto flex items-center gap-4 pr-{5}">
-                            {/* Pills (desktop only; slide out on scroll) */}
-                            <nav
-                                className={[
-                                    "hidden md:flex items-center gap-3",
-                                    "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                                    compact
-                                        ? "opacity-0 translate-x-10 pointer-events-none"
-                                        : "opacity-100 translate-x-0",
-                                ].join(" ")}
-                                aria-label="Primary"
-                            >
-                                {LINKS.map((l) => (
-                                    <NavPill key={l.href} href={l.href} onClick={smoothJump}>
-                                        {l.label}
-                                    </NavPill>
-                                ))}
-                            </nav>
+            {/* Right side controls */}
+            <div className="ml-auto flex items-center gap-4 pr-5">
+              {/* Pills (desktop only; slide out on scroll) */}
+              <nav
+                className={[
+                  "hidden md:flex items-center gap-3",
+                  "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  compact ? "opacity-0 translate-x-10 pointer-events-none" : "opacity-100 translate-x-0",
+                ].join(" ")}
+                aria-label="Primary"
+              >
+                {LINKS.map((l) => (
+                  <NavPill key={l.href} href={l.href} onClick={smoothJump}>
+                    {l.label}
+                  </NavPill>
+                ))}
+              </nav>
 
-                            {/* Hamburger:
-                  - mobile: always visible
-                  - desktop: only visible when compact */}
-                            <button
-                                type="button"
-                                aria-label="Menu"
-                                className={[
-                                    "inline-flex h-11 w-11 items-center justify-center",
-                                    "rounded-full border border-white/15 bg-white/10 backdrop-blur-xl",
-                                    "shadow-[0_10px_40px_rgba(0,0,0,0.35)]",
-                                    "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                                    compact
-                                        ? "opacity-100 translate-x-0"
-                                        : "opacity-100 translate-x-0 md:opacity-0 md:translate-x-4 md:pointer-events-none",
-                                ].join(" ")}
-                            >
-                                <span className="sr-only">Open menu</span>
-                                <span className="flex flex-col gap-[5px]">
-                                    <span className="h-[2px] w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
-                                    <span className="h-[2px] w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
-                                    <span className="h-[2px] w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
+              {/* Hamburger */}
+              <button
+                type="button"
+                aria-label="Menu"
+                className={[
+                  "inline-flex h-11 w-11 items-center justify-center",
+                  "rounded-full border border-white/15 bg-white/10 backdrop-blur-xl",
+                  "shadow-[0_10px_40px_rgba(0,0,0,0.35)]",
+                  "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  compact
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-100 translate-x-0 md:opacity-0 md:translate-x-4 md:pointer-events-none",
+                ].join(" ")}
+              >
+                <span className="sr-only">Open menu</span>
+                <span className="flex flex-col gap-[5px]">
+                  <span className="h-[2px] w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
+                  <span className="h-[2px] w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
+                  <span className="h-[2px] w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
 
-            {/* Hover animation CSS (2 layers: blue -> purple) */}
-            <style jsx global>{`
+      {/* Hover animation CSS */}
+      <style jsx global>{`
         .rb-pill {
           position: relative;
           display: inline-flex;
@@ -171,8 +170,7 @@ export default function Navbar() {
           border-radius: 9999px;
           padding-left: 1.7rem;
           padding-right: 1.7rem;
-          font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
-            Helvetica, Arial;
+          font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
           font-size: 1.05rem;
           font-weight: 640;
           letter-spacing: -0.04em;
@@ -249,8 +247,7 @@ export default function Navbar() {
         .rb-pill:hover .rb-inner-static {
           opacity: 0;
           transform: translateY(-70%);
-          transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1),
-            opacity 0.25s linear;
+          transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.25s linear;
         }
 
         .rb-pill:hover .rb-inner-hover {
@@ -261,8 +258,7 @@ export default function Navbar() {
         }
 
         .rb-pill:hover .rb-bg-layer {
-          transition: transform 1.1s cubic-bezier(0.19, 1, 0.22, 1),
-            opacity 0.25s linear;
+          transition: transform 1.1s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.25s linear;
         }
 
         .rb-pill:hover .rb-bg-layer-1 {
@@ -274,6 +270,6 @@ export default function Navbar() {
           transform: scale(1);
         }
       `}</style>
-        </>
-    );
+    </>
+  );
 }
