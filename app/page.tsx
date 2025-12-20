@@ -5,6 +5,8 @@ import ForWhomSection from "./components/ForWhomSection";
 import SpeakersSection from "./components/SpeakersSection";
 import FooterSection from "./components/FooterSection";
 import EventSchedule from "./components/EventSchedule";
+import Sponsorship from "./components/Sponsorship";
+import Questions from "./components/Questions";
 import { domAnimation, LazyMotion } from "framer-motion";
 
 export default function Page() {
@@ -16,6 +18,8 @@ export default function Page() {
         <ForWhomSection />
         <SpeakersSection />
         <EventSchedule />
+        <Sponsorship />
+        <Questions />
         <FooterSection />
       </LazyMotion>
       <Navbar />
