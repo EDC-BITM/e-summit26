@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
 
 const LINKS = [
   { label: "Speakers", href: "#speakers" },
@@ -9,29 +11,49 @@ const LINKS = [
   { label: "Contact", href: "#contact" },
 ];
 
-function NavPill({ href, children, onClick }) {
+function NavPill({
+  href,
+  children,
+  onClick,
+}: {
+  href: string;
+  children: React.ReactNode;
+  onClick: (e: React.MouseEvent) => void;
+}) {
   return (
-    <a href={href} onClick={onClick} className="rb-pill">
-      <span className="rb-bg" aria-hidden="true">
-        <span className="rb-bg-layers">
-          <span className="rb-bg-layer rb-bg-layer-1 -blue" />
-          <span className="rb-bg-layer rb-bg-layer-2 -purple" />
-        </span>
-      </span>
-
-      <span className="rb-inner">
-        <span className="rb-inner-static">{children}</span>
-        <span className="rb-inner-hover">{children}</span>
-      </span>
+    <a href={href} onClick={onClick} className="flex items-center text-white">
+      <motion.div
+        initial="initial"
+        whileHover="hover"
+        className="rounded-full relative bg-white/10 px-4 py-2 overflow-hidden transition-colors duration-500"
+      >
+        <motion.span
+          variants={{
+            initial: { y: 0 },
+            hover: { y: "-110%" },
+          }}
+          transition={{ duration: 0.22, ease: "linear" }}
+          className="block text-gray-200/80 will-change-transform"
+        >
+          {children}
+        </motion.span>
+        <motion.span
+          variants={{
+            initial: { y: "110%" },
+            hover: { y: 0 },
+          }}
+          transition={{ duration: 0.22, ease: "linear" }}
+          className="absolute inset-0 bg-[#733080] rounded-full flex items-center justify-center will-change-transform"
+        >
+          {children}
+        </motion.span>
+      </motion.div>
     </a>
   );
 }
 
 export default function Navbar() {
-  const [mounted, setMounted] = useState(false);
   const [compact, setCompact] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const onScroll = () => setCompact(window.scrollY > 18);
@@ -40,7 +62,7 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const smoothJump = (e) => {
+  const smoothJump = (e: React.MouseEvent) => {
     const href = e.currentTarget.getAttribute("href");
     if (!href || !href.startsWith("#")) return;
 
@@ -62,7 +84,6 @@ export default function Navbar() {
         className={[
           "fixed left-0 right-0 top-0 z-50",
           "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          mounted ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6",
           // Bar should only appear after scroll
           compact
             ? [
@@ -87,7 +108,11 @@ export default function Navbar() {
               ].join(" ")}
               aria-label="Home"
             >
-              <img
+              <Image
+                width={200}
+                height={200}
+                priority={true}
+                loading="eager"
                 src="/esummit_logo.png"
                 alt="E-Summit 26"
                 draggable={false}
@@ -100,9 +125,11 @@ export default function Navbar() {
               {/* Pills (desktop only; slide out on scroll) */}
               <nav
                 className={[
-                  "hidden md:flex items-center gap-3",
+                  "hidden md:flex items-center space-x-3",
                   "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  compact ? "opacity-0 translate-x-10 pointer-events-none" : "opacity-100 translate-x-0",
+                  compact
+                    ? "opacity-0 translate-x-10 pointer-events-none"
+                    : "opacity-100 translate-x-0",
                 ].join(" ")}
                 aria-label="Primary"
               >
@@ -131,10 +158,10 @@ export default function Navbar() {
                 ].join(" ")}
               >
                 <span className="sr-only">Open menu</span>
-                <span className="flex flex-col gap-[5px]">
-                  <span className="h-[2px] w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
-                  <span className="h-[2px] w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
-                  <span className="h-[2px] w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
+                <span className="flex flex-col gap-1.25">
+                  <span className="h-0.5 w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
+                  <span className="h-0.5 w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
+                  <span className="h-0.5 w-5 rounded-full bg-white/85 shadow-[0_0_18px_rgba(176,94,194,0.35)]" />
                 </span>
               </button>
             </div>
@@ -152,7 +179,8 @@ export default function Navbar() {
           border-radius: 9999px;
           padding-left: 1.7rem;
           padding-right: 1.7rem;
-          font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+          font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+            Helvetica, Arial;
           font-size: 1.05rem;
           font-weight: 640;
           letter-spacing: -0.04em;
@@ -229,7 +257,8 @@ export default function Navbar() {
         .rb-pill:hover .rb-inner-static {
           opacity: 0;
           transform: translateY(-70%);
-          transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.25s linear;
+          transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1),
+            opacity 0.25s linear;
         }
 
         .rb-pill:hover .rb-inner-hover {
@@ -240,7 +269,8 @@ export default function Navbar() {
         }
 
         .rb-pill:hover .rb-bg-layer {
-          transition: transform 1.1s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.25s linear;
+          transition: transform 1.1s cubic-bezier(0.19, 1, 0.22, 1),
+            opacity 0.25s linear;
         }
 
         .rb-pill:hover .rb-bg-layer-1 {
