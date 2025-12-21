@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState, useMemo } from "react";
+import { motion, Variants } from "framer-motion";
 import Image from "next/image";
 
 const LINKS = [
@@ -10,6 +10,22 @@ const LINKS = [
   { label: "Venue", href: "#venue" },
   { label: "Contact", href: "#contact" },
 ];
+
+// Extract animation variants for performance
+const PILL_VARIANTS: Variants = {
+  initial: { y: 0 },
+  hover: { y: "-110%" },
+};
+
+const PILL_BG_VARIANTS: Variants = {
+  initial: { y: "110%" },
+  hover: { y: 0 },
+};
+
+const TRANSITION_CONFIG = {
+  duration: 0.22,
+  ease: "linear" as const,
+};
 
 function NavPill({
   href,
@@ -28,21 +44,15 @@ function NavPill({
         className="rounded-full relative bg-white/10 px-4 py-2 overflow-hidden transition-colors duration-500"
       >
         <motion.span
-          variants={{
-            initial: { y: 0 },
-            hover: { y: "-110%" },
-          }}
-          transition={{ duration: 0.22, ease: "linear" }}
+          variants={PILL_VARIANTS}
+          transition={TRANSITION_CONFIG}
           className="block text-gray-200/80 will-change-transform"
         >
           {children}
         </motion.span>
         <motion.span
-          variants={{
-            initial: { y: "110%" },
-            hover: { y: 0 },
-          }}
-          transition={{ duration: 0.22, ease: "linear" }}
+          variants={PILL_BG_VARIANTS}
+          transition={TRANSITION_CONFIG}
           className="absolute inset-0 bg-[#733080] rounded-full flex items-center justify-center will-change-transform"
         >
           {children}
@@ -62,21 +72,24 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const smoothJump = (e: React.MouseEvent) => {
-    const href = e.currentTarget.getAttribute("href");
-    if (!href || !href.startsWith("#")) return;
+  const smoothJump = useMemo(
+    () => (e: React.MouseEvent) => {
+      const href = e.currentTarget.getAttribute("href");
+      if (!href || !href.startsWith("#")) return;
 
-    e.preventDefault();
+      e.preventDefault();
 
-    if (href === "#top") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
+      if (href === "#top") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
 
-    const el = document.querySelector(href);
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+      const el = document.querySelector(href);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    },
+    []
+  );
 
   return (
     <>
@@ -94,6 +107,11 @@ export default function Navbar() {
               ].join(" ")
             : "bg-transparent backdrop-blur-0 border-b border-transparent shadow-none",
         ].join(" ")}
+        style={{
+          willChange: compact
+            ? "background, backdrop-filter, border-color, box-shadow"
+            : "auto",
+        }}
       >
         <div className="mx-auto max-w-6xl px-1 py-4">
           <div className="relative flex items-center">
@@ -132,6 +150,7 @@ export default function Navbar() {
                     : "opacity-100 translate-x-0",
                 ].join(" ")}
                 aria-label="Primary"
+                style={{ willChange: compact ? "auto" : "opacity, transform" }}
               >
                 {LINKS.map((l) => (
                   <NavPill key={l.href} href={l.href} onClick={smoothJump}>

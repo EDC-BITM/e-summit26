@@ -1,11 +1,50 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { BriefcaseBusiness, Banknote, Armchair, Code2 } from "lucide-react";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { cn } from "@/lib/utils";
 import AnimatedBlurText from "./AnimatedBlurText";
+
+// Extract animation variants to constants for performance
+const CARD_VARIANTS: Variants = {
+  inactive: {
+    borderRadius: "36px",
+    borderColor: "rgba(255,255,255,0.1)",
+  },
+  active: {
+    borderRadius: "9999px",
+    borderColor: "rgba(176,94,194,0.78)",
+  },
+};
+
+const ICON_VARIANTS: Variants = {
+  inactive: { color: "rgba(255, 255, 255, 0.35)" },
+  active: { color: "rgb(255, 255, 255)" },
+};
+
+const LABEL_VARIANTS: Variants = {
+  inactive: { color: "rgba(255, 255, 255, 0.45)" },
+  active: { color: "rgb(255, 255, 255)" },
+};
+
+const CUBE_VARIANTS: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 },
+};
+
+const DESC_VARIANTS: Variants = {
+  hidden: { opacity: 0, y: 8 },
+  visible: { opacity: 1, y: 0 },
+};
+
+const TRANSITION_CONFIG = {
+  card: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+  icon: { duration: 0.3 },
+  cube: { duration: 0.4 },
+  desc: { duration: 0.4 },
+};
 
 function Marquee({ className = "" }) {
   const text = "Innovation. Networking. Brainstorming. Learning";
@@ -93,14 +132,9 @@ function AudienceCard({ item, active, onClick }: AudienceCardProps) {
     <motion.button
       type="button"
       onClick={onClick}
-      animate={{
-        borderRadius: active ? "9999px" : "36px",
-        borderColor: active ? "rgba(176,94,194,0.78)" : "rgba(255,255,255,0.1)",
-      }}
-      transition={{
-        duration: 0.5,
-        ease: [0.22, 1, 0.36, 1],
-      }}
+      variants={CARD_VARIANTS}
+      animate={active ? "active" : "inactive"}
+      transition={TRANSITION_CONFIG.card}
       className={cn(
         "relative isolate aspect-square w-full cursor-pointer p-6",
         "will-change-[border-radius,transform]",
@@ -109,13 +143,14 @@ function AudienceCard({ item, active, onClick }: AudienceCardProps) {
       aria-pressed={active}
     >
       {/* Rotating cube background (only when active) */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {active && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
+            variants={CUBE_VARIANTS}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            transition={TRANSITION_CONFIG.cube}
           >
             <div className="pointer-events-none absolute inset-0 rounded-full overflow-hidden">
               {/* centered, in-place rotation (no drifting) */}
@@ -129,6 +164,7 @@ function AudienceCard({ item, active, onClick }: AudienceCardProps) {
                 style={{
                   transformOrigin: "center",
                   animation: "cubeSpinInPlace 46s linear infinite",
+                  willChange: "transform",
                 }}
               />
 
@@ -151,10 +187,10 @@ function AudienceCard({ item, active, onClick }: AudienceCardProps) {
       {/* content */}
       <div className="relative z-10 flex h-full w-full flex-col items-center justify-center gap-3">
         <motion.div
-          animate={{
-            color: active ? "rgb(255, 255, 255)" : "rgba(255, 255, 255, 0.35)",
-          }}
-          transition={{ duration: 0.3 }}
+          variants={ICON_VARIANTS}
+          animate={active ? "active" : "inactive"}
+          transition={TRANSITION_CONFIG.icon}
+          style={{ willChange: "color" }}
         >
           <Icon
             size={34}
@@ -163,14 +199,14 @@ function AudienceCard({ item, active, onClick }: AudienceCardProps) {
           />
         </motion.div>
         <motion.div
-          animate={{
-            color: active ? "rgb(255, 255, 255)" : "rgba(255, 255, 255, 0.45)",
-          }}
-          transition={{ duration: 0.3 }}
+          variants={LABEL_VARIANTS}
+          animate={active ? "active" : "inactive"}
+          transition={TRANSITION_CONFIG.icon}
           className={cn(
             "text-sm sm:text-base font-medium",
             "font-['Inter',ui-sans-serif,system-ui]"
           )}
+          style={{ willChange: "color" }}
         >
           {item.label}
         </motion.div>
@@ -211,7 +247,15 @@ export default function ForWhomSection() {
   );
 
   const [activeKey, setActiveKey] = useState(items[0].key);
-  const active = items.find((x) => x.key === activeKey) || items[0];
+  const active = useMemo(
+    () => items.find((x) => x.key === activeKey) || items[0],
+    [items, activeKey]
+  );
+
+  // Memoize click handler
+  const handleCardClick = useCallback((key: string) => {
+    setActiveKey(key);
+  }, []);
 
   return (
     <section id="forwhom" className="w-full bg-black text-white">
@@ -234,20 +278,19 @@ export default function ForWhomSection() {
           )}
         >
           <AnimatedBlurText
-            lines={["Who Should Definitely Attend the"," "]}
+            lines={["Who Should Definitely Attend the", " "]}
             liteText="E-Summit'26"
           />
         </h2>
 
         {/* Cards */}
         <div className="mt-12 grid grid-cols-2 gap-6 md:grid-cols-4 md:gap-8">
-          {items.map((it, i) => (
+          {items.map((it) => (
             <AudienceCard
               key={it.key}
               item={it}
               active={activeKey === it.key}
-              onClick={() => setActiveKey(it.key)}
-              delayMs={80 + i * 70}
+              onClick={() => handleCardClick(it.key)}
             />
           ))}
         </div>
@@ -260,9 +303,11 @@ export default function ForWhomSection() {
           >
             <motion.div
               key={active.key}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
+              variants={DESC_VARIANTS}
+              initial="hidden"
+              animate="visible"
+              transition={TRANSITION_CONFIG.desc}
+              style={{ willChange: "opacity, transform" }}
             >
               {active.desc}
             </motion.div>

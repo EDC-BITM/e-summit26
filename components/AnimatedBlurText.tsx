@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 
 interface AnimatedBlurTextProps {
   lines: string[];
@@ -23,6 +24,17 @@ export default function AnimatedBlurText({
     return lines.slice(0, lineIdx).reduce((acc, line) => acc + line.length, 0);
   };
 
+  // Memoize animation variants to prevent recreation on every render
+  const charVariants = useMemo(
+    () => ({
+      hidden: { opacity: 0, filter: "blur(8px)" },
+      visible: { opacity: 1, filter: "blur(0px)" },
+    }),
+    []
+  );
+
+  const easing = useMemo(() => [0.22, 1, 0.36, 1] as const, []);
+
   return (
     <motion.div className={className}>
       {lines.map((line, lineIdx) => {
@@ -35,14 +47,16 @@ export default function AnimatedBlurText({
               <motion.span
                 aria-hidden
                 key={`char-${lineIdx}-${charIdx}`}
-                initial={{ opacity: 0, filter: "blur(8px)" }}
-                whileInView={{ opacity: 1, filter: "blur(0px)" }}
-                viewport={{ once: true }}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "0px 0px -100px 0px" }}
+                variants={charVariants}
                 transition={{
                   duration,
-                  ease: [0.22, 1, 0.36, 1],
+                  ease: easing,
                   delay: (previousCharsCount + charIdx) * charDelay,
                 }}
+                style={{ willChange: "opacity, filter" }}
               >
                 {char}
               </motion.span>
@@ -51,15 +65,17 @@ export default function AnimatedBlurText({
               <motion.span
                 aria-hidden
                 key={`lite-text-${lineIdx}`}
-                initial={{ opacity: 0, filter: "blur(8px)" }}
-                whileInView={{ opacity: 1, filter: "blur(0px)" }}
-                viewport={{ once: true }}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "0px 0px -100px 0px" }}
+                variants={charVariants}
                 transition={{
                   duration: 0.5,
-                  ease: [0.22, 1, 0.36, 1],
+                  ease: easing,
                   delay: (previousCharsCount + line.length + 1) * charDelay,
                 }}
                 className="text-white/30"
+                style={{ willChange: "opacity, filter" }}
               >
                 {liteText}
               </motion.span>

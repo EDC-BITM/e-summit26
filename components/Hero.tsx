@@ -1,10 +1,21 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import Silk from "./Silk";
 import Image from "next/image";
-import { easeInOut, motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import ShinyText from "./ShinyText";
+
+// Extract animation variants
+const CHAR_VARIANTS: Variants = {
+  hidden: { opacity: 0, filter: "blur(5px)" },
+  visible: { opacity: 1, filter: "blur(0px)" },
+};
+
+const TRANSITION_CONFIG = {
+  duration: 0.8,
+  ease: [0.42, 0, 0.58, 1] as const, // easeInOut
+};
 
 export default function Hero() {
   const words = useMemo(
@@ -13,24 +24,24 @@ export default function Hero() {
   );
 
   const [idx, setIdx] = useState(0);
-  const [visible, setVisible] = useState(true);
+  const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const timeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  const cycleWord = useCallback(() => {
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setIdx((p) => (p + 1) % words.length);
+    }, 260);
+  }, [words.length]);
 
   useEffect(() => {
-    let t: string | number | NodeJS.Timeout | undefined;
-    const interval = setInterval(() => {
-      setVisible(false);
-      clearTimeout(t);
-      t = setTimeout(() => {
-        setIdx((p) => (p + 1) % words.length);
-        setVisible(true);
-      }, 260);
-    }, 2200);
+    intervalRef.current = setInterval(cycleWord, 2200);
 
     return () => {
-      clearInterval(interval);
-      clearTimeout(t);
+      clearInterval(intervalRef.current);
+      clearTimeout(timeoutRef.current);
     };
-  }, [words.length]);
+  }, [cycleWord]);
 
   return (
     <section className="relative h-svh w-full overflow-hidden bg-black">
@@ -64,7 +75,7 @@ export default function Hero() {
           "motion-reduce:animate-none",
           "animate-[spin_24s_linear_infinite]",
         ].join(" ")}
-        style={{ transform: "rotate(12deg)" }}
+        style={{ transform: "rotate(12deg)", willChange: "transform" }}
       />
 
       {/* Small cube near the title area */}
@@ -85,7 +96,7 @@ export default function Hero() {
           "motion-reduce:animate-none",
           "animate-[spin_20s_linear_infinite]",
         ].join(" ")}
-        style={{ transform: "rotate(-10deg)" }}
+        style={{ transform: "rotate(-10deg)", willChange: "transform" }}
       />
 
       {/* Right triangle */}
@@ -106,7 +117,7 @@ export default function Hero() {
           "motion-reduce:animate-none",
           "animate-[spin_24s_linear_infinite]",
         ].join(" ")}
-        style={{ animationDirection: "reverse" }}
+        style={{ animationDirection: "reverse", willChange: "transform" }}
       />
 
       {/* Content */}
@@ -142,24 +153,22 @@ export default function Hero() {
           <span className="font-medium">Fuel your startup journey by:</span>{" "}
           <span className="inline-flex w-[13ch] justify-start align-baseline">
             <span
-              className={[
-                "inline-block font-semibold text-white",
-                "transition-all duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                "motion-reduce:transition-none opacity-100 translate-y-0 blur-0",
-              ].join(" ")}
+              className="inline-block font-semibold text-white"
               aria-live="polite"
+              style={{ willChange: "contents" }}
             >
               {words[idx].split("").map((char, i) => (
                 <motion.span
                   key={`${idx}-${i}`}
-                  initial={{ opacity: 0, filter: "blur(5px)" }}
-                  animate={{ opacity: 1, filter: "blur(0px)" }}
+                  variants={CHAR_VARIANTS}
+                  initial="hidden"
+                  animate="visible"
                   transition={{
-                    duration: 0.8,
+                    ...TRANSITION_CONFIG,
                     delay: i * 0.08,
-                    ease: easeInOut,
                   }}
                   className="inline-block"
+                  style={{ willChange: "opacity, filter" }}
                 >
                   {char}
                 </motion.span>
