@@ -2,33 +2,15 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import {
-  X,
-  Home,
-  Users,
-  Calendar,
-  MapPin,
-  Mail,
-  ChevronRight,
-  Instagram,
-  Twitter,
-  Linkedin,
-  Facebook,
-} from "lucide-react";
+import { X, Home, Users, Calendar, MapPin, Mail, ChevronRight } from "lucide-react";
 
 const LINKS = [
-  { label: "Speakers", href: "#speakers", icon: Users },
-  { label: "Events", href: "#events", icon: Calendar },
-  { label: "Venue", href: "#venue", icon: MapPin },
-  { label: "Contact", href: "#contact", icon: Mail },
-];
-
-const SOCIAL_LINKS = [
-  { label: "Instagram", href: "https://instagram.com", icon: Instagram, color: "bg-pink-500" },
-  { label: "Twitter", href: "https://twitter.com", icon: Twitter, color: "bg-black" },
-  { label: "LinkedIn", href: "https://linkedin.com", icon: Linkedin, color: "bg-blue-600" },
-  { label: "Facebook", href: "https://facebook.com", icon: Facebook, color: "bg-blue-500" },
+  { label: "Speakers", href: "/speakers", icon: Users },
+  { label: "Events", href: "/events", icon: Calendar },
+  { label: "Venue", href: "/venue", icon: MapPin },
+  { label: "Contact", href: "/contact", icon: Mail },
 ];
 
 const PILL_VARIANTS: Variants = {
@@ -110,6 +92,8 @@ function NavPill({
 }
 
 export default function Navbar() {
+  const router = useRouter();
+
   const [compact, setCompact] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -139,21 +123,31 @@ export default function Navbar() {
     []
   );
 
-  const handleNavClick = useCallback((e: React.MouseEvent, href: string) => {
-    e.preventDefault();
-    setIsSidebarOpen(false);
-    
-    setTimeout(() => {
-      if (href === "#top") {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        const el = document.querySelector(href);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
+  const handleNavClick = useCallback(
+    (e: React.MouseEvent, href: string) => {
+      e.preventDefault();
+      setIsSidebarOpen(false);
+
+      setTimeout(() => {
+        // ✅ Route navigation (e.g. /speakers)
+        if (href.startsWith("/")) {
+          router.push(href);
+          return;
         }
-      }
-    }, 300);
-  }, []);
+
+        // ✅ In-page anchors
+        if (href === "#top") {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          return;
+        }
+
+        const el = document.querySelector(href);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 300);
+    },
+    [router]
+  );
+
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
@@ -169,6 +163,17 @@ export default function Navbar() {
     return () => window.removeEventListener("keydown", handleEscape);
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isSidebarOpen]);
+
   return (
     <>
       <header
@@ -177,11 +182,11 @@ export default function Navbar() {
           "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           compact
             ? [
-                "bg-black/18",
-                "backdrop-blur-md",
-                "border-b border-white/8",
-                "shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
-              ].join(" ")
+              "bg-black/18",
+              "backdrop-blur-md",
+              "border-b border-white/8",
+              "shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
+            ].join(" ")
             : "bg-transparent backdrop-blur-0 border-b border-transparent shadow-none",
         ].join(" ")}
         style={{
@@ -190,7 +195,7 @@ export default function Navbar() {
             : "auto",
         }}
       >
-        <div className="mx-auto max-w-6xl px-1 py-4">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
           <div className="relative flex items-center">
             <a
               href="#top"
@@ -210,11 +215,11 @@ export default function Navbar() {
                 src="/esummit_logo.png"
                 alt="E-Summit 26"
                 draggable={false}
-                className="h-12 w-auto select-none"
+                className="h-10 sm:h-12 w-auto select-none"
               />
             </a>
 
-            <div className="ml-auto flex items-center gap-4 pr-5">
+            <div className="ml-auto flex items-center gap-4 pr-2 sm:pr-5">
               <nav
                 className={[
                   "hidden md:flex items-center space-x-3",
@@ -237,7 +242,7 @@ export default function Navbar() {
                 type="button"
                 aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
                 className={[
-                  "inline-flex h-11 w-11 items-center justify-center",
+                  "inline-flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center",
                   compact
                     ? "rounded-full border border-white/12 bg-white/6 backdrop-blur-md"
                     : "rounded-full border border-white/15 bg-white/10 backdrop-blur-xl",
@@ -286,50 +291,71 @@ export default function Navbar() {
               onClick={toggleSidebar}
               transition={{ duration: 0.3 }}
             />
-            
+
+            {/* ===== FIXED SIDEBAR (no cut, no scrollbar, better mobile sizing) ===== */}
             <motion.aside
               initial="closed"
               animate="open"
               exit="closed"
               variants={SIDEBAR_VARIANTS}
-              className="fixed right-0 top-0 z-[70] h-full w-full max-w-md bg-black/95 backdrop-blur-xl border-l border-white/10 shadow-2xl"
+              className="fixed right-0 top-0 z-[70] h-[100svh] w-full md:w-[400px] overflow-hidden bg-gradient-to-b from-black/95 to-black backdrop-blur-xl border-l border-white/10 shadow-2xl"
+              style={{
+                paddingBottom: "env(safe-area-inset-bottom)",
+              }}
             >
               <div className="flex h-full flex-col">
-                {/* Header - Ultra compact */}
-                <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-[clamp(14px,2.2vh,20px)] border-b border-white/10">
                   <div className="flex items-center gap-3">
                     <Image
-                      width={80}
-                      height={80}
+                      width={120}
+                      height={120}
                       src="/esummit_logo.png"
                       alt="E-Summit 26"
-                      className="h-6 w-auto"
+                      className="h-10 w-auto"
                     />
+                    {/* <span className="text-xl font-bold text-white">Menu</span> */}
                   </div>
                   <button
                     onClick={toggleSidebar}
-                    className="grid h-7 w-7 place-items-center rounded-full border border-white/15 bg-white/5 hover:bg-white/10 transition-colors"
+                    className="grid h-10 w-10 place-items-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300"
                     aria-label="Close menu"
                   >
-                    <X size={14} className="text-white/80" />
+                    <X size={24} className="text-white" />
                   </button>
                 </div>
 
-                {/* Navigation Links - Ultra compact */}
-                <nav className="flex-1 px-4 py-3">
-                  <div className="space-y-1 h-full flex flex-col justify-center">
+                {/* Navigation Links */}
+                <nav className="flex-1 min-h-0 px-6 py-[clamp(14px,3vh,30px)]">
+                  {/* NOTE: no overflow-y-auto (no scrollbar). We instead clamp paddings + sizes so it always fits. */}
+                  <div className="h-full flex flex-col justify-start gap-[clamp(6px,1.1vh,12px)]">
+                    {/* Home Link */}
                     <a
                       href="#top"
                       onClick={(e) => handleNavClick(e, "#top")}
-                      className="group flex items-center gap-2 rounded-lg px-3 py-2 text-white/80 hover:bg-white/5 hover:text-white transition-colors"
+                      className="group flex items-center gap-4 rounded-2xl px-5 py-[clamp(14px,2.6vh,18px)] hover:bg-white/10 transition-all duration-300 active:scale-[0.98]"
                     >
-                      <div className="grid h-8 w-8 place-items-center rounded-md bg-white/5 group-hover:bg-[#733080]/30">
-                        <Home size={14} className="text-white/70 group-hover:text-white" />
+                      <div
+                        className="grid place-items-center rounded-xl bg-gradient-to-br from-[#733080]/30 to-[#733080]/10 group-hover:from-[#733080] group-hover:to-[#733080]/70 transition-all duration-300"
+                        style={{
+                          width: "clamp(46px, 6vh, 56px)",
+                          height: "clamp(46px, 6vh, 56px)",
+                        }}
+                      >
+                        <Home size={24} className="text-white" />
                       </div>
-                      <span className="font-medium text-sm">Home</span>
-                      <ChevronRight size={12} className="ml-auto opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                      <div className="flex-1">
+                        <span className="font-semibold text-white text-[clamp(18px,2.4vh,22px)]">
+                          Home
+                        </span>
+                      </div>
+                      <ChevronRight
+                        size={24}
+                        className="text-white/50 group-hover:text-white group-hover:translate-x-2 transition-all duration-300"
+                      />
                     </a>
 
+                    {/* Other Links */}
                     {LINKS.map((link) => {
                       const Icon = link.icon;
                       return (
@@ -337,54 +363,37 @@ export default function Navbar() {
                           key={link.href}
                           href={link.href}
                           onClick={(e) => handleNavClick(e, link.href)}
-                          className="group flex items-center gap-2 rounded-lg px-3 py-2 text-white/80 hover:bg-white/5 hover:text-white transition-colors"
+                          className="group flex items-center gap-4 rounded-2xl px-5 py-[clamp(14px,2.6vh,18px)] hover:bg-white/10 transition-all duration-300 active:scale-[0.98]"
                         >
-                          <div className="grid h-8 w-8 place-items-center rounded-md bg-white/5 group-hover:bg-[#733080]/30">
-                            <Icon size={14} className="text-white/70 group-hover:text-white" />
+                          <div
+                            className="grid place-items-center rounded-xl bg-gradient-to-br from-white/5 to-white/2 group-hover:from-[#733080] group-hover:to-[#733080]/70 transition-all duration-300"
+                            style={{
+                              width: "clamp(46px, 6vh, 56px)",
+                              height: "clamp(46px, 6vh, 56px)",
+                            }}
+                          >
+                            <Icon size={24} className="text-white/80 group-hover:text-white" />
                           </div>
-                          <span className="font-medium text-sm">{link.label}</span>
-                          <ChevronRight size={12} className="ml-auto opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                          <div className="flex-1">
+                            <span className="font-semibold text-white text-[clamp(18px,2.4vh,22px)]">
+                              {link.label}
+                            </span>
+                          </div>
+                          <ChevronRight
+                            size={24}
+                            className="text-white/50 group-hover:text-white group-hover:translate-x-2 transition-all duration-300"
+                          />
                         </a>
                       );
                     })}
                   </div>
                 </nav>
 
-                {/* Footer - Ultra compact */}
-                <div className="border-t border-white/10 p-3">
-                  <div className="mb-3">
-                    <h3 className="mb-2 text-xs font-medium text-white/80">
-                      Follow Us
-                    </h3>
-                    <div className="flex gap-1">
-                      {SOCIAL_LINKS.map((social) => {
-                        const Icon = social.icon;
-                        return (
-                          <a
-                            key={social.label}
-                            href={social.href}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`grid h-7 w-7 place-items-center rounded-full ${social.color} text-white transition-transform hover:scale-110`}
-                            aria-label={social.label}
-                          >
-                            <Icon size={12} />
-                          </a>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="space-y-1 text-xs text-white/60">
-                    <p className="leading-relaxed text-xs">
-                      Join us for the biggest entrepreneurial event of the year.
-                      Connect, learn, and grow with industry leaders.
-                    </p>
-                    <p className="pt-1 text-[10px]">
-                      © 2025 EDC, BIT Mesra. All rights reserved.
-                    </p>
-                  </div>
-                </div>
+                {/* Removed the bottom “E-Summit 2025” pill completely (as requested) */}
+                <div
+                  className="border-t border-white/10"
+                  style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
+                />
               </div>
             </motion.aside>
           </>
@@ -503,13 +512,28 @@ export default function Navbar() {
           transform: scale(1);
         }
 
-        /* Hide scrollbar but keep functionality */
-        aside {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+        /* Touch improvements for mobile */
+        @media (max-width: 640px) {
+          .rb-pill {
+            height: 2.5rem;
+            font-size: 0.95rem;
+            padding-left: 1.3rem;
+            padding-right: 1.3rem;
+          }
+
+          body.sidebar-open {
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
+          }
         }
-        aside::-webkit-scrollbar {
-          display: none;
+
+        aside a {
+          -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
+        }
+
+        html {
+          scroll-behavior: smooth;
         }
       `}</style>
     </>

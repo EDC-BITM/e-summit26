@@ -284,7 +284,7 @@ export default function SpeakersSection() {
               <div className="h-px flex-1 bg-white/25" />
 
               <a
-                href="#"
+                href="/speakers"
                 className="group inline-flex items-center gap-3 text-sm font-medium text-white/90 hover:text-white"
               >
                 <span>See All</span>

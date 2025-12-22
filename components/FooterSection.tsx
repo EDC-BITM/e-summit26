@@ -7,10 +7,10 @@ import { Facebook, Instagram, Linkedin, X } from "lucide-react";
 type NavLink = { label: string; href: string };
 
 const LINKS: NavLink[] = [
-  { label: "Speakers", href: "#speakers" },
-  { label: "Agenda", href: "#agenda" },
-  { label: "Venue", href: "#venue" },
-  { label: "Contact", href: "#contact" },
+  { label: "Speakers", href: "/speakers" },
+  { label: "Events", href: "/events" },
+  { label: "Venue", href: "/venue" },
+  { label: "Contact", href: "/contact" },
 ];
 
 function NavPill({ href, children }: { href: string; children: React.ReactNode }) {
