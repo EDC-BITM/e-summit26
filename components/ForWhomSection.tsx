@@ -297,11 +297,11 @@ export default function ForWhomSection() {
 
         {/* Description bar */}
         <div className="mt-8 rounded-2xl border border-white/10 bg-white/3 px-5 py-4 sm:px-6 sm:py-5">
-          <p
+          <div
             aria-label={active.desc}
             className="text-sm sm:text-base text-white/80 leading-relaxed font-['Inter',ui-sans-serif,system-ui]"
           >
-            <motion.div
+            <motion.p
               key={active.key}
               variants={DESC_VARIANTS}
               initial="hidden"
@@ -310,8 +310,8 @@ export default function ForWhomSection() {
               style={{ willChange: "opacity, transform" }}
             >
               {active.desc}
-            </motion.div>
-          </p>
+            </motion.p>
+          </div>
         </div>
 
         {/* Continuous slider */}
