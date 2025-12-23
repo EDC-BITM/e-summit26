@@ -4,7 +4,17 @@ import { useEffect, useState, useMemo, useCallback } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { X, Home, Users, Calendar, MapPin, Mail, ChevronRight } from "lucide-react";
+import {
+  X,
+  Home,
+  Users,
+  Calendar,
+  MapPin,
+  Mail,
+  ChevronRight,
+} from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const LINKS = [
   { label: "Speakers", href: "/speakers", icon: Users },
@@ -66,7 +76,11 @@ function NavPill({
   onClick: (e: React.MouseEvent) => void;
 }) {
   return (
-    <a href={href} onClick={onClick} className="flex items-center text-white">
+    <Link
+      href={href}
+      onClick={onClick}
+      className="flex items-center text-white"
+    >
       <motion.div
         initial="initial"
         whileHover="hover"
@@ -87,7 +101,7 @@ function NavPill({
           {children}
         </motion.span>
       </motion.div>
-    </a>
+    </Link>
   );
 }
 
@@ -148,7 +162,6 @@ export default function Navbar() {
     [router]
   );
 
-
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
   }, []);
@@ -177,18 +190,18 @@ export default function Navbar() {
   return (
     <>
       <header
-        className={[
+        className={cn(
           "fixed left-0 right-0 top-0 z-50",
           "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
           compact
             ? [
-              "bg-black/18",
-              "backdrop-blur-md",
-              "border-b border-white/8",
-              "shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
-            ].join(" ")
-            : "bg-transparent backdrop-blur-0 border-b border-transparent shadow-none",
-        ].join(" ")}
+                "bg-black/18",
+                "backdrop-blur-md",
+                "border-b border-white/8",
+                "shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
+              ].join(" ")
+            : "bg-transparent backdrop-blur-0 border-b border-transparent shadow-none"
+        )}
         style={{
           willChange: compact
             ? "background, backdrop-filter, border-color, box-shadow"
@@ -197,14 +210,13 @@ export default function Navbar() {
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
           <div className="relative flex items-center">
-            <a
-              href="#top"
-              onClick={(e) => handleNavClick(e, "#top")}
-              className={[
+            <Link
+              href="/"
+              className={cn(
                 "flex items-center gap-3 -translate-x-4",
                 "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                "opacity-100 translate-y-0",
-              ].join(" ")}
+                "opacity-100 translate-y-0"
+              )}
               aria-label="Home"
             >
               <Image
@@ -217,17 +229,17 @@ export default function Navbar() {
                 draggable={false}
                 className="h-10 sm:h-12 w-auto select-none"
               />
-            </a>
+            </Link>
 
             <div className="ml-auto flex items-center gap-4 pr-2 sm:pr-5">
               <nav
-                className={[
+                className={cn(
                   "hidden md:flex items-center space-x-3",
                   "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   compact
                     ? "opacity-0 translate-x-10 pointer-events-none"
-                    : "opacity-100 translate-x-0",
-                ].join(" ")}
+                    : "opacity-100 translate-x-0"
+                )}
                 aria-label="Primary"
                 style={{ willChange: compact ? "auto" : "opacity, transform" }}
               >
@@ -241,7 +253,7 @@ export default function Navbar() {
               <motion.button
                 type="button"
                 aria-label={isSidebarOpen ? "Close menu" : "Open menu"}
-                className={[
+                className={cn(
                   "inline-flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center",
                   compact
                     ? "rounded-full border border-white/12 bg-white/6 backdrop-blur-md"
@@ -250,8 +262,8 @@ export default function Navbar() {
                   "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   compact
                     ? "opacity-100 translate-x-0"
-                    : "opacity-100 translate-x-0 md:opacity-0 md:translate-x-4 md:pointer-events-none",
-                ].join(" ")}
+                    : "opacity-100 translate-x-0 md:opacity-0 md:translate-x-4 md:pointer-events-none"
+                )}
                 onClick={toggleSidebar}
                 whileTap={{ scale: 0.95 }}
               >
@@ -287,7 +299,7 @@ export default function Navbar() {
               animate="open"
               exit="closed"
               variants={BACKDROP_VARIANTS}
-              className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 z-60 bg-black/40 backdrop-blur-sm"
               onClick={toggleSidebar}
               transition={{ duration: 0.3 }}
             />
@@ -298,7 +310,7 @@ export default function Navbar() {
               animate="open"
               exit="closed"
               variants={SIDEBAR_VARIANTS}
-              className="fixed right-0 top-0 z-[70] h-[100svh] w-full md:w-[400px] overflow-hidden bg-gradient-to-b from-black/95 to-black backdrop-blur-xl border-l border-white/10 shadow-2xl"
+              className="fixed right-0 top-0 z-70 h-svh w-full md:w-100 overflow-hidden bg-linear-to-b from-black/95 to-black backdrop-blur-xl border-l border-white/10 shadow-2xl"
               style={{
                 paddingBottom: "env(safe-area-inset-bottom)",
               }}
@@ -330,13 +342,13 @@ export default function Navbar() {
                   {/* NOTE: no overflow-y-auto (no scrollbar). We instead clamp paddings + sizes so it always fits. */}
                   <div className="h-full flex flex-col justify-start gap-[clamp(6px,1.1vh,12px)]">
                     {/* Home Link */}
-                    <a
+                    <Link
                       href="#top"
                       onClick={(e) => handleNavClick(e, "#top")}
                       className="group flex items-center gap-4 rounded-2xl px-5 py-[clamp(14px,2.6vh,18px)] hover:bg-white/10 transition-all duration-300 active:scale-[0.98]"
                     >
                       <div
-                        className="grid place-items-center rounded-xl bg-gradient-to-br from-[#733080]/30 to-[#733080]/10 group-hover:from-[#733080] group-hover:to-[#733080]/70 transition-all duration-300"
+                        className="grid place-items-center rounded-xl bg-linear-to-br from-[#733080]/30 to-[#733080]/10 group-hover:from-[#733080] group-hover:to-[#733080]/70 transition-all duration-300"
                         style={{
                           width: "clamp(46px, 6vh, 56px)",
                           height: "clamp(46px, 6vh, 56px)",
@@ -353,7 +365,7 @@ export default function Navbar() {
                         size={24}
                         className="text-white/50 group-hover:text-white group-hover:translate-x-2 transition-all duration-300"
                       />
-                    </a>
+                    </Link>
 
                     {/* Other Links */}
                     {LINKS.map((link) => {
@@ -366,13 +378,16 @@ export default function Navbar() {
                           className="group flex items-center gap-4 rounded-2xl px-5 py-[clamp(14px,2.6vh,18px)] hover:bg-white/10 transition-all duration-300 active:scale-[0.98]"
                         >
                           <div
-                            className="grid place-items-center rounded-xl bg-gradient-to-br from-white/5 to-white/2 group-hover:from-[#733080] group-hover:to-[#733080]/70 transition-all duration-300"
+                            className="grid place-items-center rounded-xl bg-linear-to-br from-white/5 to-white/2 group-hover:from-[#733080] group-hover:to-[#733080]/70 transition-all duration-300"
                             style={{
                               width: "clamp(46px, 6vh, 56px)",
                               height: "clamp(46px, 6vh, 56px)",
                             }}
                           >
-                            <Icon size={24} className="text-white/80 group-hover:text-white" />
+                            <Icon
+                              size={24}
+                              className="text-white/80 group-hover:text-white"
+                            />
                           </div>
                           <div className="flex-1">
                             <span className="font-semibold text-white text-[clamp(18px,2.4vh,22px)]">
@@ -392,7 +407,9 @@ export default function Navbar() {
                 {/* Removed the bottom “E-Summit 2025” pill completely (as requested) */}
                 <div
                   className="border-t border-white/10"
-                  style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
+                  style={{
+                    paddingBottom: "max(12px, env(safe-area-inset-bottom))",
+                  }}
                 />
               </div>
             </motion.aside>
