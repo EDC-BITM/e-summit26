@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
 import Silk from "@/components/Silk";
+import { m } from "framer-motion";
 
 export default function ContactHero() {
+  const title = "CONTACT";
   return (
     <section className="relative w-full overflow-hidden bg-black text-white">
       {/* Responsive height: 1/4 on mobile, 3/4 on desktop */}
@@ -33,7 +34,7 @@ export default function ContactHero() {
                 "select-none",
                 "font-['Inter',ui-sans-serif,system-ui]",
                 "font-extrabold",
-                "tracking-[-0.06em]",
+                "tracking-[-1.2rem]",
                 "text-white",
                 // Responsive text size
                 "text-[clamp(48px,14vw,205px)]",
@@ -47,7 +48,26 @@ export default function ContactHero() {
                 transform: "translateY(4px) md:translateY(6px)",
               }}
             >
-              CONTACT
+              {title.split("").map((char, index) => (
+                <m.span
+                  aria-hidden="true"
+                  key={index}
+                  initial={{ opacity: 0, scale: 1.3, filter: "blur(4px)" }}
+                  whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  viewport={{ once: true }}
+                  transition={{
+                    delay: index * 0.15,
+                    duration: 0.5,
+                    ease: "easeOut",
+                  }}
+                  style={{
+                    display: "inline-block",
+                    willChange: "transform, opacity",
+                  }}
+                >
+                  {char}
+                </m.span>
+              ))}
             </h1>
           </div>
         </div>
