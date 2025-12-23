@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable react/no-unknown-property */
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { forwardRef, useRef, useMemo, useLayoutEffect } from "react";
+import { forwardRef, useRef, useMemo, useLayoutEffect, useEffect } from "react";
 import { Color } from "three";
 
 const hexToNormalizedRGB = (hex) => {
@@ -80,6 +80,7 @@ const SilkPlane = forwardRef(function SilkPlane({ uniforms }, ref) {
   }, [ref, viewport]);
 
   useFrame((_, delta) => {
+    if (!ref.current) return;
     ref.current.material.uniforms.uTime.value += 0.1 * delta;
   });
 
@@ -96,13 +97,60 @@ const SilkPlane = forwardRef(function SilkPlane({ uniforms }, ref) {
 });
 SilkPlane.displayName = "SilkPlane";
 
-const Silk = ({
-  speed = 5,
-  scale = 1,
-  color = "#7B7481",
-  noiseIntensity = 1.5,
-  rotation = 0,
-}) => {
+function DemandFps({ active, fps }) {
+  const invalidate = useThree((s) => s.invalidate);
+  const rafRef = useRef(0);
+  const lastRef = useRef(0);
+
+  useEffect(() => {
+    if (!active) return;
+    const interval = 1000 / fps;
+    let cancelled = false;
+
+    const loop = (t) => {
+      if (cancelled) return;
+      if (t - lastRef.current >= interval) {
+        lastRef.current = t;
+        invalidate();
+      }
+      rafRef.current = requestAnimationFrame(loop);
+    };
+
+    rafRef.current = requestAnimationFrame(loop);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [active, fps, invalidate]);
+
+  return null;
+}
+
+/**
+ * @typedef {Object} SilkProps
+ * @property {number=} speed
+ * @property {number=} scale
+ * @property {string=} color
+ * @property {number=} noiseIntensity
+ * @property {number=} rotation
+ * @property {number | [number, number]=} dpr
+ * @property {"always" | "demand" | "never"=} frameloop
+ * @property {number=} maxFps
+ */
+
+/** @type {import('react').FC<SilkProps>} */
+const TypedSilk = (props) => {
+  const {
+    speed = 5,
+    scale = 1,
+    color = "#7B7481",
+    noiseIntensity = 1.5,
+    rotation = 0,
+    dpr = [1, 2],
+    frameloop = "always",
+    maxFps,
+  } = props;
+
   const meshRef = useRef();
 
   const uniforms = useMemo(
@@ -118,10 +166,21 @@ const Silk = ({
   );
 
   return (
-    <Canvas dpr={[1, 2]} frameloop="always">
+    <Canvas
+      dpr={dpr}
+      frameloop={
+        typeof maxFps === "number" && maxFps > 0 ? "demand" : frameloop
+      }
+      gl={{ antialias: false, powerPreference: "high-performance" }}
+      performance={{ min: 0.5 }}
+    >
+      <DemandFps
+        active={typeof maxFps === "number" && maxFps > 0}
+        fps={typeof maxFps === "number" && maxFps > 0 ? maxFps : 60}
+      />
       <SilkPlane ref={meshRef} uniforms={uniforms} />
     </Canvas>
   );
 };
 
-export default Silk;
+export default TypedSilk;
