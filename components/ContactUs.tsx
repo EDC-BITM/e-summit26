@@ -1,44 +1,47 @@
-// app/components/ContactUs.tsx
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import AnimatedBlurText from "@/components/AnimatedBlurText";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "./ui/textarea";
 
-type FormState = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  contactNumber: string;
-  query: string;
-};
+const formSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.email("Invalid email address"),
+  contactNumber: z.string().min(1, "Contact number is required"),
+  message: z.string().min(1, "Message is required"),
+});
 
 export default function ContactUs() {
-  const [form, setForm] = useState<FormState>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    contactNumber: "",
-    query: "",
+  const [status, setStatus] = useState<"idle" | "submitting" | "sent">("idle");
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      contactNumber: "",
+      message: "",
+    },
   });
 
-  const [status, setStatus] = useState<"idle" | "submitting" | "sent">("idle");
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus("submitting");
-
-    // Replace this with your API call / email service
-    console.log("[ContactUs] submit payload:", form);
-
-    // tiny fake delay for UX
-    await new Promise((r) => setTimeout(r, 400));
-    setStatus("sent");
-
-    // optional: clear form
-    setForm({ firstName: "", lastName: "", email: "", contactNumber: "", query: "" });
-
-    setTimeout(() => setStatus("idle"), 1800);
-  };
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+    // setStatus("submitting");
+  }
 
   return (
     <section className="w-full bg-black text-white">
@@ -74,168 +77,204 @@ export default function ContactUs() {
 
         {/* Clean form card */}
         <div className="mt-10">
-          <div
-            className="
-              rounded-2xl
-              bg-[#0e0e12]
-              ring-1 ring-white/10
-              shadow-[0_28px_120px_rgba(0,0,0,0.65)]
-              overflow-hidden
-            "
-          >
-            <form onSubmit={onSubmit} className="p-6 sm:p-8">
-              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {/* First Name */}
-                <label className="flex flex-col gap-2">
-                  <span className="text-sm text-white/80">First Name</span>
-                  <input
-                    required
-                    value={form.firstName}
-                    onChange={(e) => setForm((p) => ({ ...p, firstName: e.target.value }))}
-                    placeholder="Jane"
-                    className="
-                      h-11 rounded-xl
-                      bg-black/70
-                      px-4
-                      text-[15px] text-white/90 placeholder:text-white/35
-                      ring-1 ring-white/10
-                      outline-none
-                      focus:ring-white/25
-                      transition
-                    "
-                  />
-                </label>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <div
+                className="
+                  rounded-2xl
+                  bg-[#0e0e12]
+                  ring-1 ring-white/10
+                  shadow-[0_28px_120px_rgba(0,0,0,0.65)]
+                  overflow-hidden
+                "
+              >
+                <div className="p-8">
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    {/* First Name */}
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col gap-2">
+                          <FormLabel className="text-sm text-white/80">
+                            First Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Jane"
+                              className="
+                                h-11 rounded-xl
+                                bg-black/70
+                                px-4
+                                text-[15px] text-white/90 placeholder:text-white/35
+                                ring-1 ring-white/10
+                                outline-none
+                                focus:ring-white/25
+                                transition
+                              "
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                {/* Last Name */}
-                <label className="flex flex-col gap-2">
-                  <span className="text-sm text-white/80">Last Name</span>
-                  <input
-                    required
-                    value={form.lastName}
-                    onChange={(e) => setForm((p) => ({ ...p, lastName: e.target.value }))}
-                    placeholder="Smith"
-                    className="
-                      h-11 rounded-xl
-                      bg-black/70
-                      px-4
-                      text-[15px] text-white/90 placeholder:text-white/35
-                      ring-1 ring-white/10
-                      outline-none
-                      focus:ring-white/25
-                      transition
-                    "
-                  />
-                </label>
+                    {/* Last Name */}
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col gap-2">
+                          <FormLabel className="text-sm text-white/80">
+                            Last Name
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              placeholder="Smith"
+                              className="
+                                h-11 rounded-xl
+                                bg-black/70
+                                px-4
+                                text-[15px] text-white/90 placeholder:text-white/35
+                                ring-1 ring-white/10
+                                outline-none
+                                focus:ring-white/25
+                                transition
+                              "
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                {/* Email */}
-                <label className="flex flex-col gap-2 sm:col-span-2">
-                  <span className="text-sm text-white/80">Email</span>
-                  <input
-                    required
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                    placeholder="jane@company.com"
-                    className="
-                      h-11 rounded-xl
-                      bg-black/70
-                      px-4
-                      text-[15px] text-white/90 placeholder:text-white/35
-                      ring-1 ring-white/10
-                      outline-none
-                      focus:ring-white/25
-                      transition
-                    "
-                  />
-                </label>
+                    {/* Email */}
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col gap-2 sm:col-span-2">
+                          <FormLabel className="text-sm text-white/80">
+                            Email
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="email"
+                              placeholder="jane@company.com"
+                              className="
+                                h-11 rounded-xl
+                                bg-black/70
+                                px-4
+                                text-[15px] text-white/90 placeholder:text-white/35
+                                ring-1 ring-white/10
+                                outline-none
+                                focus:ring-white/25
+                                transition
+                              "
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                {/* Contact Number */}
-                <label className="flex flex-col gap-2 sm:col-span-2">
-                  <span className="text-sm text-white/80">Contact Number</span>
-                  <input
-                    required
-                    type="tel"
-                    value={form.contactNumber}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, contactNumber: e.target.value }))
-                    }
-                    placeholder="+91 9876543210"
-                    className="
-                      h-11 rounded-xl
-                      bg-black/70
-                      px-4
-                      text-[15px] text-white/90 placeholder:text-white/35
-                      ring-1 ring-white/10
-                      outline-none
-                      focus:ring-white/25
-                      transition
-                    "
-                  />
-                </label>
+                    {/* Contact Number */}
+                    <FormField
+                      control={form.control}
+                      name="contactNumber"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col gap-2 sm:col-span-2">
+                          <FormLabel className="text-sm text-white/80">
+                            Contact Number
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              type="tel"
+                              placeholder="+91 9876543210"
+                              className="
+                                h-11 rounded-xl
+                                bg-black/70
+                                px-4
+                                text-[15px] text-white/90 placeholder:text-white/35
+                                ring-1 ring-white/10
+                                outline-none
+                                focus:ring-white/25
+                                transition
+                              "
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                {/* Query */}
-                <label className="flex flex-col gap-2 sm:col-span-2">
-                  <span className="text-sm text-white/80">Your Message</span>
-                  <textarea
-                    required
-                    value={form.query}
-                    onChange={(e) => setForm((p) => ({ ...p, query: e.target.value }))}
-                    placeholder="Tell us what you need help with..."
-                    rows={6}
-                    className="
-                      rounded-xl
-                      bg-black/70
-                      px-4 py-3
-                      text-[15px] text-white/90 placeholder:text-white/35
-                      ring-1 ring-white/10
-                      outline-none
-                      focus:ring-white/25
-                      transition
-                      resize-y
-                    "
-                  />
-                </label>
-              </div>
+                    {/* Query */}
+                    <FormField
+                      control={form.control}
+                      name="message"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col gap-2 sm:col-span-2">
+                          <FormLabel className="text-sm text-white/80">
+                            Your Message
+                          </FormLabel>
+                          <FormControl>
+                            <Textarea
+                              {...field}
+                              placeholder="Tell us what you need help with..."
+                              rows={6}
+                              className="
+                                rounded-xl min-h-44
+                                bg-black/70
+                                px-4 py-3
+                                text-[15px] text-white/90 placeholder:text-white/35
+                                ring-1 ring-white/10
+                                outline-none
+                                focus:ring-white/25
+                                transition
+                                resize-y
+                              "
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-sm text-white/50">
-                  By submitting, you agree to be contacted back regarding your query.
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="text-sm text-white/50">
+                      By submitting, you agree to be contacted back regarding
+                      your query.
+                    </div>
+
+                    <Button
+                      type="submit"
+                      variant={"secondary"}
+                      disabled={status === "submitting"}
+                    >
+                      {status === "submitting"
+                        ? "Sending..."
+                        : status === "sent"
+                        ? "Sent"
+                        : "Submit"}
+                    </Button>
+                  </div>
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={status === "submitting"}
-                  className={[
-                    "h-11",
-                    "rounded-full",
-                    "px-6",
-                    "font-semibold",
-                    "text-[15px]",
-                    "bg-white text-black",
-                    "ring-1 ring-white/10",
-                    "shadow-[0_18px_70px_rgba(0,0,0,0.55)]",
-                    "transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                    "hover:scale-[1.01] active:scale-[0.98]",
-                    "disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100",
-                  ].join(" ")}
-                >
-                  {status === "submitting"
-                    ? "Sending..."
-                    : status === "sent"
-                    ? "Sent"
-                    : "Submit"}
-                </button>
               </div>
             </form>
-          </div>
+          </Form>
 
           <div className="mt-6 text-sm text-white/55">
             Prefer email?{" "}
             <a
               className="text-white/85 underline underline-offset-4 hover:text-white"
-              href="mailto:info@aicron.com"
+              href="mailto:team.edc@bitmesra.ac.in"
             >
-              info@aicron.com
+              team.edc@bitmesra.ac.in
             </a>
           </div>
         </div>
