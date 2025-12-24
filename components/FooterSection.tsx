@@ -3,6 +3,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Facebook, Instagram, Linkedin, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type NavLink = { label: string; href: string };
 
@@ -23,7 +24,7 @@ function NavPill({
   return (
     <Link
       href={href}
-      className={[
+      className={cn(
         "inline-flex items-center justify-center",
         "h-11 px-8 rounded-full",
         "bg-white/15 border border-white/10",
@@ -31,8 +32,8 @@ function NavPill({
         "backdrop-blur-xl",
         "transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         "hover:bg-white/20 hover:border-white/15 hover:text-white",
-        "active:scale-[0.98]",
-      ].join(" ")}
+        "active:scale-[0.98]"
+      )}
     >
       {children}
     </Link>
@@ -52,15 +53,15 @@ function SocialIcon({
     <Link
       href={href}
       aria-label={label}
-      className={[
+      className={cn(
         "grid place-items-center",
         "h-11 w-11 rounded-full",
         "border border-white/25 bg-white/0",
         "text-white/90",
         "transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
         "hover:bg-white/10 hover:border-white/35 hover:text-white",
-        "active:scale-[0.98]",
-      ].join(" ")}
+        "active:scale-[0.98]"
+      )}
     >
       {children}
     </Link>
@@ -150,11 +151,11 @@ export default function FooterSection() {
 
           {/* Light overlays */}
           <div className="absolute inset-0 bg-black/20" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black/60" />
+          <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/20 to-black/60" />
 
           {/* Subtle brand glow */}
-          <div className="absolute -right-40 -bottom-40 h-[400px] w-[400px] rounded-full bg-[#B05EC2]/22 blur-[120px]" />
-          <div className="absolute -left-40 -top-40 h-[400px] w-[400px] rounded-full bg-[#B05EC2]/16 blur-[120px]" />
+          <div className="absolute -right-40 -bottom-40 h-100 w-100 rounded-full bg-[#B05EC2]/22 blur-[120px]" />
+          <div className="absolute -left-40 -top-40 h-100 w-100 rounded-full bg-[#B05EC2]/16 blur-[120px]" />
         </div>
 
         {/* Copyright Content - Moved above the logo */}
@@ -166,7 +167,7 @@ export default function FooterSection() {
         </div>
 
         {/* Full width logo - Updated to be full width */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[45vh] w-full">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-1 h-[45vh] w-full">
           <Image
             src="/esummit_logo.png"
             alt="E-Summit Logo"
