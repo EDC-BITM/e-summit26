@@ -143,17 +143,17 @@ export default function Hero() {
         <div
           className={[
             "mt-8",
-            "translate-x-[10%]",
             "text-[22px] sm:text-[28px] md:text-[36px]",
             "text-white/90",
-            "tracking-tight",
+            "tracking-tight md::translate-x-8",
+            "flex flex-col md:block items-center",
             "font-['Inter',ui-sans-serif,system-ui]",
           ].join(" ")}
         >
           <span className="font-medium">Fuel your startup journey by:</span>{" "}
-          <span className="inline-flex w-[13ch] justify-start align-baseline">
+          <span className="inline-flex justify-start align-baseline">
             <span
-              className="inline-block font-semibold text-white"
+              className="inline-block text-start md:w-60 font-semibold text-white"
               aria-live="polite"
               style={{ willChange: "contents" }}
             >
@@ -179,30 +179,30 @@ export default function Hero() {
       </div>
 
       {/* Bottom dates (true full-width: left / center / right) */}
-      <div className="pointer-events-none absolute bottom-5 left-0 right-0 z-10">
+      <div className="pointer-events-none absolute bottom-3 sm:bottom-5 left-0 right-0 z-10">
         {/* Minimal padding so it sits near page edges */}
-        <div className="w-full px-3 sm:px-6">
-          <div className="grid grid-cols-[max-content_1fr_max-content_1fr_max-content] items-center gap-3 sm:gap-4">
+        <div className="w-full px-2 sm:px-3 md:px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-[max-content_1fr_max-content_1fr_max-content] items-center gap-2 sm:gap-3 md:gap-4">
             <ShinyText
               text="30th January 2026"
-              className="text-base sm:text-lg md:text-xl lg:text-2xl font-normal justify-self-center text-center"
+              className="text-xs sm:text-base md:text-lg lg:text-xl font-normal justify-self-center text-center"
               disabled={false}
               speed={3}
             />
 
-            <div className="h-px w-full bg-white/20" />
+            <div className="hidden sm:block h-px w-full bg-white/20" />
             <ShinyText
               text="31st January 2026"
-              className="text-base sm:text-lg md:text-xl lg:text-2xl font-normal justify-self-center text-center"
+              className="text-xs sm:text-base md:text-lg lg:text-xl font-normal justify-self-center text-center"
               disabled={false}
               speed={3}
             />
 
-            <div className="h-px w-full bg-white/20" />
+            <div className="hidden sm:block h-px w-full bg-white/20" />
 
             <ShinyText
               text="1st February 2026"
-              className="text-base sm:text-lg md:text-xl lg:text-2xl font-normal justify-self-center text-center"
+              className="text-xs sm:text-base md:text-lg lg:text-xl font-normal justify-self-center text-center"
               disabled={false}
               speed={3}
             />
