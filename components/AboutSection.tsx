@@ -1,7 +1,6 @@
-/* eslint-disable @next/next/no-img-element  */
-
 import Image from "next/image";
 import AnimatedBlurText from "./AnimatedBlurText";
+import { cn } from "@/lib/utils";
 
 export default function AboutSection() {
   const icons = [
@@ -79,18 +78,20 @@ export default function AboutSection() {
 
         {/* Banner image (full width, below) */}
         <div
-          className={[
-            "mt-12 overflow-hidden rounded-2xl",
+          className={cn(
+            "mt-12 overflow-hidden rounded-2xl sticky top-0",
             "border border-white/10 bg-white/4",
             "shadow-[0_30px_120px_rgba(0,0,0,0.55)]",
-            "transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-          ].join(" ")}
+            "transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          )}
           style={{ transitionDelay: "720ms" }}
         >
-          <img
-            src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=80"
+          <Image
+            width={2000}
+            height={800}
+            src="/photo-1507525428034-b723cf961d3e.avif"
             alt="E-Summit banner"
-            className="h-65 w-full object-cover sm:h-80 md:h-95"
+            className="h-65 sticky top-0 w-full object-cover sm:h-80 md:h-95"
             loading="lazy"
           />
         </div>
