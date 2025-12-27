@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { motion, Variants, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Image from "next/image";
 import {
   X,
@@ -17,6 +17,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const LINKS = [
+  { label: "Home", href: "/", icon: Home },
   { label: "Speakers", href: "/speakers", icon: Users },
   { label: "Events", href: "/events", icon: Calendar },
   { label: "Venue", href: "/venue", icon: MapPin },
@@ -107,6 +108,7 @@ function NavPill({
 
 export default function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
 
   const [compact, setCompact] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -341,44 +343,32 @@ export default function Navbar() {
                 <nav className="flex-1 min-h-0 px-6 py-[clamp(14px,3vh,30px)]">
                   {/* NOTE: no overflow-y-auto (no scrollbar). We instead clamp paddings + sizes so it always fits. */}
                   <div className="h-full flex flex-col justify-start gap-[clamp(6px,1.1vh,12px)]">
-                    {/* Home Link */}
-                    <Link
-                      href="#top"
-                      onClick={(e) => handleNavClick(e, "#top")}
-                      className="group flex items-center gap-4 rounded-2xl px-5 py-[clamp(14px,2.6vh,18px)] hover:bg-white/10 transition-all duration-300 active:scale-[0.98]"
-                    >
-                      <div
-                        className="grid place-items-center rounded-xl bg-linear-to-br from-[#733080]/30 to-[#733080]/10 group-hover:from-[#733080] group-hover:to-[#733080]/70 transition-all duration-300"
-                        style={{
-                          width: "clamp(46px, 6vh, 56px)",
-                          height: "clamp(46px, 6vh, 56px)",
-                        }}
-                      >
-                        <Home size={24} className="text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <span className="font-semibold text-white text-[clamp(18px,2.4vh,22px)]">
-                          Home
-                        </span>
-                      </div>
-                      <ChevronRight
-                        size={24}
-                        className="text-white/50 group-hover:text-white group-hover:translate-x-2 transition-all duration-300"
-                      />
-                    </Link>
-
-                    {/* Other Links */}
+                    {/* Links */}
                     {LINKS.map((link) => {
                       const Icon = link.icon;
+                      const isActive = pathname === link.href;
                       return (
                         <a
                           key={link.href}
                           href={link.href}
                           onClick={(e) => handleNavClick(e, link.href)}
-                          className="group flex items-center gap-4 rounded-2xl px-5 py-[clamp(14px,2.6vh,18px)] hover:bg-white/10 transition-all duration-300 active:scale-[0.98]"
+                          className={cn(
+                            "group flex items-center gap-4 rounded-2xl px-5 py-[clamp(14px,2.6vh,18px)] transition-all duration-300 active:scale-[0.98] relative overflow-hidden",
+                            isActive
+                              ? "bg-linear-to-r from-[#733080]/20 via-[#733080]/10 to-transparent shadow-[0_0_20px_rgba(115,48,128,0.15)]"
+                              : "hover:bg-white/10"
+                          )}
                         >
+                          {isActive && (
+                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-3/4 bg-linear-to-b from-transparent via-[#733080] to-transparent rounded-r-full" />
+                          )}
                           <div
-                            className="grid place-items-center rounded-xl bg-linear-to-br from-white/5 to-white/2 group-hover:from-[#733080] group-hover:to-[#733080]/70 transition-all duration-300"
+                            className={cn(
+                              "grid place-items-center rounded-xl bg-linear-to-br transition-all duration-300",
+                              isActive
+                                ? "from-[#733080] to-[#733080]/70 shadow-[0_0_15px_rgba(115,48,128,0.4)]"
+                                : "from-white/5 to-white/2 group-hover:from-[#733080] group-hover:to-[#733080]/70"
+                            )}
                             style={{
                               width: "clamp(46px, 6vh, 56px)",
                               height: "clamp(46px, 6vh, 56px)",
@@ -386,18 +376,32 @@ export default function Navbar() {
                           >
                             <Icon
                               size={24}
-                              className="text-white/80 group-hover:text-white"
+                              className={cn(
+                                "transition-all duration-300",
+                                isActive
+                                  ? "text-white"
+                                  : "text-white/80 group-hover:text-white"
+                              )}
                             />
                           </div>
                           <div className="flex-1">
-                            <span className="font-semibold text-white text-[clamp(18px,2.4vh,22px)]">
+                            <span
+                              className={cn(
+                                "font-semibold text-[clamp(18px,2.4vh,22px)] transition-all duration-300",
+                                isActive ? "text-white" : "text-white/90"
+                              )}
+                            >
                               {link.label}
                             </span>
                           </div>
-                          <ChevronRight
-                            size={24}
-                            className="text-white/50 group-hover:text-white group-hover:translate-x-2 transition-all duration-300"
-                          />
+                          {isActive ? (
+                            <div className="w-2 h-2 rounded-full bg-[#733080] shadow-[0_0_8px_rgba(115,48,128,0.6)]" />
+                          ) : (
+                            <ChevronRight
+                              size={24}
+                              className="text-white/50 group-hover:text-white group-hover:translate-x-2 transition-all duration-300"
+                            />
+                          )}
                         </a>
                       );
                     })}
