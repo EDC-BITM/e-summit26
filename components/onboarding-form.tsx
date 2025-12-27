@@ -3,17 +3,23 @@
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+function formatSupabaseError(err: any) {
+  if (!err) return "Unknown error";
+
+  // Supabase/PostgREST errors are often plain objects, not instances of Error
+  const msg = err.message || err.error_description || err.error || "Request failed";
+  const details = err.details ? `\nDetails: ${err.details}` : "";
+  const hint = err.hint ? `\nHint: ${err.hint}` : "";
+  const code = err.code ? `\nCode: ${err.code}` : "";
+
+  return `${msg}${details}${hint}${code}`;
+}
 
 export function OnboardingForm({
   className,
@@ -32,10 +38,7 @@ export function OnboardingForm({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,33 +49,36 @@ export function OnboardingForm({
     try {
       const supabase = createClient();
 
-      // Get the current user
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { data: userRes, error: userErr } = await supabase.auth.getUser();
+      if (userErr) throw userErr;
 
-      if (!user) {
-        throw new Error("User not authenticated");
+      const user = userRes?.user;
+      if (!user) throw new Error("User not authenticated");
+
+      const payload = {
+        id: user.id,
+        roll_no: formData.rollNo.trim(),
+        phone: formData.phone.trim(),
+        branch: formData.branch.trim(),
+        whatsapp_no: formData.whatsappNo.trim(),
+        onboarding_completed: true,
+      };
+
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .upsert(payload, { onConflict: "id" });
+
+      if (profileError) {
+        console.error("[Onboarding] profiles upsert error:", profileError);
+        throw profileError;
       }
 
-      // Insert or update user profile data
-      const { error: profileError } = await supabase.from("profiles").upsert({
-        id: user.id,
-        roll_no: formData.rollNo,
-        phone: formData.phone,
-        branch: formData.branch,
-        whatsapp_no: formData.whatsappNo,
-        onboarding_completed: true,
-        updated_at: new Date().toISOString(),
-      });
-
-      if (profileError) throw profileError;
-
-      // Redirect to protected page after successful onboarding
       router.push("/protected");
       router.refresh();
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+    } catch (err: any) {
+      console.error("[Onboarding] submit failed:", err);
+      setError(formatSupabaseError(err));
+    } finally {
       setIsLoading(false);
     }
   };
@@ -80,7 +86,6 @@ export function OnboardingForm({
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="relative backdrop-blur-xl bg-white/5 border border-white/10 shadow-2xl overflow-hidden">
-        {/* Inner glow effect */}
         <div className="absolute inset-0 bg-linear-to-b from-white/5 to-transparent pointer-events-none" />
 
         <CardHeader className="relative text-center space-y-2">
@@ -110,11 +115,12 @@ export function OnboardingForm({
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-sm text-red-200 flex-1">{error}</p>
+                  <pre className="text-xs text-red-200 flex-1 whitespace-pre-wrap leading-relaxed">
+                    {error}
+                  </pre>
                 </div>
               )}
 
-              {/* Roll Number */}
               <div className="space-y-2">
                 <Label htmlFor="rollNo" className="text-white font-medium">
                   Roll Number
@@ -131,7 +137,6 @@ export function OnboardingForm({
                 />
               </div>
 
-              {/* Phone */}
               <div className="space-y-2">
                 <Label htmlFor="phone" className="text-white font-medium">
                   Phone Number
@@ -148,7 +153,6 @@ export function OnboardingForm({
                 />
               </div>
 
-              {/* Branch */}
               <div className="space-y-2">
                 <Label htmlFor="branch" className="text-white font-medium">
                   Branch
@@ -165,7 +169,6 @@ export function OnboardingForm({
                 />
               </div>
 
-              {/* WhatsApp Number */}
               <div className="space-y-2">
                 <Label htmlFor="whatsappNo" className="text-white font-medium">
                   WhatsApp Number
@@ -187,9 +190,7 @@ export function OnboardingForm({
                 className="relative cursor-pointer w-full h-14 bg-white hover:bg-white/95 text-gray-900 font-semibold text-base rounded-xl shadow-lg hover:shadow-xl group overflow-hidden transition-all duration-300"
                 disabled={isLoading}
               >
-                {/* Shimmer effect on hover */}
                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-linear-to-r from-transparent via-white/40 to-transparent" />
-
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-3">
                     <svg
@@ -198,14 +199,7 @@ export function OnboardingForm({
                       fill="none"
                       viewBox="0 0 24 24"
                     >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path
                         className="opacity-75"
                         fill="currentColor"

@@ -1,22 +1,58 @@
-import { redirect } from 'next/navigation'
+// app/protected/page.tsx
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import DashboardClient from "./DashboardClient";
 
-import { LogoutButton } from '@/components/logout-button'
-import { createClient } from '@/lib/supabase/server'
+export const revalidate = 0;
+
+function deriveDisplayName(user: any) {
+  const md = user?.user_metadata ?? {};
+  const raw =
+    md.full_name ||
+    md.name ||
+    md.user_name ||
+    md.preferred_username ||
+    md.email;
+
+  if (typeof raw === "string" && raw.trim()) return raw.trim();
+
+  const email = user?.email ?? "";
+  if (email.includes("@")) return email.split("@")[0];
+  return "Participant";
+}
 
 export default async function ProtectedPage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
-  const { data, error } = await supabase.auth.getClaims()
-  if (error || !data?.claims) {
-    redirect('/auth/login')
+  const {
+    data: { user },
+    error: userErr,
+  } = await supabase.auth.getUser();
+
+  if (userErr || !user) redirect("/auth/login");
+
+  const { data: profile, error: profileErr } = await supabase
+    .from("profiles")
+    .select(
+      "id, roll_no, phone, branch, whatsapp_no, onboarding_completed, created_at, updated_at"
+    )
+    .eq("id", user.id)
+    .single();
+
+  if (profileErr || !profile || !profile.onboarding_completed) {
+    redirect("/onboarding");
   }
 
+  const displayName = deriveDisplayName(user);
+
   return (
-    <div className="flex h-svh w-full items-center justify-center gap-2">
-      <p>
-        Hello <span>{data.claims.email}</span>
-      </p>
-      <LogoutButton />
-    </div>
-  )
+    <DashboardClient
+      user={{
+        id: user.id,
+        email: user.email ?? "",
+        displayName,
+      }}
+      profile={profile}
+    />
+  );
 }
