@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Instagram, Linkedin, ArrowRight } from "lucide-react";
 import AnimatedBlurText from "./AnimatedBlurText";
+import Image from "next/image";
 
 export default function SpeakersSection() {
   const speakers = useMemo(
@@ -85,7 +86,8 @@ export default function SpeakersSection() {
     const el = cardRefs.current[activeIdx];
     if (!el) return;
 
-    const target = el.offsetLeft + el.offsetWidth / 2 - scroller.clientWidth / 2;
+    const target =
+      el.offsetLeft + el.offsetWidth / 2 - scroller.clientWidth / 2;
     scroller.scrollTo({ left: target, behavior: "smooth" });
   };
 
@@ -141,16 +143,17 @@ export default function SpeakersSection() {
         <h2
           className="
             mt-6
-            font-['Inter',ui-sans-serif,system-ui]
+            font-sans
             text-4xl sm:text-5xl md:text-6xl lg:text-[68px]
             leading-[1.05]
             tracking-tight
             font-medium
           "
         >
-          <AnimatedBlurText lines={["Meet Our Esteemed Speakers","and "]} 
-          liteText="E-Summit'26"/>
-
+          <AnimatedBlurText
+            lines={["Meet Our Esteemed Speakers", "and "]}
+            liteText="E-Summit'26"
+          />
         </h2>
 
         {/* Slider */}
@@ -215,12 +218,14 @@ export default function SpeakersSection() {
                     style={{ scrollSnapAlign: "center" }}
                   >
                     <div className="group relative overflow-hidden rounded-[26px] bg-white/5 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
-                      <img
+                      <Image
+                        height={360}
+                        width={360}
                         src={sp.img}
                         alt={sp.name}
                         draggable={false}
                         className="
-                          h-[360px] w-full object-cover
+                          h-90 w-full object-cover
                           grayscale
                           transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]
                           group-hover:grayscale-0 group-hover:saturate-[1.06]
