@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { getSiteUrl } from "@/lib/site";
-import SmoothScrolling from "@/components/SmoothScrolling";
+import { ReactLenis } from "@/components/SmoothScrolling";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 
 const siteUrl = getSiteUrl();
@@ -64,17 +64,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${interFont.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <SmoothScrolling />
-          {children}
-        </ThemeProvider>
-      </body>
+      <ReactLenis
+        options={{
+          duration: 1.2,
+          gestureOrientation: "vertical",
+          smoothWheel: true,
+          touchMultiplier: 2,
+          infinite: false,
+        }}
+        root
+      >
+        <body className={`${interFont.variable} antialiased`}>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </body>
+      </ReactLenis>
     </html>
   );
 }
