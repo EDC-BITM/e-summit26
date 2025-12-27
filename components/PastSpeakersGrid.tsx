@@ -1,9 +1,6 @@
-// app/speakers/components/PastSpeakersGrid.tsx
-"use client";
-
-import React, { useMemo } from "react";
 import { Instagram, Linkedin } from "lucide-react";
 import AnimatedBlurText from "@/components/AnimatedBlurText";
+import Image from "next/image";
 
 type Speaker = {
   name: string;
@@ -40,55 +37,52 @@ function SocialBadge({
   );
 }
 
-export default function PastSpeakersGrid() {
-  const speakers = useMemo<Speaker[]>(
-    () => [
-      {
-        name: "Aditi Kulkarni",
-        title: "Founder, Product Studio",
-        img: "https://images.unsplash.com/photo-1544005313-9a0033c0c676?auto=format&fit=crop&w=1600&q=80",
-      },
-      {
-        name: "Rohan Verma",
-        title: "Engineering Manager",
-        img: "https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=1600&q=80",
-      },
-      {
-        name: "Ananya Bose",
-        title: "Data Scientist",
-        img: "https://images.unsplash.com/photo-1524502397800-2eeaad7c3fe5?auto=format&fit=crop&w=1600&q=80",
-      },
-      {
-        name: "Karan Malhotra",
-        title: "Security Architect",
-        img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=1600&q=80",
-      },
-      {
-        name: "Neha Sharma",
-        title: "UX Lead",
-        img: "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=1600&q=80",
-      },
-      {
-        name: "Arjun Nair",
-        title: "Cloud Platform Engineer",
-        img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1600&q=80",
-      },
-      {
-        name: "Meera Iyer",
-        title: "AI Researcher",
-        img: "https://images.unsplash.com/photo-1524503033411-fbc2b48881d9?auto=format&fit=crop&w=1600&q=80",
-      },
-      {
-        name: "Siddharth Jain",
-        title: "Growth & Partnerships",
-        img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=1600&q=80",
-      },
-    ],
-    []
-  );
+const speakers: Speaker[] = [
+  {
+    name: "Aditi Kulkarni",
+    title: "Founder, Product Studio",
+    img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1061&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    name: "Rohan Verma",
+    title: "Engineering Manager",
+    img: "https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=1600&q=80",
+  },
+  {
+    name: "Ananya Bose",
+    title: "Data Scientist",
+    img: "https://images.unsplash.com/photo-1524502397800-2eeaad7c3fe5?auto=format&fit=crop&w=1600&q=80",
+  },
+  {
+    name: "Karan Malhotra",
+    title: "Security Architect",
+    img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=1600&q=80",
+  },
+  {
+    name: "Neha Sharma",
+    title: "UX Lead",
+    img: "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=1600&q=80",
+  },
+  {
+    name: "Arjun Nair",
+    title: "Cloud Platform Engineer",
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1600&q=80",
+  },
+  {
+    name: "Meera Iyer",
+    title: "AI Researcher",
+    img: "https://images.unsplash.com/photo-1714508809994-d1f71099bf35?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+  },
+  {
+    name: "Siddharth Jain",
+    title: "Growth & Partnerships",
+    img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=1600&q=80",
+  },
+];
 
+export default function PastSpeakersGrid() {
   // duplicate for seamless loop
-  const loop = useMemo(() => [...speakers, ...speakers], [speakers]);
+  const loop = [...speakers, ...speakers];
 
   // Professional speed: longer duration = slower, smoother
   // tweak this one value if needed
@@ -129,13 +123,15 @@ export default function PastSpeakersGrid() {
       <div className="mt-12">
         <div className="relative left-1/2 w-screen -translate-x-1/2">
           {/* Edge fades (looks premium, still full width) */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-black to-transparent z-10" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-black to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-linear-to-r from-black to-transparent z-10" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-20 bg-linear-to-l from-black to-transparent z-10" />
 
           <div className="overflow-hidden">
             <div
               className="es26-marquee-track flex w-max items-stretch gap-10 py-2"
-              style={{ ["--es26-duration" as any]: `${durationSec}s` }}
+              style={
+                { "--es26-duration": `${durationSec}s` } as React.CSSProperties
+              }
             >
               {loop.map((sp, idx) => (
                 <div
@@ -148,12 +144,14 @@ export default function PastSpeakersGrid() {
                   <div
                     className={[
                       "group relative overflow-hidden rounded-[28px]",
-                      "bg-white/[0.03] ring-1 ring-white/10",
+                      "bg-white/3 ring-1 ring-white/10",
                       "shadow-[0_28px_110px_rgba(0,0,0,0.75)]",
                     ].join(" ")}
                   >
-                    <div className="relative w-full aspect-[4/5]">
-                      <img
+                    <div className="relative w-full aspect-4/5">
+                      <Image
+                        height={300}
+                        width={300}
                         src={sp.img}
                         alt={sp.name}
                         draggable={false}
@@ -165,13 +163,19 @@ export default function PastSpeakersGrid() {
                         ].join(" ")}
                       />
 
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                      <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
 
                       <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                        <SocialBadge href={sp.instagramHref ?? "#"} label="Instagram">
+                        <SocialBadge
+                          href={sp.instagramHref ?? "#"}
+                          label="Instagram"
+                        >
                           <Instagram size={18} />
                         </SocialBadge>
-                        <SocialBadge href={sp.linkedinHref ?? "#"} label="LinkedIn">
+                        <SocialBadge
+                          href={sp.linkedinHref ?? "#"}
+                          label="LinkedIn"
+                        >
                           <Linkedin size={18} />
                         </SocialBadge>
                       </div>
