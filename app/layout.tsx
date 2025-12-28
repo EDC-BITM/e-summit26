@@ -4,6 +4,7 @@ import "./globals.css";
 import { getSiteUrl } from "@/lib/site";
 import { ReactLenis } from "@/components/SmoothScrolling";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const siteUrl = getSiteUrl();
 
@@ -119,6 +120,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster position="top-center"/>
           </ThemeProvider>
         </body>
       </ReactLenis>
