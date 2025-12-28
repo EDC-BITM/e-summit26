@@ -4,6 +4,7 @@ import FooterSection from "@/components/FooterSection";
 import ContactHero from "@/components/ContactHero";
 import ContactUs from "@/components/ContactUs";
 import { domAnimation, LazyMotion } from "framer-motion";
+import ReactQueryProvider from "@/components/providers/ReactQueryProvider";
 
 export const metadata: Metadata = {
   title: "Contact | E-Summit 2026",
@@ -34,7 +35,9 @@ export default function ContactPage() {
         <Navbar />
         <main>
           <ContactHero />
-          <ContactUs />
+          <ReactQueryProvider>
+            <ContactUs />
+          </ReactQueryProvider>
         </main>
         <FooterSection />
       </LazyMotion>
