@@ -1,0 +1,67 @@
+import {
+  Calendar,
+  LayoutDashboard,
+  type LucideIcon,
+  Users,
+  Trophy,
+} from "lucide-react";
+
+export interface NavSubItem {
+  title: string;
+  url: string;
+  icon?: LucideIcon;
+  comingSoon?: boolean;
+  newTab?: boolean;
+  isNew?: boolean;
+}
+
+export interface NavMainItem {
+  title: string;
+  url: string;
+  icon?: LucideIcon;
+  subItems?: NavSubItem[];
+  comingSoon?: boolean;
+  newTab?: boolean;
+  isNew?: boolean;
+}
+
+export interface NavGroup {
+  id: number;
+  label?: string;
+  items: NavMainItem[];
+}
+
+export const sidebarItems: NavGroup[] = [
+  {
+    id: 1,
+    label: "Overview",
+    items: [
+      {
+        title: "Dashboard",
+        url: "/admin/dashboard/default",
+        icon: LayoutDashboard,
+      },
+    ],
+  },
+  {
+    id: 2,
+    label: "Management",
+    items: [
+      {
+        title: "Events",
+        url: "/admin/dashboard/events",
+        icon: Trophy,
+      },
+      {
+        title: "Users",
+        url: "/admin/dashboard/users",
+        icon: Users,
+      },
+      {
+        title: "Registrations",
+        url: "/admin/dashboard/registrations",
+        icon: Calendar,
+      },
+    ],
+  },
+];
