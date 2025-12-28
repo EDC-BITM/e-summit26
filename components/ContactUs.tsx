@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import AnimatedBlurText from "@/components/AnimatedBlurText";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,31 +16,71 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "./ui/textarea";
+import apiClient_db from "@/lib/api";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 const formSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
   email: z.email("Invalid email address"),
-  contactNumber: z.string().min(1, "Contact number is required"),
+  contact_no: z
+    .string()
+    .min(10, "Contact number should be 10 digits")
+    .max(10, "Contact number should be 10 digits"),
   message: z.string().min(1, "Message is required"),
 });
 
+const fetchContactUs = async (data: z.infer<typeof formSchema>) => {
+  try {
+    const response = await apiClient_db.post("/rest/v1/contact_us", data);
+    return response.data;
+  } catch (error) {
+    console.error("Error submitting contact us form:", error);
+    throw error;
+  }
+};
+
 export default function ContactUs() {
-  const [status, setStatus] = useState<"idle" | "submitting" | "sent">("idle");
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      first_name: "",
+      last_name: "",
       email: "",
-      contactNumber: "",
+      contact_no: "",
       message: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // setStatus("submitting");
+  const [submitted, setSubmitted] = useState(false);
+
+  const ContactMutation = useMutation({
+    mutationFn: fetchContactUs,
+    onMutate: () => {},
+    onError: (error) => {
+      console.error("Submission error:", error);
+    },
+    onSuccess: (data) => {
+      console.log("Submission successful:", data);
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      toast.promise(ContactMutation.mutateAsync(values), {
+        loading: "Sending your message...",
+        success: "Message sent successfully!",
+        error: "Failed to send your message.",
+      });
+
+      form.reset();
+
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (error) {
+      console.error("Submit failed:", error);
+    }
   }
 
   return (
@@ -93,7 +133,7 @@ export default function ContactUs() {
                     {/* First Name */}
                     <FormField
                       control={form.control}
-                      name="firstName"
+                      name="first_name"
                       render={({ field }) => (
                         <FormItem className="flex flex-col gap-2">
                           <FormLabel className="text-sm text-white/80">
@@ -123,7 +163,7 @@ export default function ContactUs() {
                     {/* Last Name */}
                     <FormField
                       control={form.control}
-                      name="lastName"
+                      name="last_name"
                       render={({ field }) => (
                         <FormItem className="flex flex-col gap-2">
                           <FormLabel className="text-sm text-white/80">
@@ -184,7 +224,7 @@ export default function ContactUs() {
                     {/* Contact Number */}
                     <FormField
                       control={form.control}
-                      name="contactNumber"
+                      name="contact_no"
                       render={({ field }) => (
                         <FormItem className="flex flex-col gap-2 sm:col-span-2">
                           <FormLabel className="text-sm text-white/80">
@@ -194,7 +234,7 @@ export default function ContactUs() {
                             <Input
                               {...field}
                               type="tel"
-                              placeholder="+91 9876543210"
+                              placeholder="9876543210"
                               className="
                                 h-11 rounded-xl
                                 bg-black/70
@@ -254,12 +294,10 @@ export default function ContactUs() {
                     <Button
                       type="submit"
                       variant={"secondary"}
-                      disabled={status === "submitting"}
+                      disabled={ContactMutation.status === "pending"}
                     >
-                      {status === "submitting"
+                      {ContactMutation.status === "pending"
                         ? "Sending..."
-                        : status === "sent"
-                        ? "Sent"
                         : "Submit"}
                     </Button>
                   </div>
@@ -267,6 +305,13 @@ export default function ContactUs() {
               </div>
             </form>
           </Form>
+
+          {submitted && (
+            <div className="mt-4 rounded-md bg-emerald-800/20 border border-emerald-600/20 p-3 text-emerald-300 text-sm">
+              Thanks — we received your message. We&apos;ll get back to you
+              shortly.
+            </div>
+          )}
 
           <div className="mt-6 text-sm text-white/55">
             Prefer email?{" "}
