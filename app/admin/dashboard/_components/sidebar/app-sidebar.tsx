@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 
-import { Command } from "lucide-react";
-
 import {
   Sidebar,
   SidebarContent,
@@ -18,6 +16,7 @@ import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
 
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
+import Image from "next/image";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user: {
@@ -35,7 +34,13 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
               <Link prefetch={false} href="/admin/dashboard">
-                <Command />
+                <Image
+                  src="/edclogo3d-Cyj-GxS2.webp"
+                  alt="EDC Logo"
+                  width={32}
+                  height={32}
+                  className="h-8 w-8 object-contain"
+                />
                 <span className="font-semibold text-base">
                   {APP_CONFIG.name}
                 </span>
