@@ -20,16 +20,19 @@ export async function checkUserRole(allowedRoles: string[] = ['admin']) {
     `)
     .eq('user_id', user.id)
     .single();
+  
+
 
   if (roleError || !userRole) {
     return { authorized: false, user, role: null };
   }
 
+
+
   type Role = { id: string; name: string };
   let roleName: string | undefined;
   if (Array.isArray(userRole.roles)) {
     roleName = userRole.roles[0]?.name;
-    console.log(roleName)
   } else {
     roleName = (userRole.roles as Role)?.name;
   }
