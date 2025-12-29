@@ -12,6 +12,22 @@ export default async function EventsPage() {
 
   const events = await getAllEvents();
 
+  if (!events) {
+    return (
+      <div className="@container/main flex flex-col gap-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Events Management
+          </h1>
+          <p className="text-muted-foreground mt-2">
+            View all events and manage team registrations and results
+          </p>
+        </div>
+        <div>No events found</div>
+      </div>
+    );
+  }
+
   return (
     <div className="@container/main flex flex-col gap-6">
       <div>

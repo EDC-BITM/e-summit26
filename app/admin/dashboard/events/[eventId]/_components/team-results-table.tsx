@@ -389,7 +389,7 @@ export function TeamResultsTable({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            // @ts-ignore
+                            // @ts-expect-error TanStack Table context type mismatch
                             header.context
                           )}
                     </TableHead>
@@ -407,7 +407,7 @@ export function TeamResultsTable({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {/* @ts-ignore */}
+                      {/* @ts-expect-error TanStack Table context type mismatch */}
                       {flexRender(cell.column.columnDef.cell, cell.context)}
                     </TableCell>
                   ))}
