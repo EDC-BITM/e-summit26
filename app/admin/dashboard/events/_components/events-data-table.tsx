@@ -128,8 +128,16 @@ export function EventsDataTable({ events }: EventsDataTableProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
 
+  const tableData = React.useMemo(() => {
+    if (!events) {
+      console.log("No events data provided");
+      return [];
+    }
+    return events;
+  }, [events]);
+
   const table = useReactTable({
-    data: events,
+    data: tableData,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -144,6 +152,10 @@ export function EventsDataTable({ events }: EventsDataTableProps) {
       columnVisibility,
     },
   });
+
+  if (!events || events.length === 0) {
+    return <div>No events found</div>;
+  }
 
   return (
     <div className="w-full space-y-4">
@@ -169,8 +181,7 @@ export function EventsDataTable({ events }: EventsDataTableProps) {
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            // @ts-ignore
-                            header.context
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -187,8 +198,10 @@ export function EventsDataTable({ events }: EventsDataTableProps) {
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {/* @ts-ignore */}
-                      {flexRender(cell.column.columnDef.cell, cell.context)}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>

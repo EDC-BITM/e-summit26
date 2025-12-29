@@ -11,7 +11,7 @@ export default async function UsersPage() {
   }
 
   const users = await getAllUsers();
-
+  
   return (
     <div className="@container/main flex flex-col gap-6">
       <div>
