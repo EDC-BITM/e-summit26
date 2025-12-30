@@ -5,6 +5,7 @@ import SpeakersHero from "@/components/SpeakersHero"; // you said this already e
 import SpeakersGrid from "@/components/SpeakersGrid";
 import PastSpeakersGrid from "@/components/PastSpeakersGrid";
 import { domAnimation, LazyMotion } from "framer-motion";
+import { ReactLenis } from "@/components/SmoothScrolling";
 
 export const metadata: Metadata = {
   title: "Speakers | E-Summit 2026",
@@ -30,16 +31,27 @@ export const metadata: Metadata = {
 
 export default function SpeakersPage() {
   return (
-    <div className="isolate bg-black text-white">
-      <LazyMotion features={domAnimation}>
-        <Navbar />
-        <main>
-          <SpeakersHero />
-          <SpeakersGrid />
-          <PastSpeakersGrid />
-        </main>
-        <FooterSection />
-      </LazyMotion>
-    </div>
+    <ReactLenis
+      options={{
+        duration: 1.2,
+        gestureOrientation: "vertical",
+        smoothWheel: true,
+        touchMultiplier: 2,
+        infinite: false,
+      }}
+      root
+    >
+      <div className="isolate bg-black text-white">
+        <LazyMotion features={domAnimation}>
+          <Navbar />
+          <main>
+            <SpeakersHero />
+            <SpeakersGrid />
+            <PastSpeakersGrid />
+          </main>
+          <FooterSection />
+        </LazyMotion>
+      </div>
+    </ReactLenis>
   );
 }

@@ -29,7 +29,7 @@ export default async function ProtectedPage() {
     error: userErr,
   } = await supabase.auth.getUser();
 
-  if (userErr || !user) redirect("/auth/login");
+  if (userErr || !user) redirect("/auth/login?redirect=/protected");
 
   const { data: profile, error: profileErr } = await supabase
     .from("profiles")
@@ -40,7 +40,7 @@ export default async function ProtectedPage() {
     .single();
 
   if (profileErr || !profile || !profile.onboarding_completed) {
-    redirect("/onboarding");
+    redirect("/auth/onboarding?redirect=/protected");
   }
 
   const displayName = deriveDisplayName(user);
