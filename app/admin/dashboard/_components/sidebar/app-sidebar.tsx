@@ -37,7 +37,6 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
             <SidebarMenuButton asChild>
               <Link
                 className="flex justify-start items-center gap-2"
-                prefetch={false}
                 href="/admin/dashboard"
               >
                 <Image
