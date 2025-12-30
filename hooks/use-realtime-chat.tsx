@@ -68,6 +68,10 @@ export function useRealtimeChat({
       config: {
         broadcast: {
           self: false, // Disable receiving own messages to prevent duplicates
+          ack: false, // Don't wait for acknowledgement to improve performance
+        },
+        presence: {
+          key: userId || username,
         },
       },
     });
@@ -88,16 +92,20 @@ export function useRealtimeChat({
         if (status === "SUBSCRIBED") {
           didSubscribe = true;
           setIsConnected(true);
+          setConnectAttempt(0); // Reset attempt counter on success
           console.log("Successfully connected to room:", roomName);
         } else if (status === "CHANNEL_ERROR") {
           console.error("Channel error:", err);
           setIsConnected(false);
           didSubscribe = false;
         } else if (status === "TIMED_OUT") {
-          console.error("Channel subscription timed out");
+          console.error(
+            "Channel subscription timed out - this may indicate network issues or Realtime not being enabled"
+          );
           setIsConnected(false);
           didSubscribe = false;
         } else if (status === "CLOSED") {
+          console.log("Channel closed");
           setIsConnected(false);
           didSubscribe = false;
         } else {
