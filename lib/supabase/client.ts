@@ -12,5 +12,17 @@ export function createClient() {
     throw new Error('Missing Supabase environment variables')
   }
   
-  return createBrowserClient(supabaseUrl, supabaseKey)
+  return createBrowserClient(supabaseUrl, supabaseKey, {
+    realtime: {
+      params: {
+        eventsPerSecond: 10,
+      },
+      timeout: 30000,
+    },
+    global: {
+      headers: {
+        'x-client-info': 'supabase-js-web',
+      },
+    },
+  })
 }
