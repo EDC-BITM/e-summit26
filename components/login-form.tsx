@@ -11,11 +11,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"div">) {
+  const searchParams = useSearchParams();
+
+  const redirect = searchParams.get("redirect");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -26,10 +30,17 @@ export function LoginForm({
     setError(null);
 
     try {
+      // Pass redirect via URL parameter
+      const redirectTo = redirect
+        ? `${window.location.origin}/auth/oauth?redirect=${encodeURIComponent(
+            redirect
+          )}`
+        : `${window.location.origin}/auth/oauth`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/oauth?next=/auth/onboarding`,
+          redirectTo,
         },
       });
 
