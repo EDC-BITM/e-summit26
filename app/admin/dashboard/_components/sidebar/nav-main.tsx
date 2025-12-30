@@ -77,7 +77,6 @@ const NavItemExpanded = ({
               tooltip={item.title}
             >
               <Link
-                prefetch={false}
                 href={item.url}
                 target={item.newTab ? "_blank" : undefined}
                 className="hover:no-underline"
@@ -100,7 +99,6 @@ const NavItemExpanded = ({
                     asChild
                   >
                     <Link
-                      prefetch={false}
                       href={subItem.url}
                       target={subItem.newTab ? "_blank" : undefined}
                     >
@@ -155,7 +153,6 @@ const NavItemCollapsed = ({
                 isActive={isActive(subItem.url)}
               >
                 <Link
-                  prefetch={false}
                   href={subItem.url}
                   target={subItem.newTab ? "_blank" : undefined}
                 >
@@ -216,7 +213,6 @@ export function NavMain({ items }: NavMainProps) {
                           isActive={isItemActive(item.url)}
                         >
                           <Link
-                            prefetch={false}
                             href={item.url}
                             target={item.newTab ? "_blank" : undefined}
                           >
