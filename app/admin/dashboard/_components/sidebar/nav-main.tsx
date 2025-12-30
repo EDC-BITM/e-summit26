@@ -3,9 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { ChevronRight, MailIcon, PlusCircleIcon } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -81,6 +80,7 @@ const NavItemExpanded = ({
                 prefetch={false}
                 href={item.url}
                 target={item.newTab ? "_blank" : undefined}
+                className="hover:no-underline"
               >
                 {item.icon && <item.icon />}
                 <span>{item.title}</span>

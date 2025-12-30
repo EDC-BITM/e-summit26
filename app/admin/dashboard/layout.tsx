@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+export const dynamic = "force-dynamic";
+
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -26,7 +28,7 @@ export default async function Layout({
   const currentUser = await getCurrentUser();
 
   if (!currentUser) {
-    redirect("/auth/login");
+    redirect("/auth/login?redirect=/admin/dashboard");
   }
 
   return (

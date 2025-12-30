@@ -17,6 +17,8 @@ import { sidebarItems } from "@/navigation/sidebar/sidebar-items";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
 import Image from "next/image";
+import { Separator } from "@/components/ui/separator";
+import React from "react";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user: {
@@ -33,7 +35,11 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link prefetch={false} href="/admin/dashboard">
+              <Link
+                className="flex justify-start items-center gap-2"
+                prefetch={false}
+                href="/admin/dashboard"
+              >
                 <Image
                   src="/edclogo3d-Cyj-GxS2.webp"
                   alt="EDC Logo"
@@ -41,12 +47,11 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                   height={32}
                   className="h-8 w-8 object-contain"
                 />
-                <span className="font-semibold text-base">
-                  {APP_CONFIG.name}
-                </span>
+                <span className="font-semibold text-xl">{APP_CONFIG.name}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <Separator />
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>

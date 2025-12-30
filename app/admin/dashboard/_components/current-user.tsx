@@ -33,7 +33,8 @@ export function CurrentUser({ user }: CurrentUserProps) {
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/auth/login");
+    const next = `${window.location.pathname}${window.location.search}`;
+    router.push(`/auth/login?redirect=${encodeURIComponent(next)}`);
     router.refresh();
   };
 
