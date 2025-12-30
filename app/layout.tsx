@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { getSiteUrl } from "@/lib/site";
-import { ReactLenis } from "@/components/SmoothScrolling";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -102,28 +101,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ReactLenis
-        options={{
-          duration: 1.2,
-          gestureOrientation: "vertical",
-          smoothWheel: true,
-          touchMultiplier: 2,
-          infinite: false,
-        }}
-        root
-      >
-        <body className={`${googleSans.variable} antialiased`}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <Toaster position="top-center"/>
-          </ThemeProvider>
-        </body>
-      </ReactLenis>
+      <body className={`${googleSans.variable} antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster position="top-center" />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
