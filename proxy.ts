@@ -8,7 +8,7 @@ function shouldRefreshSession(pathname: string) {
   return (
     pathname.startsWith("/auth") ||
     pathname.startsWith("/admin") ||
-    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/auth/onboarding") ||
     pathname.startsWith("/api") // keep if your API routes rely on cookies in dev
   );
 }
