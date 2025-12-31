@@ -177,9 +177,12 @@ export function NavMain({ items }: NavMainProps) {
 
   const isItemActive = (url: string, subItems?: NavMainItem["subItems"]) => {
     if (subItems?.length) {
-      return subItems.some((sub) => path.startsWith(sub.url));
+      return (
+        subItems.some((sub) => path.startsWith(sub.url)) ||
+        (url !== "/" && path.startsWith(url))
+      );
     }
-    return path === url;
+    return path === url || (url !== "/" && path.startsWith(url));
   };
 
   const isSubmenuOpen = (subItems?: NavMainItem["subItems"]) => {
