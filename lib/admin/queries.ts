@@ -16,14 +16,34 @@ type TeamRegistration = {
   }>;
 };
 
+type Registration = {
+  id: string;
+  registered_at: string;
+  team_id: string;
+  teams:
+    | {
+        id: string;
+        name: string;
+        slug: string;
+        team_leader_id: string;
+      }
+    | {
+        id: string;
+        name: string;
+        slug: string;
+        team_leader_id: string;
+      }[];
+};
+
 export async function getAdminStats() {
   const supabase = await createServiceClient();
 
   // Total onboarded users
+  // Count users with role_id = 3 in user_role (role_id=3 is 'user')
   const { count: onboardedCount } = await supabase
-    .from("profiles")
-    .select("*", { count: "exact", head: true })
-    .eq("onboarding_completed", true);
+    .from("user_role")
+    .select("user_id", { count: "exact", head: true })
+    .eq("role_id", 3);
 
   // Total registrations
   const { count: registrationsCount } = await supabase
@@ -140,21 +160,19 @@ export async function getEventDetails(eventId: string) {
 
   // Fetch event results separately for each registration
   let registrationsWithResults: TeamRegistration[] = [];
-  
+
   if (registrations && registrations.length > 0) {
-    const teamIds = registrations.map((reg: any) => reg.team_id);
-    
+    const teamIds = registrations.map((reg: Registration) => reg.team_id);
+
     const { data: results } = await supabase
       .from("event_results")
       .select("team_id, rank, marks, declared_at")
       .eq("event_id", eventId)
       .in("team_id", teamIds);
-    
-    const resultsMap = new Map(
-      results?.map((r) => [r.team_id, r]) || []
-    );
-    
-    registrationsWithResults = registrations.map((reg: any) => {
+
+    const resultsMap = new Map(results?.map((r) => [r.team_id, r]) || []);
+
+    registrationsWithResults = registrations.map((reg: Registration) => {
       const result = resultsMap.get(reg.team_id);
       return {
         id: reg.id,
