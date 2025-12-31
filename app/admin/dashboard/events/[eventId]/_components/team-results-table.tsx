@@ -52,6 +52,18 @@ type TeamRegistration = {
   }>;
 };
 
+interface TeamResultsTableMeta {
+  editingResults: Record<string, { rank: number | null; marks: number | null }>;
+  setEditingResults: React.Dispatch<
+    React.SetStateAction<
+      Record<string, { rank: number | null; marks: number | null }>
+    >
+  >;
+  handleSaveResult: (teamId: string, teamName: string) => Promise<void>;
+  handleDeleteResult: (teamId: string, teamName: string) => Promise<void>;
+  maxScore: number;
+}
+
 interface TeamResultsTableProps {
   eventId: string;
   registrations: TeamRegistration[];
@@ -153,191 +165,210 @@ export function TeamResultsTable({
     }
   };
 
-  const columns: ColumnDef<TeamRegistration>[] = [
-    {
-      accessorKey: "teams.name",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Team Name
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const team = row.original.teams;
-        return (
-          <div>
-            <div className="font-medium">{team.name}</div>
-            <div className="text-sm text-muted-foreground">@{team.slug}</div>
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "registered_at",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Registered At
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        );
-      },
-      cell: ({ row }) => {
-        const date = new Date(row.getValue("registered_at"));
-        return <div>{date.toLocaleDateString()}</div>;
-      },
-    },
-    {
-      id: "rank",
-      header: "Rank",
-      cell: ({ row }) => {
-        const teamId = row.original.teams.id;
-        const existingResult = row.original.event_results?.[0];
-        const editingResult = editingResults[teamId];
-
-        if (existingResult && !editingResult) {
-          const rankColor =
-            existingResult.rank === 1
-              ? "text-yellow-600"
-              : existingResult.rank === 2
-              ? "text-gray-400"
-              : "text-amber-700";
+  const columns = React.useMemo<ColumnDef<TeamRegistration>[]>(
+    () => [
+      {
+        accessorKey: "teams.name",
+        id: "team_name",
+        header: ({ column }) => {
           return (
-            <Badge variant="outline" className={rankColor}>
-              <Medal className="mr-1 h-4 w-4" />
-              Rank {existingResult.rank}
-            </Badge>
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Team Name
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
           );
-        }
-
-        return (
-          <Select
-            value={editingResult?.rank?.toString() || ""}
-            onValueChange={(value) => {
-              setEditingResults({
-                ...editingResults,
-                [teamId]: {
-                  ...editingResults[teamId],
-                  rank: parseInt(value),
-                  marks: editingResults[teamId]?.marks || null,
-                },
-              });
-            }}
-          >
-            <SelectTrigger className="w-[120px]">
-              <SelectValue placeholder="Select rank" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1">🥇 Rank 1</SelectItem>
-              <SelectItem value="2">🥈 Rank 2</SelectItem>
-              <SelectItem value="3">🥉 Rank 3</SelectItem>
-            </SelectContent>
-          </Select>
-        );
-      },
-    },
-    {
-      id: "marks",
-      header: "Marks",
-      cell: ({ row }) => {
-        const teamId = row.original.teams.id;
-        const existingResult = row.original.event_results?.[0];
-        const editingResult = editingResults[teamId];
-
-        if (existingResult && !editingResult) {
+        },
+        cell: ({ row }) => {
+          const team = row.original.teams;
           return (
-            <Badge variant="secondary">
-              {existingResult.marks} / {maxScore}
-            </Badge>
-          );
-        }
-
-        return (
-          <Input
-            type="number"
-            min={0}
-            max={maxScore}
-            placeholder="Enter marks"
-            className="w-[120px]"
-            value={editingResult?.marks?.toString() || ""}
-            onChange={(e) => {
-              const value =
-                e.target.value === "" ? null : parseInt(e.target.value);
-              setEditingResults({
-                ...editingResults,
-                [teamId]: {
-                  ...editingResults[teamId],
-                  rank: editingResults[teamId]?.rank || null,
-                  marks: value,
-                },
-              });
-            }}
-          />
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => {
-        const team = row.original.teams;
-        const existingResult = row.original.event_results?.[0];
-        const editingResult = editingResults[team.id];
-
-        if (existingResult && !editingResult) {
-          return (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setEditingResults({
-                    ...editingResults,
-                    [team.id]: {
-                      rank: existingResult.rank,
-                      marks: existingResult.marks,
-                    },
-                  });
-                }}
-              >
-                Edit
-              </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => handleDeleteResult(team.id, team.name)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+            <div>
+              <div className="font-medium">{team.name}</div>
+              <div className="text-sm text-muted-foreground">@{team.slug}</div>
             </div>
           );
-        }
-
-        return (
-          <Button
-            size="sm"
-            onClick={() => handleSaveResult(team.id, team.name)}
-            disabled={
-              !editingResult ||
-              editingResult.rank === null ||
-              editingResult.marks === null
-            }
-          >
-            <Save className="mr-2 h-4 w-4" />
-            Save
-          </Button>
-        );
+        },
       },
-    },
-  ];
+      {
+        accessorKey: "registered_at",
+        header: ({ column }) => {
+          return (
+            <Button
+              variant="ghost"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Registered At
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </Button>
+          );
+        },
+        cell: ({ row }) => {
+          const date = new Date(row.getValue("registered_at"));
+          return <div>{date.toLocaleDateString()}</div>;
+        },
+      },
+      {
+        id: "rank",
+        header: "Rank",
+        cell: ({ row, table }) => {
+          const meta = table.options.meta as TeamResultsTableMeta;
+          const { editingResults, setEditingResults } = meta;
+          const teamId = row.original.teams.id;
+          const existingResult = row.original.event_results?.[0];
+          const editingResult = editingResults[teamId];
+
+          if (existingResult && !editingResult) {
+            const rankColor =
+              existingResult.rank === 1
+                ? "text-yellow-600"
+                : existingResult.rank === 2
+                ? "text-gray-400"
+                : "text-amber-700";
+            return (
+              <Badge variant="outline" className={rankColor}>
+                <Medal className="mr-1 h-4 w-4" />
+                Rank {existingResult.rank}
+              </Badge>
+            );
+          }
+
+          return (
+            <Select
+              value={editingResult?.rank?.toString() || ""}
+              onValueChange={(value) => {
+                setEditingResults({
+                  ...editingResults,
+                  [teamId]: {
+                    ...editingResults[teamId],
+                    rank: parseInt(value),
+                    marks: editingResults[teamId]?.marks || null,
+                  },
+                });
+              }}
+            >
+              <SelectTrigger className="w-30">
+                <SelectValue placeholder="Select rank" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">🥇 Rank 1</SelectItem>
+                <SelectItem value="2">🥈 Rank 2</SelectItem>
+                <SelectItem value="3">🥉 Rank 3</SelectItem>
+              </SelectContent>
+            </Select>
+          );
+        },
+      },
+      {
+        id: "marks",
+        header: "Marks",
+        cell: ({ row, table }) => {
+          const meta = table.options.meta as TeamResultsTableMeta;
+          const { editingResults, setEditingResults, maxScore } = meta;
+          const teamId = row.original.teams.id;
+          const existingResult = row.original.event_results?.[0];
+          const editingResult = editingResults[teamId];
+
+          if (existingResult && !editingResult) {
+            return (
+              <Badge variant="secondary">
+                {existingResult.marks} / {maxScore}
+              </Badge>
+            );
+          }
+
+          return (
+            <Input
+              type="number"
+              min={0}
+              max={maxScore}
+              placeholder="Enter marks"
+              className="w-30"
+              value={editingResult?.marks?.toString() || ""}
+              onChange={(e) => {
+                const value =
+                  e.target.value === "" ? null : parseInt(e.target.value);
+                setEditingResults({
+                  ...editingResults,
+                  [teamId]: {
+                    ...editingResults[teamId],
+                    rank: editingResults[teamId]?.rank || null,
+                    marks: value,
+                  },
+                });
+              }}
+            />
+          );
+        },
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row, table }) => {
+          const meta = table.options.meta as TeamResultsTableMeta;
+          const {
+            editingResults,
+            setEditingResults,
+            handleSaveResult,
+            handleDeleteResult,
+          } = meta;
+          const team = row.original.teams;
+          const existingResult = row.original.event_results?.[0];
+          const editingResult = editingResults[team.id];
+
+          if (existingResult && !editingResult) {
+            return (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEditingResults({
+                      ...editingResults,
+                      [team.id]: {
+                        rank: existingResult.rank,
+                        marks: existingResult.marks,
+                      },
+                    });
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => handleDeleteResult(team.id, team.name)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            );
+          }
+
+          return (
+            <Button
+              size="sm"
+              onClick={() => handleSaveResult(team.id, team.name)}
+              disabled={
+                !editingResult ||
+                editingResult.rank === null ||
+                editingResult.marks === null
+              }
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Save
+            </Button>
+          );
+        },
+      },
+    ],
+    []
+  );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -361,6 +392,13 @@ export function TeamResultsTable({
       columnFilters,
       columnVisibility,
     },
+    meta: {
+      editingResults,
+      setEditingResults,
+      handleSaveResult,
+      handleDeleteResult,
+      maxScore,
+    },
   });
 
   return (
@@ -369,10 +407,10 @@ export function TeamResultsTable({
         <Input
           placeholder="Filter teams..."
           value={
-            (table.getColumn("teams.name")?.getFilterValue() as string) ?? ""
+            (table.getColumn("team_name")?.getFilterValue() as string) ?? ""
           }
           onChange={(event) =>
-            table.getColumn("teams.name")?.setFilterValue(event.target.value)
+            table.getColumn("team_name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
         />
@@ -389,8 +427,7 @@ export function TeamResultsTable({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            // @ts-expect-error TanStack Table context type mismatch
-                            header.context
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -407,8 +444,10 @@ export function TeamResultsTable({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {/* @ts-expect-error TanStack Table context type mismatch */}
-                      {flexRender(cell.column.columnDef.cell, cell.context)}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
