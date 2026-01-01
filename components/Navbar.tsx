@@ -348,7 +348,7 @@ export default function Navbar() {
                       const Icon = link.icon;
                       const isActive = pathname === link.href;
                       return (
-                        <a
+                        <Link
                           key={link.href}
                           href={link.href}
                           onClick={(e) => handleNavClick(e, link.href)}
@@ -402,7 +402,7 @@ export default function Navbar() {
                               className="text-white/50 group-hover:text-white group-hover:translate-x-2 transition-all duration-300"
                             />
                           )}
-                        </a>
+                        </Link>
                       );
                     })}
                   </div>

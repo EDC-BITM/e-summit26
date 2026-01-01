@@ -11,9 +11,8 @@ export default function AboutSection() {
 
   return (
     <section id="about" className="w-full bg-black text-white">
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-24">
-        {/* Eyebrow (left aligned) */}
-
+      <div className="w-full px-6 py-20 md:py-24">
+        {/* Eyebrow */}
         <div className="flex items-center justify-start gap-3 text-white/85">
           <span className="h-px w-10 bg-white/80" />
           <span className="text-xs font-semibold tracking-[0.22em] uppercase">
@@ -21,9 +20,9 @@ export default function AboutSection() {
           </span>
         </div>
 
-        {/* Heading (forced 2 lines, left aligned) */}
+        {/* Heading */}
         <AnimatedBlurText
-          lines={["Why You Absolutely ", "Attend "]}
+          lines={["Why You Absolutely Should ", "Attend "]}
           liteText="E-Summit'26"
           className="
             mt-6 text-left
@@ -32,51 +31,60 @@ export default function AboutSection() {
           "
         />
 
-        {/* 50/50 row: icons (left) + paragraph (right) */}
-        <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:items-center">
-          {/* Left: icons in a single line */}
-          <div className="flex items-center justify-center lg:justify-start gap-6 sm:gap-8">
-            {icons.map((c, i) => (
-              <Image
-                width={120}
-                height={120}
-                key={c.alt}
-                src={c.img}
-                alt={c.alt}
-                draggable={false}
-                className={[
-                  "select-none opacity-95 mix-blend-screen",
-                  "w-19.5 sm:w-23 md:w-27 lg:w-30 h-auto",
-                  "transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                ].join(" ")}
-                style={{ transitionDelay: `${140 + i * 160}ms` }}
-              />
-            ))}
+        {/* 50 / 50 layout */}
+        <div className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-stretch">
+          {/* Left: Icons */}
+          <div className="w-full h-full flex items-center justify-center lg:justify-start">
+            <div className="flex items-center gap-8 sm:gap-10 lg:gap-12">
+              {icons.map((c, i) => (
+                <Image
+                  key={c.alt}
+                  src={c.img}
+                  alt={c.alt}
+                  width={160}
+                  height={160}
+                  draggable={false}
+                  className="
+                    select-none opacity-95 mix-blend-screen
+                    w-28 sm:w-32 md:w-36 lg:w-40 h-auto
+                    transition-all duration-700
+                    ease-[cubic-bezier(0.22,1,0.36,1)]
+                  "
+                  style={{ transitionDelay: `${140 + i * 160}ms` }}
+                />
+              ))}
+            </div>
           </div>
 
-          {/* Right: paragraph */}
+          {/* Right: Text */}
           <div
-            className={[
-              "text-sm sm:text-base text-white/75 leading-relaxed",
-              "transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]",
-            ].join(" ")}
+            className="
+              w-full h-full flex items-center
+              text-sm sm:text-base md:text-lg
+              text-white/75 leading-relaxed
+              transition-all duration-700
+              ease-[cubic-bezier(0.22,1,0.36,1)]
+            "
             style={{ transitionDelay: "520ms" }}
           >
-            <p>
-              <span className="font-semibold text-white/90">E-Summit</span> is
-              BIT Mesra’s flagship entrepreneurship festival, organised by EDC.
-              It brings together bold dreamers, aspiring entrepreneurs, industry
-              experts, investors, mentors and innovators from across India.
-            </p>
-            <p className="mt-4">
-              Whether you’re an aspiring founder, tech-enthusiast, designer,
-              investor or simply curious, E-Summit&apos;26 offers something for
-              everyone.
-            </p>
+            <div>
+              <p>
+                <span className="font-semibold text-white/90">E-Summit</span> is
+                BIT Mesra’s flagship entrepreneurship festival, organised by
+                EDC. It brings together bold dreamers, aspiring entrepreneurs,
+                industry experts, investors, mentors and innovators from across
+                India.
+              </p>
+              <p className="mt-4">
+                Whether you’re an aspiring founder, tech-enthusiast, designer,
+                investor or simply curious, E-Summit&apos;26 offers something
+                for everyone.
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Banner image (full width, below) */}
+        {/* Banner */}
         <div
           className={cn(
             "mt-12 overflow-hidden rounded-2xl sticky top-0",
@@ -87,11 +95,11 @@ export default function AboutSection() {
           style={{ transitionDelay: "720ms" }}
         >
           <Image
-            width={2000}
-            height={800}
             src="/photo-1507525428034-b723cf961d3e.avif"
             alt="E-Summit banner"
-            className="h-65 sticky top-0 w-full object-cover sm:h-80 md:h-95"
+            width={2000}
+            height={800}
+            className="w-full object-cover h-64 sm:h-80 md:h-96"
             loading="lazy"
           />
         </div>

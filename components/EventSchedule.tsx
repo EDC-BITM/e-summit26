@@ -17,25 +17,25 @@ type PanelPerson = {
 
 type EventItem =
   | {
-      time: string;
-      kind: "simple";
-      title: string;
-      desc: string;
-    }
+    time: string;
+    kind: "simple";
+    title: string;
+    desc: string;
+  }
   | {
-      time: string;
-      kind: "keynote";
-      title: string;
-      desc: string;
-      speaker: Speaker;
-    }
+    time: string;
+    kind: "keynote";
+    title: string;
+    desc: string;
+    speaker: Speaker;
+  }
   | {
-      time: string;
-      kind: "panel";
-      title: string;
-      desc: string;
-      panel: PanelPerson[];
-    };
+    time: string;
+    kind: "panel";
+    title: string;
+    desc: string;
+    panel: PanelPerson[];
+  };
 
 type DayBlock = {
   left: string;
@@ -319,55 +319,35 @@ export default function EventSchedule() {
 
   return (
     <section id="agenda" className="w-full bg-black text-white">
-      <div className="mx-auto max-w-6xl px-6 pt-16 pb-10 md:pt-24 md:pb-20">
-        {/* Eyebrow */}
+      <div className="mx-auto w-full px-4 sm:px-6 pt-14 pb-16 md:pt-20">
         <div className="flex items-center gap-3 text-white/85">
-          <span className="h-px w-12 bg-white/80" />
+          <span className="h-px w-10 bg-white/80" />
           <span className="text-xs font-semibold tracking-[0.22em] uppercase">
             Event Schedule
           </span>
         </div>
 
-        {/* Heading */}
-        <h2
-          className={[
-            "mt-6",
-            "font-sans",
-            "text-4xl sm:text-5xl md:text-6xl",
-            "leading-[1.08] tracking-tight",
-            "font-bold",
-          ].join(" ")}
-        >
+        <h2 className="mt-5 text-4xl sm:text-5xl md:text-6xl font-bold leading-[1.08]">
           <AnimatedBlurText
             lines={["Discover the Full E-Summit'26 ", ""]}
             liteText="Event Schedule"
           />
         </h2>
 
-        {/* Days */}
-        <div className="mt-14 space-y-20">
-          {days.map((day, index) => (
-            <div key={day.left} className="space-y-10">
-              <DayStickyBar
-                key={index}
-                leftLabel={day.left}
-                rightLabel={day.right}
-              />
+        <div className="mt-12 space-y-16">
+          {days.map((day) => (
+            <div key={day.left} className="space-y-8">
+              <DayStickyBar leftLabel={day.left} rightLabel={day.right} />
 
-              <div className="space-y-12">
+              <div className="space-y-8">
                 {day.items.map((ev) => (
                   <div
                     key={`${day.left}-${ev.time}-${ev.title}`}
-                    className={[
-                      "grid gap-5 sm:gap-8",
-                      "md:grid-cols-[200px_1fr]",
-                      "items-start",
-                    ].join(" ")}
+                    className="grid gap-4 md:grid-cols-[180px_1fr] items-start"
                   >
-                    <div className="text-white/80 text-base sm:text-lg tracking-tight pt-3 font-sans font-medium">
+                    <div className="text-white/80 text-base pt-3 font-medium">
                       {ev.time}
                     </div>
-
                     <EventCard item={ev} />
                   </div>
                 ))}
@@ -375,8 +355,6 @@ export default function EventSchedule() {
             </div>
           ))}
         </div>
-
-        <div className="h-20" />
       </div>
     </section>
   );

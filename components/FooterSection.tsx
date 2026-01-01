@@ -2,7 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Facebook, Instagram, Linkedin, X } from "lucide-react";
+import { Facebook, Instagram, Linkedin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type NavLink = { label: string; href: string };
@@ -77,17 +77,23 @@ export default function FooterSection() {
           <div>
             <div className="text-sm font-medium text-white/90">Our Socials</div>
             <div className="mt-4 flex items-center gap-4">
-              <SocialIcon href="#" label="Facebook">
+              <SocialIcon
+                href="https://www.facebook.com/edcbitmesra/"
+                label="Facebook"
+              >
                 <Facebook size={18} />
               </SocialIcon>
-              <SocialIcon href="#" label="Instagram">
+              <SocialIcon
+                href="https://www.instagram.com/edcbitmesra/"
+                label="Instagram"
+              >
                 <Instagram size={18} />
               </SocialIcon>
-              <SocialIcon href="#" label="LinkedIn">
+              <SocialIcon
+                href="https://www.linkedin.com/company/edcbitmesra/"
+                label="LinkedIn"
+              >
                 <Linkedin size={18} />
-              </SocialIcon>
-              <SocialIcon href="#" label="X">
-                <X size={18} />
               </SocialIcon>
             </div>
           </div>

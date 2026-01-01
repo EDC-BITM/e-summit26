@@ -123,7 +123,11 @@ export default function Hero() {
 
       {/* Content */}
       <div className="relative z-10 mx-auto flex h-full max-w-6xl flex-col items-center justify-center px-6 text-center">
-        {/* Center logo pop-in */}
+        <h1 className="sr-only">
+          E-Summit 2026 — BIT Mesra&apos;s Premier Entrepreneurship Festival by
+          EDC
+        </h1>
+
         <div className="motion-reduce:animate-none animate-in fade-in zoom-in-95 duration-700 ease-out">
           <Image
             width={980}
