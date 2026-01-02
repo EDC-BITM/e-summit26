@@ -13,7 +13,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Eye } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ import { Badge } from "@/components/ui/badge";
 type Registration = {
   id: string;
   registered_at: string;
+  team_id?: string;
   events: {
     id: string;
     name: string;
@@ -116,13 +118,41 @@ const columns: ColumnDef<Registration>[] = [
     },
     cell: ({ row }) => {
       const date = new Date(row.getValue("registered_at"));
+      const formattedDate = date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+      return <div className="text-muted-foreground">{formattedDate}</div>;
+    },
+  },
+  {
+    id: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      const registration = row.original;
+      console.log('Registration data:', registration);
+      
+      // Check if the team ID is available in the expected structure
+      const teamId = registration.team_id || (registration.teams && registration.teams.id);
+      
+      if (!teamId) {
+        console.error('No team ID found in registration:', registration);
+        return (
+          <Button variant="outline" size="sm" disabled>
+            <Eye className="mr-2 h-4 w-4" />
+            No Team
+          </Button>
+        );
+      }
+      
       return (
-        <div>
-          <div>{date.toLocaleDateString()}</div>
-          <div className="text-sm text-muted-foreground">
-            {date.toLocaleTimeString()}
-          </div>
-        </div>
+        <Link href={`/admin/dashboard/registrations/team/${teamId}`}>
+          <Button variant="outline" size="sm">
+            <Eye className="mr-2 h-4 w-4" />
+            View Team
+          </Button>
+        </Link>
       );
     },
   },
