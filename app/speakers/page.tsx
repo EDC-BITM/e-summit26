@@ -8,7 +8,7 @@ import { domAnimation, LazyMotion } from "framer-motion";
 import { ReactLenis } from "@/components/SmoothScrolling";
 
 export const metadata: Metadata = {
-  title: "Speakers | E-Summit 2026",
+  title: "Speakers",
   description:
     "Meet the speakers and past speakers of E-Summit 2026 — founders, investors, creators, and leaders sharing actionable insights.",
   alternates: {

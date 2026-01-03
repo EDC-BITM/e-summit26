@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "./ui/textarea";
-import apiClient_db from "@/lib/api";
+import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -33,7 +33,7 @@ const formSchema = z.object({
 
 const fetchContactUs = async (data: z.infer<typeof formSchema>) => {
   try {
-    const response = await apiClient_db.post("/rest/v1/contact_us", data);
+    const response = await axios.post("/api/contact", data);
     return response.data;
   } catch (error) {
     console.error("Error submitting contact us form:", error);

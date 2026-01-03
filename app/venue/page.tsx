@@ -7,7 +7,7 @@ import { domAnimation, LazyMotion } from "framer-motion";
 import { ReactLenis } from "@/components/SmoothScrolling";
 
 export const metadata: Metadata = {
-  title: "Venue | E-Summit 2026",
+  title: "Venue",
   description:
     "Find the E-Summit 2026 venue details at BIT Mesra — location, directions, and on-ground information for attendees.",
   alternates: {
