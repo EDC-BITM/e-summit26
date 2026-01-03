@@ -38,12 +38,21 @@ type Registration = {
 export async function getAdminStats() {
   const supabase = await createServiceClient();
 
-  // Total onboarded users
-  // Count users with role_id = 3 in user_role (role_id=3 is 'user')
-  const { count: onboardedCount } = await supabase
+  // Total onboarded users - count profiles where onboarding is completed
+
+  const { count: AdminOrModeratorCount } = await supabase
     .from("user_role")
     .select("user_id", { count: "exact", head: true })
-    .eq("role_id", 3);
+    .or("role_id.eq.2,role_id.eq.1");
+  
+  
+  const {count: totalOnboardingCount} = await supabase
+    .from("profiles")
+    .select("id", { count: "exact", head: true })
+    .eq("onboarding_completed", true)
+  
+    
+  const onboardedCount  = (totalOnboardingCount ?? 0) - (AdminOrModeratorCount ?? 0)
 
   // Total registrations
   const { count: registrationsCount } = await supabase
