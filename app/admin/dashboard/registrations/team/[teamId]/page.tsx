@@ -7,18 +7,55 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@supabase/supabase-js";
 
+interface Profile {
+  id: string;
+  roll_no?: string;
+  branch?: string;
+  phone?: string;
+  avatar_url?: string;
+}
+
+interface TeamMember {
+  id: string;
+  roll_no?: string;
+  branch?: string;
+  phone?: string;
+  avatar_url?: string;
+  role: string;
+  status: string;
+  joined_at: string;
+  isLeader: boolean;
+}
+
+interface EventRegistration {
+  id: string;
+  events: {
+    name: string;
+    category: string;
+    description: string;
+  };
+}
+
+interface Team {
+  id: string;
+  name: string;
+  slug: string;
+  created_at: string;
+  team_leader_id: string;
+}
+
 export default async function TeamDetailsPage({
   params,
 }: {
   params: Promise<{ teamId: string }>;
 }) {
   const { teamId } = await params;
-  
+
   if (!teamId) return notFound();
 
   const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!, 
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       auth: {
         autoRefreshToken: false,
@@ -28,26 +65,25 @@ export default async function TeamDetailsPage({
   );
 
   // 3. Fetch Team Details
-  const { data: team, error: teamError } = await supabaseAdmin
+  const { data: team, error: teamError } = (await supabaseAdmin
     .from("teams")
     .select("*")
     .eq("id", teamId)
-    .single();
+    .single()) as { data: Team | null; error: unknown };
 
   if (teamError || !team) {
     return notFound();
   }
 
-
-  const { data: teamMembers, error: membersError } = await supabaseAdmin
+  const { data: teamMembers } = await supabaseAdmin
     .from("team_members")
     .select("*")
     .eq("team_id", teamId);
 
   // Fetch profiles for these users
-  const userIds = teamMembers?.map(member => member.user_id) || [];
-  
-  let profiles: any[] = [];
+  const userIds = teamMembers?.map((member) => member.user_id) || [];
+
+  let profiles: Profile[] = [];
   if (userIds.length > 0) {
     const { data: profilesData } = await supabaseAdmin
       .from("profiles")
@@ -57,22 +93,23 @@ export default async function TeamDetailsPage({
   }
 
   //  Combine data
-  const formattedMembers = teamMembers?.map((member: any) => {
-    const profile = profiles.find(p => p.id === member.user_id);
-    return {
-      id: member.user_id,
-      ...profile, 
-      role: member.role,
-      status: member.status,
-      joined_at: member.joined_at,
-      isLeader: member.user_id === team.team_leader_id,
-    };
-  }) || [];
+  const formattedMembers: TeamMember[] =
+    teamMembers?.map((member) => {
+      const profile = profiles.find((p) => p.id === member.user_id);
+      return {
+        id: member.user_id,
+        ...profile,
+        role: member.role,
+        status: member.status,
+        joined_at: member.joined_at,
+        isLeader: member.user_id === team.team_leader_id,
+      };
+    }) || [];
 
-  const { data: registrations } = await supabaseAdmin
+  const { data: registrations } = (await supabaseAdmin
     .from("event_registrations")
     .select("id, events(name, category, description)")
-    .eq("team_id", teamId);
+    .eq("team_id", teamId)) as { data: EventRegistration[] | null };
 
   return (
     <div className="container mx-auto py-8 space-y-6">
@@ -90,7 +127,12 @@ export default async function TeamDetailsPage({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>{team.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground font-medium">
+                  Team Name:
+                </span>
+                <span className="font-semibold text-lg">{team.name}</span>
+              </div>
               <Badge variant="outline" className="text-sm">
                 {team.slug}
               </Badge>
@@ -101,8 +143,8 @@ export default async function TeamDetailsPage({
               <h3 className="text-sm font-medium text-muted-foreground">
                 Team Code
               </h3>
-              <p className="font-mono text-sm bg-muted px-2 py-1 rounded-md inline-block mt-1">
-                {(team as any).invite_code || "N/A"}
+              <p className="font-mono text-sm py-1 inline-block ">
+                {team.slug || "N/A"}
               </p>
             </div>
 
@@ -136,7 +178,7 @@ export default async function TeamDetailsPage({
           </CardHeader>
           <CardContent className="space-y-4">
             {formattedMembers.length > 0 ? (
-              formattedMembers.map((member: any) => (
+              formattedMembers.map((member) => (
                 <div
                   key={member.id}
                   className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50"
@@ -150,7 +192,9 @@ export default async function TeamDetailsPage({
                   </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{member.roll_no || "Unknown ID"}</span>
+                      <span className="font-medium">
+                        {member.roll_no || "Unknown ID"}
+                      </span>
                       {member.isLeader && (
                         <Badge variant="secondary" className="text-xs">
                           Leader
@@ -161,17 +205,22 @@ export default async function TeamDetailsPage({
                       </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground">
-                       {member.branch ? (
-                         <><span>{member.branch}</span> • <span>{member.phone}</span></>
-                       ) : (
-                         <span>User ID: {member.id.substring(0,8)}...</span>
-                       )}
+                      {member.branch ? (
+                        <>
+                          <span>{member.branch}</span> •{" "}
+                          <span>{member.phone}</span>
+                        </>
+                      ) : (
+                        <span>User ID: {member.id.substring(0, 8)}...</span>
+                      )}
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground">No team members found</p>
+              <p className="text-sm text-muted-foreground">
+                No team members found
+              </p>
             )}
           </CardContent>
         </Card>
@@ -185,7 +234,7 @@ export default async function TeamDetailsPage({
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {registrations.map((reg: any) => (
+              {registrations.map((reg) => (
                 <div
                   key={reg.id}
                   className="flex items-center justify-between p-3 border rounded-lg"
