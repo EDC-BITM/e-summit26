@@ -1,6 +1,7 @@
 "use client";
 
-import Silk from "@/components/Silk";
+// import Silk from "@/components/Silk";
+import GradientBlinds from "./GradientBlinds";
 import { m, useInView, useReducedMotion } from "framer-motion";
 import { useRef } from "react";
 import { usePathname } from "next/navigation";
@@ -25,17 +26,21 @@ export default function ContactHero() {
       <div className="relative h-[25svh] md:h-[75svh] w-full">
         {/* Silk background */}
         <div className="absolute inset-0">
-          <Silk
-            speed={5}
-            scale={1}
-            color="#7d2da3"
-            noiseIntensity={1.35}
-            rotation={0.12}
-            dpr={silkDpr}
-            frameloop={silkFrameloop}
-            maxFps={silkMaxFps}
-            active={silkActive}
-          />
+          <GradientBlinds
+          gradientColors={["#8F00AF", "#8F00AF"]}
+          angle={24}
+          noise={0.25}
+          blindCount={20}
+          blindMinWidth={15}
+          spotlightRadius={0.6}
+          spotlightSoftness={1}
+          spotlightOpacity={1}
+          mouseDampening={0.50}
+          distortAmount={0}
+          shineDirection="left"
+          mixBlendMode="lighten"
+          className="w-full h-full"
+        />
         </div>
 
         {/* Vignette + contrast overlays to match the screenshot feel */}
