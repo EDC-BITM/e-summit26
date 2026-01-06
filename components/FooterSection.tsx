@@ -175,7 +175,7 @@ export default function FooterSection() {
         {/* Full width logo - Updated to be full width */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-1 h-[45vh] w-full">
           <Image
-            src="/esummit_logo.png"
+            src="/Esum26new.png"
             alt="E-Summit Logo"
             fill
             className="object-contain object-bottom opacity-[0.8] mix-blend-screen"

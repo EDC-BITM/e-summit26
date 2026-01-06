@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, useRef, useCallback } from "react";
-import Silk from "./Silk";
+// import Silk from "./Silk";
+import GradientBlinds from "@/components/GradientBlinds";
+// import LiquidEther from "@/components/LiquidEther";
 import Image from "next/image";
 import { motion, Variants } from "framer-motion";
 import ShinyText from "./ShinyText";
@@ -15,7 +17,7 @@ const CHAR_VARIANTS: Variants = {
 
 const TRANSITION_CONFIG = {
   duration: 0.8,
-  ease: [0.42, 0, 0.58, 1] as const, // easeInOut
+  ease: [0.42, 0, 0.58, 1] as const,
 };
 
 export default function Hero() {
@@ -46,16 +48,42 @@ export default function Hero() {
 
   return (
     <section className="relative h-svh w-full overflow-hidden bg-black">
-      {/* Silk background */}
+      {/* Background: GradientBlinds */}
       <div className="absolute inset-0">
-        <Silk
-          speed={5}
-          scale={1}
-          color="#B05EC2"
-          noiseIntensity={1.5}
-          rotation={0}
+        {/*
+        <Silk speed={5} scale={1} color="#B05EC2" noiseIntensity={1.5} rotation={0} />
+        */}
+
+        {/*
+        <LiquidEther
+          colors={["#B05EC2", "#B05EC2", "#B05EC2"]}
+          mouseForce={32}
+          cursorSize={185}
+          iterationsPoisson={41}
+          autoSpeed={0.4}
+          autoIntensity={2.2}
+          resolution={0.5}
+          className="w-full h-full"
+        />
+        */}
+
+        <GradientBlinds
+          gradientColors={["#8F00AF", "#8F00AF"]}
+          angle={24}
+          noise={0.25}
+          blindCount={20}
+          blindMinWidth={15}
+          spotlightRadius={0.6}
+          spotlightSoftness={1}
+          spotlightOpacity={1}
+          mouseDampening={0.50}
+          distortAmount={0}
+          shineDirection="left"
+          mixBlendMode="lighten"
+          className="w-full h-full"
         />
       </div>
+
       <div className="pointer-events-none absolute inset-0 bg-black/30" />
 
       {/* Left BIG cube */}
@@ -134,7 +162,7 @@ export default function Hero() {
             height={200}
             priority={true}
             loading="eager"
-            src="/esummit_logo.png"
+            src="/Esum26new.png"
             alt="E-Summit 2026"
             draggable={false}
             className={[
@@ -182,9 +210,8 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Bottom dates (true full-width: left / center / right) */}
+      {/* Bottom dates */}
       <div className="pointer-events-none absolute bottom-3 sm:bottom-5 left-0 right-0 z-10">
-        {/* Minimal padding so it sits near page edges */}
         <div className="w-full px-2 sm:px-3 md:px-6">
           <div className="grid grid-cols-1 sm:grid-cols-[max-content_1fr_max-content_1fr_max-content] items-center gap-2 sm:gap-3 md:gap-4">
             <ShinyText

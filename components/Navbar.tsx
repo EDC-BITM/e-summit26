@@ -226,7 +226,7 @@ export default function Navbar() {
                 height={200}
                 priority={true}
                 loading="eager"
-                src="/esummit_logo.png"
+                src="/Esum26new.png"
                 alt="E-Summit 26"
                 draggable={false}
                 className="h-10 sm:h-12 w-auto select-none"
@@ -324,7 +324,7 @@ export default function Navbar() {
                     <Image
                       width={120}
                       height={120}
-                      src="/esummit_logo.png"
+                      src="/Esum26new.png"
                       alt="E-Summit 26"
                       className="h-10 w-auto"
                     />
