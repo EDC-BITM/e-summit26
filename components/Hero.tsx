@@ -208,6 +208,46 @@ export default function Hero() {
             </span>
           </span>
         </div>
+                {/* CTA: Brochure */}
+        <motion.a
+          href="https://drive.google.com/file/d/1tAyP54AZ7kAP2nzXBC7kaNFcJH2hTd_l/view"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="E-Summit 2026 brochure"
+          className={cn(
+            "mt-10 inline-flex w-full sm:w-auto items-center justify-center",
+            "relative group overflow-hidden rounded-full",
+            "p-[1px]",
+            "bg-gradient-to-r from-[#8F00AF]/70 via-white/15 to-[#B05EC2]/70",
+            "shadow-[0_28px_120px_rgba(0,0,0,0.75)]",
+            "motion-reduce:animate-none animate-in fade-in zoom-in-95 duration-700 ease-out"
+          )}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          {/* glow */}
+          <span className="pointer-events-none absolute -inset-6 rounded-full bg-gradient-to-r from-[#8F00AF]/55 via-white/5 to-[#B05EC2]/55 blur-3xl opacity-70 transition-opacity duration-300 group-hover:opacity-100" />
+
+          {/* button surface */}
+          <span
+            className={cn(
+              "relative inline-flex w-full sm:w-auto items-center justify-center rounded-full",
+              "bg-black/35 backdrop-blur-xl",
+              "ring-1 ring-white/15",
+              "px-7 sm:px-9 py-3.5",
+              "transition-colors duration-300 group-hover:bg-black/25",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+            )}
+          >
+            <ShinyText
+              text="Get the ’26 Brochure"
+              className="text-sm sm:text-base font-semibold tracking-tight text-center"
+              disabled={false}
+              speed={3}
+            />
+          </span>
+        </motion.a>
+
       </div>
 
       {/* Bottom dates */}

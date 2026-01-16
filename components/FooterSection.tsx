@@ -11,6 +11,7 @@ const LINKS: NavLink[] = [
   { label: "Speakers", href: "/speakers" },
   { label: "Events", href: "/events" },
   { label: "Venue", href: "/venue" },
+  { label: "Brochure", href: "https://drive.google.com/file/d/1tAyP54AZ7kAP2nzXBC7kaNFcJH2hTd_l/view" },
   { label: "Contact", href: "/contact" },
 ];
 
