@@ -1,9 +1,8 @@
 // app/protected/page.tsx
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import DashboardClient from "./DashboardClient";
-
-export const revalidate = 0;
 
 function deriveDisplayName(user: any) {
   const md = user?.user_metadata ?? {};
@@ -22,6 +21,8 @@ function deriveDisplayName(user: any) {
 }
 
 export default async function ProtectedPage() {
+  await connection();
+
   const supabase = await createClient();
 
   const {
@@ -34,7 +35,7 @@ export default async function ProtectedPage() {
   const { data: profile, error: profileErr } = await supabase
     .from("profiles")
     .select(
-      "id, roll_no, phone, branch, whatsapp_no, onboarding_completed, created_at, updated_at"
+      "id, roll_no, phone, branch, whatsapp_no, onboarding_completed, created_at, updated_at",
     )
     .eq("id", user.id)
     .single();

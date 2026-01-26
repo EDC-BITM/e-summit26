@@ -1,9 +1,12 @@
 import { requireAdminOrModerator } from "@/lib/admin/auth";
 import { getAllRegistrations } from "@/lib/admin/data-queries";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { RegistrationsDataTable } from "./_components/registrations-data-table";
 
 export default async function RegistrationsPage() {
+  await connection();
+
   try {
     await requireAdminOrModerator();
   } catch {

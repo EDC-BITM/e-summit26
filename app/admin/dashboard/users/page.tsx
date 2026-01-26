@@ -1,16 +1,19 @@
 import { requireAdminOrModerator } from "@/lib/admin/auth";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { UsersDataTable } from "./_components/users-data-table";
 import { getAllUsersWithDetails } from "./actions";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function UsersPage() {
+  await connection();
+
   try {
     await requireAdminOrModerator();
   } catch (error) {
     console.error("Access denied:", error);
     redirect(
-      `/auth/login?redirect=${encodeURIComponent("/admin/dashboard/users")}`
+      `/auth/login?redirect=${encodeURIComponent("/admin/dashboard/users")}`,
     );
   }
 
@@ -31,7 +34,7 @@ export default async function UsersPage() {
         roles!inner (
           name
         )
-      `
+      `,
       )
       .eq("user_id", user.id)
       .single();

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -49,6 +50,8 @@ export default async function TeamDetailsPage({
 }: {
   params: Promise<{ teamId: string }>;
 }) {
+  await connection();
+
   const { teamId } = await params;
 
   if (!teamId) return notFound();
@@ -61,7 +64,7 @@ export default async function TeamDetailsPage({
         autoRefreshToken: false,
         persistSession: false,
       },
-    }
+    },
   );
 
   // 3. Fetch Team Details

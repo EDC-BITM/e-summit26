@@ -2,6 +2,7 @@ import { requireAdminOrModerator } from "@/lib/admin/auth";
 import { getEventDetails } from "@/lib/admin/queries";
 import { redirect } from "next/navigation";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { TeamResultsTable } from "./_components/team-results-table";
 import {
   Card,
@@ -17,6 +18,8 @@ export default async function EventDetailsPage({
 }: {
   params: Promise<{ eventId: string }>;
 }) {
+  await connection();
+
   const { eventId } = await params;
 
   try {

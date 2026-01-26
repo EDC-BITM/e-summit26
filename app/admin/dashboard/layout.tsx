@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { redirect } from "next/navigation";
 
 import { AppSidebar } from "./_components/sidebar/app-sidebar";
@@ -20,6 +21,8 @@ import "./dashboard.css";
 export default async function Layout({
   children,
 }: Readonly<{ children: ReactNode }>) {
+  await connection();
+
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar_state")?.value !== "false";
 

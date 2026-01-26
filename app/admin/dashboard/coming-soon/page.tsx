@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
-export default function Page() {
+export default async function Page() {
+  await connection();
+
   redirect("/admin/dashboard/default");
 }

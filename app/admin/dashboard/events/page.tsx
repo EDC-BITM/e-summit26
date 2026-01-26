@@ -1,9 +1,12 @@
 import { requireAdminOrModerator } from "@/lib/admin/auth";
 import { getAllEvents } from "@/lib/admin/queries";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { EventsDataTable } from "./_components/events-data-table";
 
 export default async function EventsPage() {
+  await connection();
+
   try {
     await requireAdminOrModerator();
   } catch (error) {

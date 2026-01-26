@@ -1,15 +1,18 @@
 import { requireAdminOrModerator } from "@/lib/admin/auth";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { ContactsDataTable } from "./_components/contacts-data-table";
 import { createServiceClient } from "@/lib/supabase/server";
 
 export default async function ContactsPage() {
+  await connection();
+
   try {
     await requireAdminOrModerator();
   } catch (error) {
     console.error("Access denied:", error);
     redirect(
-      `/auth/login?redirect=${encodeURIComponent("/admin/dashboard/contacts")}`
+      `/auth/login?redirect=${encodeURIComponent("/admin/dashboard/contacts")}`,
     );
   }
 

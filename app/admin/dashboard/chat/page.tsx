@@ -3,6 +3,7 @@ import { OnlineUsers } from "@/components/chat/online-users";
 import { requireAdminOrModerator } from "@/lib/admin/auth";
 import { getCurrentUser } from "@/lib/admin/current-user";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import {
   Card,
   CardContent,
@@ -12,6 +13,8 @@ import {
 } from "@/components/ui/card";
 
 export default async function ChatPage() {
+  await connection();
+
   // Require admin or moderator access
   try {
     await requireAdminOrModerator();

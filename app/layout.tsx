@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Suspense } from "react";
 import "./globals.css";
 import { getSiteUrl } from "@/lib/site";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -100,7 +101,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${googleSans.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
@@ -108,7 +109,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <Suspense>{children}</Suspense>
           <Toaster position="top-center" />
         </ThemeProvider>
       </body>

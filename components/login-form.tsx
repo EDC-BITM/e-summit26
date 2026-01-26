@@ -150,11 +150,7 @@ export function LoginForm({
               </Button>
 
               <div className="relative">
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-transparent px-2 text-white/50">
-                    Secure Authentication
-                  </span>
-                </div>
+
               </div>
             </div>
           </form>

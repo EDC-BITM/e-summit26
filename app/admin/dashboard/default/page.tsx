@@ -5,8 +5,11 @@ import { fetchAnalyticsData } from "./_components/fetch-analytics";
 import { requireAdminOrModerator } from "@/lib/admin/auth";
 import { getAdminStats } from "@/lib/admin/queries";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 
 export default async function Page() {
+  await connection();
+
   try {
     await requireAdminOrModerator();
   } catch (error) {
