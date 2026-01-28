@@ -187,14 +187,6 @@ export default function ProfilePage() {
           {/* Hero Section */}
           <div className="max-w-7xl mx-auto mb-12">
             <div className="text-center mb-8">
-              <Image
-                src="/Esum26new.png"
-                alt="E-Summit 26"
-                width={200}
-                height={80}
-                className="mx-auto mb-6 opacity-90"
-                priority
-              />
               <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
                 My Profile
               </h1>
