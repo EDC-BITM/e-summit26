@@ -2,10 +2,12 @@
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
-
+html,
 html.lenis,
 html.lenis body {
   height: auto;
+  overflow-x: hidden !important;
+  width: 100%;
 }
 
 .lenis.lenis-smooth {
@@ -26,6 +28,9 @@ html.lenis body {
 
 body {
   @apply font-sans antialiased;
+  overflow-x: hidden !important;
+  width: 100%;
+  position: relative;
 }
 
 @theme inline {

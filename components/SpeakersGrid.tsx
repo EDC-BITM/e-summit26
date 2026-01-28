@@ -1,3 +1,5 @@
+"use client";
+
 import { Instagram, Linkedin } from "lucide-react";
 
 // Adjust this import if your file lives elsewhere.

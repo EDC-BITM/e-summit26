@@ -1,5 +1,8 @@
+"use client";
+
 import { Instagram, Linkedin } from "lucide-react";
 import AnimatedBlurText from "@/components/AnimatedBlurText";
+import { IMAGES } from "@/lib/images";
 import Image from "next/image";
 
 type Speaker = {
@@ -39,44 +42,34 @@ function SocialBadge({
 
 const speakers: Speaker[] = [
   {
-    name: "Aditi Kulkarni",
-    title: "Founder, Product Studio",
-    img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1061&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    name: "Dr. Vijender Chauhan",
+    title: "Public Speaker",
+    img: IMAGES.past_speakers.vijender_chauhan,
   },
   {
-    name: "Rohan Verma",
-    title: "Engineering Manager",
-    img: "https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=1600&q=80",
+    name: "Karan Bajaj",
+    title: "Founder, WhiteHat Jr",
+    img: IMAGES.past_speakers.karan_bajaj,
   },
   {
-    name: "Ananya Bose",
-    title: "Data Scientist",
-    img: "https://images.unsplash.com/photo-1524502397800-2eeaad7c3fe5?auto=format&fit=crop&w=1600&q=80",
+    name: "Amit Chaudhry",
+    title: "Co-Founder, Lenskart",
+    img: IMAGES.past_speakers.amit_chaudhry,
   },
   {
-    name: "Karan Malhotra",
-    title: "Security Architect",
-    img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=1600&q=80",
+    name: "Aman Dhattarwal",
+    title: "Founder, Apni Kaksha",
+    img: IMAGES.past_speakers.aman_dhattarwal,
   },
   {
-    name: "Neha Sharma",
-    title: "UX Lead",
-    img: "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=1600&q=80",
+    name: "Ashutosh Pratihast",
+    title: "COO, Grow",
+    img: IMAGES.past_speakers.ashutosh_naik,
   },
   {
-    name: "Arjun Nair",
-    title: "Cloud Platform Engineer",
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1600&q=80",
-  },
-  {
-    name: "Meera Iyer",
-    title: "AI Researcher",
-    img: "https://images.unsplash.com/photo-1714508809994-d1f71099bf35?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-  },
-  {
-    name: "Siddharth Jain",
-    title: "Growth & Partnerships",
-    img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=1600&q=80",
+    name: "Muskaan Sancheti",
+    title: "Founder, The State Plate",
+    img: IMAGES.past_speakers.muskaan_sancheti,
   },
 ];
 

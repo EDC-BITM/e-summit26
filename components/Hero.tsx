@@ -97,10 +97,10 @@ export default function Hero() {
         draggable={false}
         className={[
           "pointer-events-none absolute z-0",
-          "-left-35 sm:-left-42.5 md:-left-47.5",
-          "top-[22%] sm:top-[20%] md:top-[10%]",
-          "w-65 sm:w-[320px] md:w-100 lg:w-77.5",
-          "opacity-95 mix-blend-screen",
+          "-left-20 sm:-left-32 md:-left-40 lg:-left-47.5",
+          "top-[28%] sm:top-[20%] md:top-[12%] lg:top-[10%]",
+          "w-40 sm:w-64 md:w-80 lg:w-77.5",
+          "opacity-80 sm:opacity-95 mix-blend-screen",
           "motion-reduce:animate-none",
           "animate-[spin_24s_linear_infinite]",
         ].join(" ")}
@@ -118,10 +118,10 @@ export default function Hero() {
         draggable={false}
         className={[
           "pointer-events-none absolute z-0",
-          "right-[30%] sm:right-[28%] md:right-[18%]",
-          "top-[18%] sm:top-[18%] md:top-[20%]",
-          "w-16 sm:w-19.5 md:w-23 lg:w-27",
-          "opacity-95 mix-blend-screen",
+          "right-[5%] sm:right-[8%] md:right-[15%] lg:right-[18%]",
+          "top-[12%] sm:top-[16%] md:top-[20%]",
+          "w-10 sm:w-16 md:w-20 lg:w-27",
+          "opacity-90 sm:opacity-95 mix-blend-screen",
           "motion-reduce:animate-none",
           "animate-[spin_20s_linear_infinite]",
         ].join(" ")}
@@ -139,10 +139,10 @@ export default function Hero() {
         draggable={false}
         className={[
           "pointer-events-none absolute z-0",
-          "right-[-10%] sm:right-[-9%] md:right-[-8%]",
-          "top-[24%] sm:top-[24%] md:top-[30%]",
-          "w-60 sm:w-75 md:w-92.5 lg:w-56.25",
-          "opacity-95 mix-blend-screen",
+          "right-[-15%] sm:right-[-12%] md:right-[-10%] lg:right-[-8%]",
+          "top-[25%] sm:top-[22%] md:top-[28%] lg:top-[30%]",
+          "w-40 sm:w-60 md:w-80 lg:w-56.25",
+          "opacity-80 sm:opacity-95 mix-blend-screen",
           "motion-reduce:animate-none",
           "animate-[spin_24s_linear_infinite]",
         ].join(" ")}
@@ -175,17 +175,17 @@ export default function Hero() {
         {/* Subtitle with animated word */}
         <div
           className={cn(
-            "mt-8",
-            "text-[22px] sm:text-[28px] md:text-[36px]",
+            "mt-6 sm:mt-8",
+            "text-[18px] sm:text-[28px] md:text-[36px]",
             "text-white/90",
-            "tracking-tight md::translate-x-8",
+            "tracking-tight md:translate-x-8",
             "flex flex-col md:block items-center"
           )}
         >
           <span className="font-medium">Fuel your startup journey by:</span>{" "}
-          <span className="inline-flex justify-start align-baseline">
+          <span className="inline-flex justify-center md:justify-start align-baseline">
             <span
-              className="inline-block text-start md:w-60 font-semibold text-white"
+              className="inline-block text-center md:text-start w-auto md:w-60 font-semibold text-white"
               aria-live="polite"
               style={{ willChange: "contents" }}
             >
@@ -251,12 +251,12 @@ export default function Hero() {
       </div>
 
       {/* Bottom dates */}
-      <div className="pointer-events-none absolute bottom-3 sm:bottom-5 left-0 right-0 z-10">
-        <div className="w-full px-2 sm:px-3 md:px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-[max-content_1fr_max-content_1fr_max-content] items-center gap-2 sm:gap-3 md:gap-4">
+      <div className="pointer-events-none absolute bottom-6 sm:bottom-6 left-0 right-0 z-10">
+        <div className="w-full px-6 sm:px-10 md:px-16 lg:px-24">
+          <div className="grid grid-cols-1 sm:grid-cols-[max-content_1fr_max-content_1fr_max-content] items-center gap-2 sm:gap-4 md:gap-6">
             <ShinyText
               text="13th February 2026"
-              className="text-xs sm:text-base md:text-lg lg:text-xl font-normal justify-self-center text-center"
+              className="text-sm sm:text-base md:text-lg lg:text-xl font-normal justify-self-center text-center py-1"
               disabled={false}
               speed={3}
             />
@@ -264,7 +264,7 @@ export default function Hero() {
             <div className="hidden sm:block h-px w-full bg-white/20" />
             <ShinyText
               text="14th February 2026"
-              className="text-xs sm:text-base md:text-lg lg:text-xl font-normal justify-self-center text-center"
+              className="text-sm sm:text-base md:text-lg lg:text-xl font-normal justify-self-center text-center py-1 border-y border-white/10 sm:border-0"
               disabled={false}
               speed={3}
             />
@@ -273,7 +273,7 @@ export default function Hero() {
 
             <ShinyText
               text="15th February 2026"
-              className="text-xs sm:text-base md:text-lg lg:text-xl font-normal justify-self-center text-center"
+              className="text-sm sm:text-base md:text-lg lg:text-xl font-normal justify-self-center text-center py-1"
               disabled={false}
               speed={3}
             />

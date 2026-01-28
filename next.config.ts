@@ -18,7 +18,13 @@ const nextConfig: NextConfig = {
         hostname: "media.tenor.com",
         port: "",
         pathname: "/**",
-      }
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
   // Rewrites to support PostHog ingestion and assets

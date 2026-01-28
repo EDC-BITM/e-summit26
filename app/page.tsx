@@ -22,7 +22,7 @@ export default function Page() {
       }}
       root
     >
-      <div className="isolate">
+      <div className="isolate w-full overflow-x-hidden">
         <LazyMotion features={domAnimation}>
           <Navbar />
           <Hero />

@@ -109,7 +109,7 @@ export default function SpeakersSection() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden text-white">
+    <section className="relative w-full overflow-hidden text-white">
       {/* Background: push the purple glow MUCH harder (to match your reference) */}
       <div className="pointer-events-none absolute inset-0 -z-10">
         {/* base */}
