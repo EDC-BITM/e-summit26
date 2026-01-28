@@ -3,9 +3,9 @@ import Navbar from "@/components/Navbar";
 import FooterSection from "@/components/FooterSection";
 import EventsHero from "@/components/EventsHero";
 import EventSchedule from "@/components/EventSchedule";
+import EventsList from "@/components/EventsList";
 import { domAnimation, LazyMotion } from "framer-motion";
 import { ReactLenis } from "@/components/SmoothScrolling";
-
 
 export const metadata: Metadata = {
   title: "Events",
@@ -47,6 +47,7 @@ export default function EventsPage() {
           <main>
             <EventsHero />
             <EventSchedule />
+            <EventsList />
           </main>
           <FooterSection />
         </LazyMotion>

@@ -30,12 +30,16 @@ export function LoginForm({
     setError(null);
 
     try {
+      // Use the current origin (works in both dev and production)
+      const origin =
+        typeof window !== "undefined" ? window.location.origin : "";
+
       // Pass redirect via URL parameter
       const redirectTo = redirect
-        ? `${window.location.origin}/auth/oauth?redirect=${encodeURIComponent(
-            redirect
-          )}`
-        : `${window.location.origin}/auth/oauth`;
+        ? `${origin}/auth/oauth?redirect=${encodeURIComponent(redirect)}`
+        : `${origin}/auth/oauth`;
+
+      console.log("OAuth Redirect URL:", redirectTo); // Debug log
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -149,9 +153,7 @@ export function LoginForm({
                 )}
               </Button>
 
-              <div className="relative">
-
-              </div>
+              <div className="relative"></div>
             </div>
           </form>
         </CardContent>
