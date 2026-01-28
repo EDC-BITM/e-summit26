@@ -9,7 +9,15 @@ import AnimatedBlurText from "./AnimatedBlurText";
 
 // Animation variants and Marquee component remains untouched...
 const CARD_VARIANTS: Variants = {
-  inactive: { borderRadius: "36px", borderColor: "rgba(255,255,255,0.1)" },
+  inactive: {
+  borderRadius: "36px",
+  borderColor: "rgba(255,255,255,0.18)",
+  borderWidth: "1px",
+  backgroundColor: "rgba(255,255,255,0.08)",
+  backdropFilter: "blur(14px) saturate(140%)",
+  
+  boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+},
   active: { borderRadius: "9999px", borderColor: "rgba(176,94,194,0.78)" },
 };
 
@@ -34,7 +42,7 @@ const TRANSITION_CONFIG = {
 };
 
 function Marquee({ className = "" }) {
-  const text = "Innovation. Networking. Brainstorming. Learning";
+  const text = "Innovation. Networking. Brainstorming. Learning.";
   return (
     <div className={`relative mt-16 overflow-hidden py-6 ${className}`}>
       <div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-linear-to-r from-black to-transparent" />
@@ -115,7 +123,7 @@ export default function ForWhomSection() {
   const handleCardClick = useCallback((key: string) => setActiveKey(key), []);
 
   return (
-    <section id="forwhom" className="w-full bg-black text-white">
+    <section id="forwhom" className="w-full bg-black text-white overflow-x-hidden">
       {/* 1. Added very small responsive horizontal padding for a professional "near-edge" look */}
       <div className="w-full px-4 sm:px-6 md:px-10 pt-20 pb-10 md:pt-24 md:pb-8">
 
@@ -163,7 +171,7 @@ export default function ForWhomSection() {
         </div>
 
         {/* Slider - Maintained its edge-to-edge bleed behavior */}
-        <Marquee className="w-screen relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw]" />
+        <Marquee className="relative w-full left-0 mx-0" />
       </div>
     </section>
   );
