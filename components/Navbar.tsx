@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { UserNav } from "@/components/user-nav";
 
 const LINKS = [
   { label: "Home", href: "/", icon: Home },
@@ -136,7 +137,7 @@ export default function Navbar() {
       if (!el) return;
       el.scrollIntoView({ behavior: "smooth", block: "start" });
     },
-    []
+    [],
   );
 
   const handleNavClick = useCallback(
@@ -161,7 +162,7 @@ export default function Navbar() {
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
       }, 300);
     },
-    [router]
+    [router],
   );
 
   const toggleSidebar = useCallback(() => {
@@ -202,7 +203,7 @@ export default function Navbar() {
                 "border-b border-white/8",
                 "shadow-[0_10px_40px_rgba(0,0,0,0.25)]",
               ].join(" ")
-            : "bg-transparent backdrop-blur-0 border-b border-transparent shadow-none"
+            : "bg-transparent backdrop-blur-0 border-b border-transparent shadow-none",
         )}
         style={{
           willChange: compact
@@ -217,7 +218,7 @@ export default function Navbar() {
               className={cn(
                 "flex items-center gap-3 -translate-x-4",
                 "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                "opacity-100 translate-y-0"
+                "opacity-100 translate-y-0",
               )}
               aria-label="Home"
             >
@@ -240,7 +241,7 @@ export default function Navbar() {
                   "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   compact
                     ? "opacity-0 translate-x-10 pointer-events-none"
-                    : "opacity-100 translate-x-0"
+                    : "opacity-100 translate-x-0",
                 )}
                 aria-label="Primary"
                 style={{ willChange: compact ? "auto" : "opacity, transform" }}
@@ -251,6 +252,10 @@ export default function Navbar() {
                   </NavPill>
                 ))}
               </nav>
+
+              <div className="hidden md:block">
+                <UserNav />
+              </div>
 
               <motion.button
                 type="button"
@@ -264,7 +269,7 @@ export default function Navbar() {
                   "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
                   compact
                     ? "opacity-100 translate-x-0"
-                    : "opacity-100 translate-x-0 md:opacity-0 md:translate-x-4 md:pointer-events-none"
+                    : "opacity-100 translate-x-0 md:opacity-0 md:translate-x-4 md:pointer-events-none",
                 )}
                 onClick={toggleSidebar}
                 whileTap={{ scale: 0.95 }}
@@ -330,13 +335,16 @@ export default function Navbar() {
                     />
                     {/* <span className="text-xl font-bold text-white">Menu</span> */}
                   </div>
-                  <button
-                    onClick={toggleSidebar}
-                    className="grid h-10 w-10 place-items-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300"
-                    aria-label="Close menu"
-                  >
-                    <X size={24} className="text-white" />
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <UserNav />
+                    <button
+                      onClick={toggleSidebar}
+                      className="grid h-10 w-10 place-items-center rounded-full bg-white/10 hover:bg-white/20 transition-all duration-300"
+                      aria-label="Close menu"
+                    >
+                      <X size={24} className="text-white" />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Navigation Links */}
@@ -356,7 +364,7 @@ export default function Navbar() {
                             "group flex items-center gap-4 rounded-2xl px-5 py-[clamp(14px,2.6vh,18px)] transition-all duration-300 active:scale-[0.98] relative overflow-hidden",
                             isActive
                               ? "bg-linear-to-r from-[#733080]/20 via-[#733080]/10 to-transparent shadow-[0_0_20px_rgba(115,48,128,0.15)]"
-                              : "hover:bg-white/10"
+                              : "hover:bg-white/10",
                           )}
                         >
                           {isActive && (
@@ -367,7 +375,7 @@ export default function Navbar() {
                               "grid place-items-center rounded-xl bg-linear-to-br transition-all duration-300",
                               isActive
                                 ? "from-[#733080] to-[#733080]/70 shadow-[0_0_15px_rgba(115,48,128,0.4)]"
-                                : "from-white/5 to-white/2 group-hover:from-[#733080] group-hover:to-[#733080]/70"
+                                : "from-white/5 to-white/2 group-hover:from-[#733080] group-hover:to-[#733080]/70",
                             )}
                             style={{
                               width: "clamp(46px, 6vh, 56px)",
@@ -380,7 +388,7 @@ export default function Navbar() {
                                 "transition-all duration-300",
                                 isActive
                                   ? "text-white"
-                                  : "text-white/80 group-hover:text-white"
+                                  : "text-white/80 group-hover:text-white",
                               )}
                             />
                           </div>
@@ -388,7 +396,7 @@ export default function Navbar() {
                             <span
                               className={cn(
                                 "font-semibold text-[clamp(18px,2.4vh,22px)] transition-all duration-300",
-                                isActive ? "text-white" : "text-white/90"
+                                isActive ? "text-white" : "text-white/90",
                               )}
                             >
                               {link.label}
@@ -430,8 +438,14 @@ export default function Navbar() {
           border-radius: 9999px;
           padding-left: 1.7rem;
           padding-right: 1.7rem;
-          font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
-            Helvetica, Arial;
+          font-family:
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            Segoe UI,
+            Roboto,
+            Helvetica,
+            Arial;
           font-size: 1.05rem;
           font-weight: 640;
           letter-spacing: -0.04em;
@@ -508,19 +522,22 @@ export default function Navbar() {
         .rb-pill:hover .rb-inner-static {
           opacity: 0;
           transform: translateY(-70%);
-          transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1),
+          transition:
+            transform 1.2s cubic-bezier(0.19, 1, 0.22, 1),
             opacity 0.25s linear;
         }
 
         .rb-pill:hover .rb-inner-hover {
           opacity: 1;
           transform: translateY(0);
-          transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1),
+          transition:
+            transform 1.2s cubic-bezier(0.19, 1, 0.22, 1),
             opacity 1.2s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
         .rb-pill:hover .rb-bg-layer {
-          transition: transform 1.1s cubic-bezier(0.19, 1, 0.22, 1),
+          transition:
+            transform 1.1s cubic-bezier(0.19, 1, 0.22, 1),
             opacity 0.25s linear;
         }
 
