@@ -1,260 +1,195 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
-export const runtime = "nodejs";
+type DbEvent = {
+  id: string;
+  name: string;
+  category: string;
+  description: string | null;
+  max_score: number;
+  created_at: string | null;
+  date: string | null;
+  location: string | null;
+  image_url: string | null;
+  max_participants: number | null;
+  is_active: boolean | null;
+};
 
-function json(
-  data: unknown,
-  init?: ResponseInit & { cacheSeconds?: number }
-) {
-  const cacheSeconds = init?.cacheSeconds ?? 20;
-  const headers = new Headers(init?.headers);
-  headers.set(
-    "Cache-Control",
-    `public, s-maxage=${cacheSeconds}, stale-while-revalidate=${cacheSeconds * 6}`
-  );
-  headers.set("Content-Type", "application/json; charset=utf-8");
-  return new NextResponse(JSON.stringify(data), { ...init, headers });
-}
-
-function clampInt(v: string | null, def: number, min: number, max: number) {
-  const n = v ? Number(v) : NaN;
-  if (!Number.isFinite(n)) return def;
-  return Math.max(min, Math.min(max, Math.floor(n)));
-}
-
-type TeamRow = {
+type DbTeam = {
   id: string;
   slug: string;
   name: string;
   team_leader_id: string;
+  created_at: string;
 };
 
-type EventRow = {
-  id: string;
-  name: string;
-  category: string;
-  date: string | null;
-  location: string | null;
-  is_active: boolean | null;
-  max_score: number;
-};
-
-type EventResultRow = {
+type DbEventResult = {
   event_id: string;
   team_id: string;
-  rank: number;
+  rank: 1 | 2 | 3;
   marks: number;
   declared_at: string | null;
+  team: DbTeam | null;
 };
 
-type TeamAgg = {
-  team_id: string;
-  team: TeamRow | null;
-  total_marks: number;
-  events_count: number;
-  gold: number;
-  silver: number;
-  bronze: number;
-  points: number;
-  last_declared_at: string | null;
-};
+function json(data: unknown, init?: ResponseInit) {
+  return NextResponse.json(data, {
+    ...init,
+    headers: { "Cache-Control": "no-store", ...(init?.headers ?? {}) },
+  });
+}
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const mode = (url.searchParams.get("mode") || "overall").toLowerCase();
-  const limit = clampInt(url.searchParams.get("limit"), 50, 1, 200);
-  const category = url.searchParams.get("category");
+  const activeOnly = url.searchParams.get("activeOnly");
+  const includeOverall = url.searchParams.get("includeOverall");
 
-  const sb = supabaseAdmin();
+  const onlyActive =
+    activeOnly === null ? true : activeOnly === "1" || activeOnly === "true";
+  const wantOverall =
+    includeOverall === null
+      ? true
+      : includeOverall === "1" || includeOverall === "true";
 
-  // --------------------------
-  // MODE: EVENTS (events that have results + podium)
-  // --------------------------
-  if (mode === "events") {
-    const q = sb
-      .from("events")
-      .select("id,name,category,date,location,is_active,max_score")
-      .order("date", { ascending: false });
+  const sb = supabaseAdmin(); // ✅ FIX
 
-    if (category) q.eq("category", category);
+  const eventsQuery = sb
+    .from("events")
+    .select(
+      "id,name,category,description,max_score,created_at,date,location,image_url,max_participants,is_active"
+    )
+    .order("created_at", { ascending: false });
 
-    const { data: events, error: eventsErr } = await q
-      .limit(limit)
-      .returns<EventRow[]>();
+  const { data: eventsData, error: eventsErr } = onlyActive
+    ? await eventsQuery.eq("is_active", true)
+    : await eventsQuery;
 
-    if (eventsErr) {
-      return json(
-        { ok: false, error: "Failed to load events.", details: eventsErr.message },
-        { status: 500, cacheSeconds: 0 }
-      );
-    }
-
-    const eventIds = (events ?? []).map((e) => e.id);
-    if (eventIds.length === 0) {
-      return json({ ok: true, mode: "events", updatedAt: new Date().toISOString(), events: [] });
-    }
-
-    const { data: results, error: resErr } = await sb
-      .from("event_results")
-      .select("event_id,team_id,rank,marks,declared_at")
-      .in("event_id", eventIds)
-      .order("rank", { ascending: true })
-      .returns<EventResultRow[]>();
-
-    if (resErr) {
-      return json(
-        { ok: false, error: "Failed to load event results.", details: resErr.message },
-        { status: 500, cacheSeconds: 0 }
-      );
-    }
-
-    const teamIds = Array.from(new Set((results ?? []).map((r) => r.team_id)));
-    const { data: teams, error: teamErr } = await sb
-      .from("teams")
-      .select("id,slug,name,team_leader_id")
-      .in("id", teamIds)
-      .returns<TeamRow[]>();
-
-    if (teamErr) {
-      return json(
-        { ok: false, error: "Failed to load teams.", details: teamErr.message },
-        { status: 500, cacheSeconds: 0 }
-      );
-    }
-
-    const teamMap = new Map<string, TeamRow>();
-    (teams ?? []).forEach((t) => teamMap.set(t.id, t));
-
-    const byEvent = new Map<string, Array<EventResultRow & { team: TeamRow | null }>>();
-    (results ?? []).forEach((r) => {
-      const arr = byEvent.get(r.event_id) ?? [];
-      arr.push({ ...r, team: teamMap.get(r.team_id) ?? null });
-      byEvent.set(r.event_id, arr);
-    });
-
-    const enriched = (events ?? [])
-      .map((e) => ({
-        ...e,
-        results: (byEvent.get(e.id) ?? []).sort((a, b) => a.rank - b.rank),
-      }))
-      .filter((e) => e.results.length > 0);
-
+  if (eventsErr) {
     return json(
-      { ok: true, mode: "events", updatedAt: new Date().toISOString(), events: enriched },
-      { status: 200, cacheSeconds: 20 }
+      { error: "Failed to fetch events", details: eventsErr.message },
+      { status: 500 }
     );
   }
 
-  // --------------------------
-  // MODE: OVERALL (aggregate)
-  // --------------------------
-  const { data: rows, error } = await sb
+  const events = ((eventsData as DbEvent[]) ?? []).map((e) => ({
+    ...e,
+    results: [] as Array<{
+      rank: 1 | 2 | 3;
+      marks: number;
+      declared_at: string | null;
+      team: { id: string; slug: string; name: string };
+    }>,
+    declared: false,
+  }));
+
+  const eventIds = events.map((e) => e.id);
+  if (eventIds.length === 0) return json({ events: [], overall: [] });
+
+  const { data: rowsData, error: rowsErr } = await sb
     .from("event_results")
-    .select("event_id,team_id,rank,marks,declared_at")
-    .order("declared_at", { ascending: false })
-    .returns<EventResultRow[]>();
+    .select(
+      `
+      event_id,
+      team_id,
+      rank,
+      marks,
+      declared_at,
+      team:teams!event_results_team_id_fkey ( id, slug, name, team_leader_id, created_at )
+    `
+    )
+    .in("event_id", eventIds)
+    .order("event_id", { ascending: true })
+    .order("rank", { ascending: true });
 
-  if (error) {
+  if (rowsErr) {
     return json(
-      { ok: false, error: "Failed to load overall leaderboard.", details: error.message },
-      { status: 500, cacheSeconds: 0 }
+      { error: "Failed to fetch event results", details: rowsErr.message },
+      { status: 500 }
     );
   }
 
-  const allRows = rows ?? [];
-  const teamIds = Array.from(new Set(allRows.map((r) => r.team_id)));
+  const rows = (rowsData as unknown as DbEventResult[]) ?? [];
 
-  const { data: teams, error: teamErr } = await sb
-    .from("teams")
-    .select("id,slug,name,team_leader_id")
-    .in("id", teamIds)
-    .returns<TeamRow[]>();
-
-  if (teamErr) {
-    return json(
-      { ok: false, error: "Failed to load teams.", details: teamErr.message },
-      { status: 500, cacheSeconds: 0 }
-    );
+  const byEventId = new Map<string, DbEventResult[]>();
+  for (const r of rows) {
+    if (!byEventId.has(r.event_id)) byEventId.set(r.event_id, []);
+    byEventId.get(r.event_id)!.push(r);
   }
 
-  const teamMap = new Map<string, TeamRow>();
-  (teams ?? []).forEach((t) => teamMap.set(t.id, t));
+  for (const e of events) {
+    const list = byEventId.get(e.id) ?? [];
+    const normalized = list
+      .filter((r) => r.team)
+      .map((r) => ({
+        rank: r.rank,
+        marks: r.marks,
+        declared_at: r.declared_at,
+        team: { id: r.team!.id, slug: r.team!.slug, name: r.team!.name },
+      }));
 
-  const agg = new Map<string, TeamAgg>();
-  const eventsSeen = new Map<string, Set<string>>();
+    e.results = normalized;
+    e.declared = normalized.length > 0;
+  }
 
-  for (const r of allRows) {
-    const pointsForRank = r.rank === 1 ? 3 : r.rank === 2 ? 2 : r.rank === 3 ? 1 : 0;
+  let overall: Array<{
+    team: { id: string; slug: string; name: string };
+    total_marks: number;
+    podiums: number;
+    golds: number;
+    silvers: number;
+    bronzes: number;
+  }> = [];
 
-    const current =
-      agg.get(r.team_id) ??
-      ({
-        team_id: r.team_id,
-        team: teamMap.get(r.team_id) ?? null,
-        total_marks: 0,
-        events_count: 0,
-        gold: 0,
-        silver: 0,
-        bronze: 0,
-        points: 0,
-        last_declared_at: null,
-      } satisfies TeamAgg);
+  if (wantOverall) {
+    const agg = new Map<
+      string,
+      {
+        team: { id: string; slug: string; name: string };
+        total_marks: number;
+        golds: number;
+        silvers: number;
+        bronzes: number;
+      }
+    >();
 
-    current.total_marks += Number(r.marks ?? 0);
-    current.points += pointsForRank;
+    for (const r of rows) {
+      if (!r.team) continue;
 
-    if (r.rank === 1) current.gold += 1;
-    if (r.rank === 2) current.silver += 1;
-    if (r.rank === 3) current.bronze += 1;
+      const key = r.team.id;
+      if (!agg.has(key)) {
+        agg.set(key, {
+          team: { id: r.team.id, slug: r.team.slug, name: r.team.name },
+          total_marks: 0,
+          golds: 0,
+          silvers: 0,
+          bronzes: 0,
+        });
+      }
 
-    const set = eventsSeen.get(r.team_id) ?? new Set<string>();
-    set.add(r.event_id);
-    eventsSeen.set(r.team_id, set);
-    current.events_count = set.size;
-
-    const dt = r.declared_at ? String(r.declared_at) : null;
-    if (!current.last_declared_at || (dt && dt > current.last_declared_at)) {
-      current.last_declared_at = dt;
+      const v = agg.get(key)!;
+      v.total_marks += r.marks;
+      if (r.rank === 1) v.golds++;
+      if (r.rank === 2) v.silvers++;
+      if (r.rank === 3) v.bronzes++;
     }
 
-    agg.set(r.team_id, current);
+    overall = Array.from(agg.values())
+      .map((v) => ({
+        team: v.team,
+        total_marks: v.total_marks,
+        podiums: v.golds + v.silvers + v.bronzes,
+        golds: v.golds,
+        silvers: v.silvers,
+        bronzes: v.bronzes,
+      }))
+      .sort((a, b) => {
+        if (b.total_marks !== a.total_marks) return b.total_marks - a.total_marks;
+        if (b.golds !== a.golds) return b.golds - a.golds;
+        if (b.silvers !== a.silvers) return b.silvers - a.silvers;
+        if (b.bronzes !== a.bronzes) return b.bronzes - a.bronzes;
+        return a.team.name.localeCompare(b.team.name);
+      });
   }
 
-  const leaderboard = Array.from(agg.values())
-    .sort((a, b) => {
-      if (b.points !== a.points) return b.points - a.points;
-      if (b.total_marks !== a.total_marks) return b.total_marks - a.total_marks;
-      if (b.gold !== a.gold) return b.gold - a.gold;
-      if (b.silver !== a.silver) return b.silver - a.silver;
-      if (b.bronze !== a.bronze) return b.bronze - a.bronze;
-      return (a.team?.name ?? "").localeCompare(b.team?.name ?? "");
-    })
-    .slice(0, limit)
-    .map((t, idx) => ({ position: idx + 1, ...t }));
-
-  return json(
-    {
-      ok: true,
-      mode: "overall",
-      updatedAt: new Date().toISOString(),
-      scoring: {
-        note: "Overall leaderboard uses rank-based points + total marks as tie-breaker.",
-        points: { rank1: 3, rank2: 2, rank3: 1 },
-        tieBreakers: ["total_marks", "gold", "silver", "bronze", "team.name"],
-      },
-      leaderboard,
-    },
-    { status: 200, cacheSeconds: 20 }
-  );
-}
-
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Methods": "GET,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    },
-  });
+  return json({ events, overall });
 }

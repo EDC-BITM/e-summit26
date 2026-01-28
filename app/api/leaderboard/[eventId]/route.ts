@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
-export const runtime = "nodejs";
-
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-type TeamRow = {
+type DbEvent = {
+  id: string;
+  name: string;
+  category: string;
+  description: string | null;
+  max_score: number;
+  created_at: string | null;
+  date: string | null;
+  location: string | null;
+  image_url: string | null;
+  max_participants: number | null;
+  is_active: boolean | null;
+};
+
+type DbTeam = {
   id: string;
   slug: string;
   name: string;
@@ -14,158 +26,96 @@ type TeamRow = {
   created_at: string;
 };
 
-type EventRow = {
-  id: string;
-  name: string;
-  category: string;
-  description: string | null;
-  max_score: number;
-  date: string | null;
-  location: string | null;
-  image_url: string | null;
-  is_active: boolean | null;
-};
-
-type EventResultRow = {
+type DbEventResult = {
   event_id: string;
   team_id: string;
-  rank: number;
+  rank: 1 | 2 | 3;
   marks: number;
   declared_at: string | null;
+  team: DbTeam | null;
 };
 
-function parseBool(v: string | null) {
-  if (!v) return false;
-  return ["1", "true", "yes", "y", "on"].includes(v.toLowerCase());
-}
-
-function json(
-  data: unknown,
-  init?: ResponseInit & { cacheSeconds?: number }
-) {
-  const cacheSeconds = init?.cacheSeconds ?? 15;
-  const headers = new Headers(init?.headers);
-  headers.set(
-    "Cache-Control",
-    `public, s-maxage=${cacheSeconds}, stale-while-revalidate=${cacheSeconds * 6}`
-  );
-  headers.set("Content-Type", "application/json; charset=utf-8");
-  return new NextResponse(JSON.stringify(data), { ...init, headers });
+function json(data: unknown, init?: ResponseInit) {
+  return NextResponse.json(data, {
+    ...init,
+    headers: { "Cache-Control": "no-store", ...(init?.headers ?? {}) },
+  });
 }
 
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { eventId: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
-  const eventId = params.eventId;
+  const { eventId } = await params;
 
   if (!UUID_RE.test(eventId)) {
-    return json(
-      { ok: false, error: "Invalid eventId (expected UUID)." },
-      { status: 400, cacheSeconds: 0 }
-    );
+    return json({ error: "Invalid eventId (expected UUID)" }, { status: 400 });
   }
 
-  const url = new URL(req.url);
-  const includeMembers = parseBool(url.searchParams.get("includeMembers"));
+  const sb = supabaseAdmin(); // ✅ FIX
 
-  const sb = supabaseAdmin();
-
-  // 1) Event meta
-  const { data: event, error: eventErr } = await sb
+  const { data: eventData, error: eventErr } = await sb
     .from("events")
     .select(
-      "id,name,category,description,max_score,date,location,image_url,is_active"
+      "id,name,category,description,max_score,created_at,date,location,image_url,max_participants,is_active"
     )
     .eq("id", eventId)
-    .single<EventRow>();
+    .maybeSingle();
 
-  if (eventErr || !event) {
+  if (eventErr) {
     return json(
-      { ok: false, error: "Event not found.", details: eventErr?.message },
-      { status: 404, cacheSeconds: 0 }
+      { error: "Failed to fetch event", details: eventErr.message },
+      { status: 500 }
     );
   }
 
-  // 2) Results (no embedded join to avoid Team[] typing)
-  const { data: results, error: resErr } = await sb
+  const event = eventData as DbEvent | null;
+  if (!event) return json({ error: "Event not found" }, { status: 404 });
+
+  const { data: rowsData, error: rowsErr } = await sb
     .from("event_results")
-    .select("event_id,team_id,rank,marks,declared_at")
+    .select(
+      `
+      event_id,
+      team_id,
+      rank,
+      marks,
+      declared_at,
+      team:teams!event_results_team_id_fkey (
+        id,
+        slug,
+        name,
+        team_leader_id,
+        created_at
+      )
+    `
+    )
     .eq("event_id", eventId)
-    .order("rank", { ascending: true })
-    .returns<EventResultRow[]>();
+    .order("rank", { ascending: true });
 
-  if (resErr) {
+  if (rowsErr) {
     return json(
-      { ok: false, error: "Failed to load event results.", details: resErr.message },
-      { status: 500, cacheSeconds: 0 }
+      { error: "Failed to fetch leaderboard", details: rowsErr.message },
+      { status: 500 }
     );
   }
 
-  const safeResults = results ?? [];
-  const teamIds = Array.from(new Set(safeResults.map((r) => r.team_id)));
+  const rows = (rowsData as unknown as DbEventResult[]) ?? [];
 
-  // 3) Teams for those results
-  const { data: teams, error: teamErr } = await sb
-    .from("teams")
-    .select("id,slug,name,team_leader_id,created_at")
-    .in("id", teamIds)
-    .returns<TeamRow[]>();
-
-  if (teamErr) {
-    return json(
-      { ok: false, error: "Failed to load teams.", details: teamErr.message },
-      { status: 500, cacheSeconds: 0 }
-    );
-  }
-
-  const teamMap = new Map<string, TeamRow>();
-  (teams ?? []).forEach((t) => teamMap.set(t.id, t));
-
-  // 4) Optional accepted member counts
-  let acceptedMemberCounts: Record<string, number> = {};
-  if (includeMembers && teamIds.length > 0) {
-    const { data: members, error: memErr } = await sb
-      .from("team_members")
-      .select("team_id")
-      .in("team_id", teamIds)
-      .eq("status", "accepted");
-
-    if (!memErr && members) {
-      acceptedMemberCounts = members.reduce<Record<string, number>>((acc, m) => {
-        const tid = String(m.team_id);
-        acc[tid] = (acc[tid] ?? 0) + 1;
-        return acc;
-      }, {});
-    }
-  }
-
-  return json(
-    {
-      ok: true,
-      mode: "event",
-      updatedAt: new Date().toISOString(),
-      event,
-      results: safeResults.map((r) => ({
-        ...r,
-        team: teamMap.get(r.team_id) ?? null,
-        members_accepted: includeMembers ? acceptedMemberCounts[r.team_id] ?? 0 : undefined,
-      })),
-      meta: {
-        hasResults: safeResults.length > 0,
-        ranksPresent: safeResults.map((r) => r.rank),
+  const results = rows
+    .filter((r) => r.team)
+    .map((r) => ({
+      rank: r.rank,
+      marks: r.marks,
+      declared_at: r.declared_at,
+      team: {
+        id: r.team!.id,
+        slug: r.team!.slug,
+        name: r.team!.name,
+        team_leader_id: r.team!.team_leader_id,
+        created_at: r.team!.created_at,
       },
-    },
-    { status: 200, cacheSeconds: 10 }
-  );
-}
+    }));
 
-export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: {
-      "Access-Control-Allow-Methods": "GET,OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    },
-  });
+  return json({ event, declared: results.length > 0, results });
 }
