@@ -14,6 +14,8 @@ interface Profile {
   branch?: string;
   phone?: string;
   avatar_url?: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 interface TeamMember {
@@ -22,6 +24,8 @@ interface TeamMember {
   branch?: string;
   phone?: string;
   avatar_url?: string;
+  first_name?: string;
+  last_name?: string;
   role: string;
   status: string;
   joined_at: string;
@@ -190,13 +194,17 @@ export default async function TeamDetailsPage({
                     {/* Fallback to roll number or name if avatar is missing */}
                     <AvatarImage src={member.avatar_url} />
                     <AvatarFallback>
-                      {member.roll_no?.substring(0, 2).toUpperCase() || "U"}
+                      {member.first_name?.[0]?.toUpperCase() ||
+                        member.roll_no?.substring(0, 2).toUpperCase() ||
+                        "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">
-                        {member.roll_no || "Unknown ID"}
+                        {member.first_name || member.last_name
+                          ? `${member.first_name || ""} ${member.last_name || ""}`.trim()
+                          : member.roll_no || "Unknown User"}
                       </span>
                       {member.isLeader && (
                         <Badge variant="secondary" className="text-xs">
@@ -208,12 +216,16 @@ export default async function TeamDetailsPage({
                       </Badge>
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {member.branch ? (
+                      {member.roll_no && <span>{member.roll_no}</span>}
+                      {member.roll_no && member.branch && " • "}
+                      {member.branch && <span>{member.branch}</span>}
+                      {member.phone && (
                         <>
-                          <span>{member.branch}</span> •{" "}
+                          {(member.roll_no || member.branch) && " • "}
                           <span>{member.phone}</span>
                         </>
-                      ) : (
+                      )}
+                      {!member.roll_no && !member.branch && !member.phone && (
                         <span>User ID: {member.id.substring(0, 8)}...</span>
                       )}
                     </div>

@@ -37,6 +37,11 @@ type Event = {
   description: string | null;
   max_score: number;
   created_at: string;
+  date: string | null;
+  location: string | null;
+  image_url: string | null;
+  max_participants: number | null;
+  is_active: boolean;
 };
 
 interface EventsDataTableProps {

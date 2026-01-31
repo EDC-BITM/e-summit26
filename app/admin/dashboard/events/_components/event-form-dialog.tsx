@@ -32,6 +32,11 @@ type Event = {
   category: string;
   description: string | null;
   max_score: number;
+  date: string | null;
+  location: string | null;
+  image_url: string | null;
+  max_participants: number | null;
+  is_active: boolean;
 };
 
 interface EventFormDialogProps {
@@ -57,6 +62,11 @@ export function EventFormDialog({
     category: event?.category || "",
     description: event?.description || "",
     max_score: event?.max_score || 100,
+    date: event?.date || "",
+    location: event?.location || "",
+    image_url: event?.image_url || "",
+    max_participants: event?.max_participants || null,
+    is_active: event?.is_active ?? true,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -190,6 +200,83 @@ export function EventFormDialog({
                 placeholder="Enter event description"
                 rows={4}
               />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="image_url">Image URL (Optional)</Label>
+              <Input
+                id="image_url"
+                value={formData.image_url || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, image_url: e.target.value })
+                }
+                placeholder="https://example.com/image.jpg"
+                type="url"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="date">Date & Time (Optional)</Label>
+              <Input
+                id="date"
+                type="datetime-local"
+                value={
+                  formData.date
+                    ? new Date(formData.date).toISOString().slice(0, 16)
+                    : ""
+                }
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="location">Location (Optional)</Label>
+              <Input
+                id="location"
+                value={formData.location || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, location: e.target.value })
+                }
+                placeholder="Enter event location"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="max_participants">
+                Max Participants (Optional)
+              </Label>
+              <Input
+                id="max_participants"
+                type="number"
+                value={formData.max_participants || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    max_participants: e.target.value
+                      ? parseInt(e.target.value)
+                      : null,
+                  })
+                }
+                placeholder="Enter maximum number of participants"
+                min="1"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="is_active"
+                checked={formData.is_active}
+                onChange={(e) =>
+                  setFormData({ ...formData, is_active: e.target.checked })
+                }
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="is_active" className="cursor-pointer">
+                Event is Active (Users can register)
+              </Label>
             </div>
           </div>
           <DialogFooter>
