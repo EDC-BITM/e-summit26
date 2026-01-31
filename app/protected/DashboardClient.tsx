@@ -233,10 +233,11 @@ function initialsFromProfile(p: MemberRow["profile"]) {
   return p.roll_no.slice(0, 2).toUpperCase();
 }
 
-function medal(rank: 1 | 2 | 3) {
+function medal(rank: number) {
   if (rank === 1) return "🥇";
   if (rank === 2) return "🥈";
-  return "🥉";
+  if (rank === 3) return "🥉";
+  return "•";
 }
 
 function fmtDate(s?: string | null) {
@@ -397,6 +398,7 @@ export default function DashboardClient({
             <div className="flex flex-wrap items-center gap-3">
               <Pill>{profile.branch}</Pill>
               <Pill>{profile.roll_no}</Pill>
+              <LogoutButton />
             </div>
           </motion.div>
 
@@ -428,19 +430,20 @@ export default function DashboardClient({
             </div>
           ) : null}
 
-          {/* Main grid */}
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.08, ease: "easeOut" }}
             className="mt-6 md:mt-10"
           >
-            <div className="lg:col-span-2 space-y-4 md:space-y-6">
+            <div className="space-y-6">
+              {/* Card 1: Points & Team Status */}
               <Card
                 title="Points & Team"
-                subtitle="Create a team, join via code, and compete across challenges and checkpoints."
+                subtitle="Create a team, join via code, and compete across challenges."
               >
-                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {/* Team Points Column */}
                   <div className="rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 sm:p-5">
                     <p className="text-[10px] sm:text-xs uppercase tracking-wide text-white/45">
                       Team Points
@@ -449,101 +452,27 @@ export default function DashboardClient({
                       {points}
                     </p>
                     <p className="mt-2 text-xs sm:text-sm text-white/55">
-                      Points are computed from declared event results (overall
-                      leaderboard).
+                      Points are computed from overall event results.
                     </p>
 
                     {isAccepted && myOverallRow ? (
                       <div className="mt-4 flex flex-wrap gap-2">
                         <Pill tone="strong">
-                          Rank:{" "}
-                          {myOverallIndex >= 0 ? `#${myOverallIndex + 1}` : "—"}
+                          Rank: {myOverallIndex >= 0 ? `#${myOverallIndex + 1}` : "—"}
                         </Pill>
                         <Pill>
-                          Podiums: {myOverallRow.podiums} • 🥇
-                          {myOverallRow.golds} 🥈{myOverallRow.silvers} 🥉
-                          {myOverallRow.bronzes}
+                          Podiums: {myOverallRow.podiums} • 🥇{myOverallRow.golds} 🥈
+                          {myOverallRow.silvers} 🥉{myOverallRow.bronzes}
                         </Pill>
                       </div>
-<<<<<<< HEAD
                     ) : (
                       <div className="mt-4">
                         <Pill>Join a team to appear on leaderboard</Pill>
                       </div>
                     )}
                   </div>
-=======
-                    </>
-                  ) : teamState.membershipStatus === "pending" ? (
-                    <>
-                      <p className="mt-2 text-lg font-semibold text-white/90">
-                        Request Pending to join &quot;{teamState.team?.name}&quot;
-                      </p>
-                      <p className="mt-2 text-sm text-white/55">
-                        Your join request is awaiting approval by the team leader.
-                      </p>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <button
-                          onClick={async () => {
-                            try {
-                              setLoading(true);
-                              await api("/api/team/cancel", { method: "POST" });
-                              await refresh();
-                            } catch (e: unknown) {
-                              const msg =
-                                e instanceof Error ? e.message : "CANCEL_FAILED";
-                              setErr(msg);
-                            } finally {
-                              setLoading(false);
-                            }
-                          }}
-                          className="rounded-full bg-white/10 text-white px-4 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
-                        >
-                          Cancel Request
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <p className="mt-2 text-lg font-semibold text-white/90">
-                        {teamState.team.name}
-                      </p>
-                      <div className="mt-3 flex flex-wrap items-center gap-2">
-                        <Pill>Code: {teamState.team.slug}</Pill>
-                        <Pill>{acceptedCount}/5 members</Pill>
-                        {isEligible ? (
-                          <Pill tone="strong">Eligible</Pill>
-                        ) : (
-                          <Pill>Need 2+ members</Pill>
-                        )}
-                      </div>
-                      <p className="mt-2 text-sm text-white/55">
-                        Share the code for join requests. Leader approves requests from the dashboard.
-                      </p>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <button
-                          onClick={async () => {
-                            if (teamState.membershipStatus === "accepted" && teamState.team.slug) {
-                              try {
-                                await navigator.clipboard.writeText(teamState.team.slug);
-                                setCopied(true);
-                                setTimeout(() => setCopied(false), 2000);
-                              } catch (err) {
-                                console.error("Failed to copy!", err);
-                              }
-                            }
-                          }}
-                          className={cx(
-                            "rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200",
-                            copied 
-                              ? "bg-green-600/20 text-green-400 ring-1 ring-green-600/30" 
-                              : "bg-white text-black hover:opacity-90"
-                          )}
-                        >
-                          {copied ? "Copied!" : "Copy Team Code"}
-                        </button>
->>>>>>> 7a15da6 (feat: added refresh logic and any function)
 
+                  {/* Team Status Column */}
                   <div className="rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 sm:p-5">
                     <p className="text-[10px] sm:text-xs uppercase tracking-wide text-white/45">
                       Team Status
@@ -559,8 +488,7 @@ export default function DashboardClient({
                           Not in a team
                         </p>
                         <p className="mt-2 text-xs sm:text-sm text-white/55">
-                          Create a team to get a code, or request to join using
-                          an existing team code.
+                          Create a team or join using code.
                         </p>
                         <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
                           <button
@@ -580,27 +508,20 @@ export default function DashboardClient({
                     ) : teamState.membershipStatus === "pending" ? (
                       <>
                         <p className="mt-2 text-base sm:text-lg font-semibold text-white/90">
-                          Request Pending
+                          Join Request Sent
                         </p>
                         <p className="mt-2 text-xs sm:text-sm text-white/55">
-                          Your join request is awaiting approval by the team
-                          leader.
+                          Awaiting approval from &quot;{teamState.team?.name}&quot; leader.
                         </p>
-                        <div className="mt-3 sm:mt-4 flex flex-wrap gap-2">
+                        <div className="mt-3 sm:mt-4">
                           <button
                             onClick={async () => {
                               try {
                                 setLoading(true);
-                                await api("/api/team/cancel", {
-                                  method: "POST",
-                                });
+                                await api("/api/team/cancel", { method: "POST" });
                                 await refresh();
                               } catch (e: unknown) {
-                                const msg =
-                                  e instanceof Error
-                                    ? e.message
-                                    : "CANCEL_FAILED";
-                                setErr(msg);
+                                setErr(e instanceof Error ? e.message : "CANCEL_FAILED");
                               } finally {
                                 setLoading(false);
                               }
@@ -616,7 +537,7 @@ export default function DashboardClient({
                         <p className="mt-2 text-base sm:text-lg font-semibold text-white/90">
                           {teamState.team.name}
                         </p>
-                        <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
                           <Pill>Code: {teamState.team.slug}</Pill>
                           <Pill>{acceptedCount}/5 members</Pill>
                           {isEligible ? (
@@ -625,40 +546,31 @@ export default function DashboardClient({
                             <Pill>Need 2+ members</Pill>
                           )}
                         </div>
-                        <p className="mt-2 text-xs sm:text-sm text-white/55">
-                          Share the code for join requests. Leader approves
-                          requests from the dashboard.
-                        </p>
                         <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
                           <button
                             onClick={async () => {
                               try {
-                                await navigator.clipboard.writeText(
-                                  teamState.team.slug,
-                                );
+                                await navigator.clipboard.writeText(teamState.team.slug);
+                                setCopied(true);
+                                setTimeout(() => setCopied(false), 2000);
                               } catch {}
                             }}
-                            className="rounded-full bg-white text-black px-4 py-2 text-xs sm:text-sm font-semibold hover:opacity-90 transition w-full sm:w-auto"
+                            className={cx(
+                              "rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition w-full sm:w-auto",
+                              copied ? "bg-green-500/20 text-green-400 ring-1 ring-green-500/30" : "bg-white text-black hover:opacity-90"
+                            )}
                           >
-                            Copy Team Code
+                            {copied ? "Copied!" : "Copy Code"}
                           </button>
-
-<<<<<<< HEAD
-                          {!isLeader ? (
+                          {!isLeader && (
                             <button
                               onClick={async () => {
                                 try {
                                   setLoading(true);
-                                  await api("/api/team/leave", {
-                                    method: "POST",
-                                  });
+                                  await api("/api/team/leave", { method: "POST" });
                                   await refresh();
                                 } catch (e: unknown) {
-                                  const msg =
-                                    e instanceof Error
-                                      ? e.message
-                                      : "LEAVE_FAILED";
-                                  setErr(msg);
+                                  setErr(e instanceof Error ? e.message : "LEAVE_FAILED");
                                 } finally {
                                   setLoading(false);
                                 }
@@ -667,27 +579,97 @@ export default function DashboardClient({
                             >
                               Leave Team
                             </button>
-=======
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-2">
+                  <Link
+                    href="/"
+                    className="rounded-full bg-white/10 text-white px-5 py-2.5 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition text-center w-full sm:w-auto"
+                  >
+                    Back to Home
+                  </Link>
+                  <Link
+                    href="/protected/events"
+                    className="rounded-full bg-white text-black px-5 py-2.5 text-xs sm:text-sm font-semibold hover:opacity-90 transition text-center w-full sm:w-auto"
+                  >
+                    Register for Events
+                  </Link>
+                  <Link
+                    href="/contact"
+                    className="rounded-full bg-white/10 text-white px-5 py-2.5 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition text-center w-full sm:w-auto"
+                  >
+                    Support
+                  </Link>
+                </div>
+              </Card>
+
+              {/* Card 2: Team Members & Requests (if accepted) */}
+              {isAccepted && (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="rounded-[20px] md:rounded-[24px] bg-[#111114] ring-1 ring-white/10 p-5 md:p-7">
+                    <p className="text-sm font-medium text-white/85">Team Members</p>
+                    <div className="mt-4 space-y-3">
+                      {teamState.acceptedMembers.map((m) => (
+                        <div key={m.user_id} className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="h-9 w-9 shrink-0 rounded-full bg-white/10 ring-1 ring-white/15 grid place-items-center text-xs font-semibold text-white/80">
+                              {initialsFromProfile(m.profile)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm text-white/85 truncate">
+                                {m.profile?.first_name ? `${m.profile.first_name} ${m.profile.last_name || ""}` : (m.profile?.roll_no || m.user_id.slice(0, 8))}
+                                {m.role === "leader" && <span className="ml-1 text-white/50">(Leader)</span>}
+                              </p>
+                              <p className="text-xs text-white/45 truncate">
+                                {m.profile?.roll_no || "—"} • {m.profile?.branch || "—"}
+                              </p>
+                            </div>
+                          </div>
+                          <Pill>{m.role}</Pill>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-[20px] md:rounded-[24px] bg-[#111114] ring-1 ring-white/10 p-5 md:p-7">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-white/85">Join Requests</p>
+                      <Pill>{teamState.pendingMembers.length}</Pill>
+                    </div>
+                    <p className="mt-1 text-xs text-white/55">
+                      {isLeader ? "Approve or reject pending requests." : "Only leader can approve."}
+                    </p>
+                    <div className="mt-4 space-y-3">
+                      {teamState.pendingMembers.length === 0 ? (
+                        <p className="text-xs text-white/45">No pending requests.</p>
+                      ) : (
+                        teamState.pendingMembers.map((m) => (
+                          <div key={m.user_id} className="rounded-xl bg-black/35 ring-1 ring-white/10 p-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-white/85 truncate">
+                                  {m.profile?.first_name || m.profile?.roll_no || "User"}
+                                </p>
+                                <p className="text-xs text-white/50">{m.profile?.roll_no} • {m.profile?.branch}</p>
+                              </div>
                               {isLeader ? (
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 shrink-0">
                                   <button
                                     onClick={async () => {
                                       try {
                                         setLoading(true);
                                         await api("/api/team/approve", {
                                           method: "POST",
-                                          body: JSON.stringify({
-                                            team_id: teamState.team.id,
-                                            user_id: m.user_id,
-                                          }),
+                                          body: JSON.stringify({ team_id: teamState.team.id, user_id: m.user_id }),
                                         });
                                         await refresh();
                                       } catch (e: unknown) {
-                                        const msg =
-                                          e instanceof Error
-                                            ? e.message
-                                            : "APPROVE_FAILED";
-                                        setErr(msg);
+                                        setErr(e instanceof Error ? e.message : "APPROVE_FAILED");
                                       } finally {
                                         setLoading(false);
                                       }
@@ -702,18 +684,11 @@ export default function DashboardClient({
                                         setLoading(true);
                                         await api("/api/team/reject", {
                                           method: "POST",
-                                          body: JSON.stringify({
-                                            team_id: teamState.team.id,
-                                            user_id: m.user_id,
-                                          }),
+                                          body: JSON.stringify({ team_id: teamState.team.id, user_id: m.user_id }),
                                         });
                                         await refresh();
                                       } catch (e: unknown) {
-                                        const msg =
-                                          e instanceof Error
-                                            ? e.message
-                                            : "REJECT_FAILED";
-                                        setErr(msg);
+                                        setErr(e instanceof Error ? e.message : "REJECT_FAILED");
                                       } finally {
                                         setLoading(false);
                                       }
@@ -733,309 +708,20 @@ export default function DashboardClient({
                     </div>
                   </div>
                 </div>
-              ) : null}
+              )}
 
-              <div className="mt-6 flex flex-wrap gap-2">
-                <Link
-                  href="/"
-                  className="rounded-full bg-white/10 text-white px-5 py-2.5 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
-                >
-                  Back to Home
-                </Link>
-                <Link
-                  href="/protected/events"
-                  className="rounded-full bg-white text-black px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition"
-                >
-                  Register for Events
-                </Link>
-                <Link
-                  href="/contact"
-                  className="rounded-full bg-white/10 text-white px-5 py-2.5 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
-                >
-                  Support
-                </Link>
-              </div>
-            </Card>
-
-            {/* ---------- Leaderboard Card (wired) ---------- */}
-            <Card
-              title="Leaderboard"
-              subtitle="Overall standings + event-wise podiums (updates automatically when results are declared)."
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2 rounded-full bg-black/30 ring-1 ring-white/10 p-1">
-                  <button
-                    onClick={() => setLbView("overall")}
-                    className={cx(
-                      "rounded-full px-4 py-2 text-sm font-semibold transition",
-                      lbView === "overall"
-                        ? "bg-white text-black"
-                        : "text-white/80 hover:bg-white/10"
-                    )}
-                  >
-                    Overall
-                  </button>
-                  <button
-                    onClick={() => setLbView("events")}
-                    className={cx(
-                      "rounded-full px-4 py-2 text-sm font-semibold transition",
-                      lbView === "events"
-                        ? "bg-white text-black"
-                        : "text-white/80 hover:bg-white/10"
-                    )}
-                  >
-                    Events
-                  </button>
-                </div>
-
-                <button
-                  onClick={refreshLeaderboard}
-                  className="rounded-full bg-white/10 text-white px-4 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
-                >
-                  Refresh
-                </button>
-              </div>
-
-              {lbLoading ? (
-                <div className="mt-5 text-sm text-white/60">
-                  Loading leaderboard…
-                </div>
-              ) : lbErr ? (
-                <div className="mt-5 rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 text-sm text-white/75">
-                  Error: {lbErr}
-                </div>
-              ) : !lb ? (
-                <div className="mt-5 text-sm text-white/60">No data.</div>
-              ) : lbView === "overall" ? (
-                <div className="mt-5">
-                  {lb.overall.length === 0 ? (
-                    <div className="rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 text-sm text-white/70">
-                      No overall results yet. This will appear once event results are declared.
-                    </div>
-                  ) : (
-                    <>
-                      {/* My row summary */}
-                      {isAccepted ? (
-                        <div className="mb-4 rounded-2xl bg-black/30 ring-1 ring-white/10 p-4">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Pill tone="strong">Your Team</Pill>
-                            <Pill>{teamState.team.name}</Pill>
-                            <Pill>
-                              Rank:{" "}
-                              {myOverallIndex >= 0
-                                ? `#${myOverallIndex + 1}`
-                                : "—"}
-                            </Pill>
-                            <Pill>Points: {points}</Pill>
-                          </div>
-                          {myOverallIndex < 0 ? (
-                            <p className="mt-2 text-sm text-white/55">
-                              Your team isn’t on the board yet (no declared scores for your team).
-                            </p>
->>>>>>> 7a15da6 (feat: added refresh logic and any function)
-                          ) : null}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* If accepted: members + pending approvals */}
-                {isAccepted ? (
-                  <div className="mt-4 md:mt-6 grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
-                    <div className="rounded-xl md:rounded-2xl bg-black/30 ring-1 ring-white/10 p-4 sm:p-5">
-                      <p className="text-xs sm:text-sm font-semibold text-white/85">
-                        Team Members
-                      </p>
-                      <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
-                        {teamState.acceptedMembers.map((m) => (
-                          <div
-                            key={m.user_id}
-                            className="flex items-center justify-between gap-2 sm:gap-3"
-                          >
-                            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                              <div className="h-8 w-8 sm:h-9 sm:w-9 shrink-0 rounded-full bg-white/10 ring-1 ring-white/15 grid place-items-center text-[10px] sm:text-xs font-semibold text-white/80">
-                                {initialsFromProfile(m.profile)}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-xs sm:text-sm text-white/85 truncate">
-                                  {(() => {
-                                    const firstName =
-                                      m.profile?.first_name?.trim();
-                                    const lastName =
-                                      m.profile?.last_name?.trim();
-                                    if (firstName && lastName) {
-                                      return `${firstName} ${lastName}`;
-                                    } else if (firstName || lastName) {
-                                      return firstName || lastName;
-                                    }
-                                    return (
-                                      m.profile?.roll_no ??
-                                      m.user_id.slice(0, 8) + "…"
-                                    );
-                                  })()}{" "}
-                                  {m.role === "leader" ? (
-                                    <span className="text-white/50">
-                                      (Leader)
-                                    </span>
-                                  ) : null}
-                                </p>
-                                <p className="text-[10px] sm:text-xs text-white/45 truncate">
-                                  {m.profile?.roll_no ?? "—"} •{" "}
-                                  {m.profile?.branch ?? "—"}
-                                </p>
-                              </div>
-                            </div>
-                            <Pill>{m.role}</Pill>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="rounded-xl md:rounded-2xl bg-black/30 ring-1 ring-white/10 p-4 sm:p-5">
-                      <p className="text-xs sm:text-sm font-semibold text-white/85">
-                        Join Requests
-                      </p>
-                      <p className="mt-1 text-xs sm:text-sm text-white/55">
-                        {isLeader
-                          ? "Approve or reject pending requests."
-                          : "Only the leader can approve requests."}
-                      </p>
-
-                      <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-3">
-                        {teamState.pendingMembers.length === 0 ? (
-                          <p className="text-xs sm:text-sm text-white/55">
-                            No pending requests.
-                          </p>
-                        ) : (
-                          teamState.pendingMembers.map((m) => (
-                            <div
-                              key={m.user_id}
-                              className="rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-3 sm:p-4"
-                            >
-                              <div className="flex items-start justify-between gap-2 sm:gap-3">
-                                <div className="min-w-0">
-                                  <p className="text-xs sm:text-sm font-semibold text-white/85 truncate">
-                                    {(() => {
-                                      const firstName =
-                                        m.profile?.first_name?.trim();
-                                      const lastName =
-                                        m.profile?.last_name?.trim();
-                                      if (firstName && lastName) {
-                                        return `${firstName} ${lastName}`;
-                                      } else if (firstName || lastName) {
-                                        return firstName || lastName;
-                                      }
-                                      return (
-                                        m.profile?.roll_no ??
-                                        m.user_id.slice(0, 8) + "…"
-                                      );
-                                    })()}
-                                  </p>
-                                  <p className="mt-1 text-[10px] sm:text-xs text-white/50">
-                                    {m.profile?.roll_no ?? "—"} •{" "}
-                                    {m.profile?.branch ?? "—"} •{" "}
-                                    {m.profile?.phone ?? "—"}
-                                  </p>
-                                </div>
-
-                                {isLeader ? (
-                                  <div className="flex gap-1.5 sm:gap-2 shrink-0">
-                                    <button
-                                      onClick={async () => {
-                                        try {
-                                          setLoading(true);
-                                          await api("/api/team/approve", {
-                                            method: "POST",
-                                            body: JSON.stringify({
-                                              team_id: teamState.team.id,
-                                              user_id: m.user_id,
-                                            }),
-                                          });
-                                          await refresh();
-                                        } catch (e: unknown) {
-                                          const msg =
-                                            e instanceof Error
-                                              ? e.message
-                                              : "APPROVE_FAILED";
-                                          setErr(msg);
-                                        } finally {
-                                          setLoading(false);
-                                        }
-                                      }}
-                                      className="rounded-full bg-white text-black px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-semibold hover:opacity-90 transition"
-                                    >
-                                      Accept
-                                    </button>
-                                    <button
-                                      onClick={async () => {
-                                        try {
-                                          setLoading(true);
-                                          await api("/api/team/reject", {
-                                            method: "POST",
-                                            body: JSON.stringify({
-                                              team_id: teamState.team.id,
-                                              user_id: m.user_id,
-                                            }),
-                                          });
-                                          await refresh();
-                                        } catch (e: unknown) {
-                                          const msg =
-                                            e instanceof Error
-                                              ? e.message
-                                              : "REJECT_FAILED";
-                                          setErr(msg);
-                                        } finally {
-                                          setLoading(false);
-                                        }
-                                      }}
-                                      className="rounded-full bg-white/10 text-white px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
-                                    >
-                                      Reject
-                                    </button>
-                                  </div>
-                                ) : (
-                                  <Pill>Pending</Pill>
-                                )}
-                              </div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="mt-4 md:mt-6 flex flex-col sm:flex-row gap-2">
-                  <Link
-                    href="/"
-                    className="rounded-full bg-white/10 text-white px-5 py-2.5 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition text-center w-full sm:w-auto"
-                  >
-                    Back to Home
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className="rounded-full bg-white text-black px-5 py-2.5 text-xs sm:text-sm font-semibold hover:opacity-90 transition text-center w-full sm:w-auto"
-                  >
-                    Support
-                  </Link>
-                </div>
-              </Card>
-
-              {/* ---------- Leaderboard Card (wired) ---------- */}
+              {/* Card 3: Leaderboard */}
               <Card
                 title="Leaderboard"
-                subtitle="Overall standings + event-wise podiums (updates automatically when results are declared)."
+                subtitle="Overall standings and event-wise results (updates automatically)."
               >
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-2 rounded-full bg-black/30 ring-1 ring-white/10 p-1">
                     <button
                       onClick={() => setLbView("overall")}
                       className={cx(
-                        "rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition flex-1 sm:flex-initial",
-                        lbView === "overall"
-                          ? "bg-white text-black"
-                          : "text-white/80 hover:bg-white/10",
+                        "rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition",
+                        lbView === "overall" ? "bg-white text-black" : "text-white/80 hover:bg-white/10"
                       )}
                     >
                       Overall
@@ -1043,277 +729,138 @@ export default function DashboardClient({
                     <button
                       onClick={() => setLbView("events")}
                       className={cx(
-                        "rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold transition flex-1 sm:flex-initial",
-                        lbView === "events"
-                          ? "bg-white text-black"
-                          : "text-white/80 hover:bg-white/10",
+                        "rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition",
+                        lbView === "events" ? "bg-white text-black" : "text-white/80 hover:bg-white/10"
                       )}
                     >
                       Events
                     </button>
                   </div>
-
                   <button
                     onClick={refreshLeaderboard}
-                    className="rounded-full bg-white/10 text-white px-4 py-2 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition w-full sm:w-auto"
+                    className="rounded-full bg-white/10 text-white px-4 py-2 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
                   >
                     Refresh
                   </button>
                 </div>
 
                 {lbLoading ? (
-                  <div className="mt-4 sm:mt-5 text-xs sm:text-sm text-white/60">
-                    Loading leaderboard…
-                  </div>
+                  <div className="mt-5 text-sm text-white/60">Loading leaderboard…</div>
                 ) : lbErr ? (
-                  <div className="mt-4 sm:mt-5 rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-3 sm:p-4 text-xs sm:text-sm text-white/75">
+                  <div className="mt-5 rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 text-sm text-white/75">
                     Error: {lbErr}
                   </div>
                 ) : !lb ? (
-                  <div className="mt-4 sm:mt-5 text-xs sm:text-sm text-white/60">No data.</div>
+                  <div className="mt-5 text-sm text-white/60">No data.</div>
                 ) : lbView === "overall" ? (
-                  <div className="mt-4 sm:mt-5">
+                  <div className="mt-5 space-y-4">
                     {lb.overall.length === 0 ? (
-                      <div className="rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-3 sm:p-4 text-xs sm:text-sm text-white/70">
-                        No overall results yet. This will appear once event
-                        results are declared.
+                      <div className="rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 text-sm text-white/70 text-center">
+                        No results declared yet.
                       </div>
                     ) : (
                       <>
-                        {/* My row summary */}
-                        {isAccepted ? (
-                          <div className="mb-3 sm:mb-4 rounded-xl md:rounded-2xl bg-black/30 ring-1 ring-white/10 p-3 sm:p-4">
-                            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                              <Pill tone="strong">Your Team</Pill>
-                              <Pill>{teamState.team.name}</Pill>
-                              <Pill>
-                                Rank:{" "}
-                                {myOverallIndex >= 0
-                                  ? `#${myOverallIndex + 1}`
-                                  : "—"}
-                              </Pill>
+                        {isAccepted && (
+                          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 border-l-4 border-white">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-xs font-bold uppercase text-white/40">Your Team</span>
+                              <span className="text-sm font-semibold text-white/90">{teamState.team.name}</span>
+                              <Pill tone="strong">Rank: {myOverallIndex >= 0 ? `#${myOverallIndex + 1}` : "—"}</Pill>
                               <Pill>Points: {points}</Pill>
                             </div>
-                            {myOverallIndex < 0 ? (
-                              <p className="mt-2 text-sm text-white/55">
-                                Your team isn’t on the board yet (no declared
-                                scores for your team).
-                              </p>
-                            ) : null}
                           </div>
-                        ) : null}
-
-                        {/* Overall list */}
+                        )}
                         <div className="space-y-2">
-                          {(overallExpanded
-                            ? lb.overall
-                            : lb.overall.slice(0, 10)
-                          ).map((row, idx) => {
-                            const rank = idx + 1;
-                            const isMe = !!myTeamId && row.team.id === myTeamId;
-
-                            return (
-                              <div
-                                key={row.team.id}
-                                className={cx(
-                                  "rounded-2xl px-4 py-3 ring-1 transition",
-                                  isMe
-                                    ? "bg-white/10 ring-white/25"
-                                    : "bg-black/35 ring-white/10 hover:bg-black/40",
-                                )}
-                              >
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-sm font-semibold text-white/90">
-                                        #{rank}
-                                      </span>
-                                      <span className="truncate text-sm font-semibold text-white/85">
-                                        {row.team.name}
-                                      </span>
-                                      {isMe ? (
-                                        <span className="text-xs font-semibold text-white/70">
-                                          (You)
-                                        </span>
-                                      ) : null}
-                                    </div>
-                                    <div className="mt-1 text-xs text-white/55">
-                                      🥇{row.golds} 🥈{row.silvers} 🥉
-                                      {row.bronzes} • Podiums: {row.podiums}
-                                    </div>
-                                  </div>
-
-                                  <div className="shrink-0 text-right">
-                                    <div className="text-sm font-semibold text-white/90">
-                                      {row.total_marks}
-                                    </div>
-                                    <div className="text-xs text-white/55">
-                                      points
-                                    </div>
-                                  </div>
+                          {(overallExpanded ? lb.overall : lb.overall.slice(0, 10)).map((row, idx) => (
+                            <div
+                              key={row.team.id}
+                              className={cx(
+                                "flex items-center justify-between rounded-2xl px-4 py-3 ring-1 transition",
+                                myTeamId === row.team.id ? "bg-white/10 ring-white/20" : "bg-black/35 ring-white/10 hover:bg-black/40"
+                              )}
+                            >
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-bold text-white/90">#{idx + 1}</span>
+                                  <span className="truncate text-sm font-semibold text-white/85">{row.team.name}</span>
+                                  {myTeamId === row.team.id && <span className="text-[10px] text-white/50">(You)</span>}
+                                </div>
+                                <div className="mt-1 text-[10px] text-white/50">
+                                  🥇{row.golds} 🥈{row.silvers} 🥉{row.bronzes} • Podiums: {row.podiums}
                                 </div>
                               </div>
-                            );
-                          })}
+                              <div className="text-right">
+                                <div className="text-sm font-bold text-white/90">{row.total_marks}</div>
+                                <div className="text-[10px] text-white/50">pts</div>
+                              </div>
+                            </div>
+                          ))}
                         </div>
-
-                        {lb.overall.length > 10 ? (
+                        {lb.overall.length > 10 && (
                           <button
-                            onClick={() => setOverallExpanded((v) => !v)}
-                            className="mt-4 w-full rounded-2xl bg-white/10 text-white px-4 py-3 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
+                            onClick={() => setOverallExpanded(!overallExpanded)}
+                            className="w-full py-3 text-xs font-semibold text-white/60 hover:text-white transition"
                           >
-                            {overallExpanded
-                              ? "Show Less"
-                              : "Show Full Leaderboard"}
+                            {overallExpanded ? "Show Less" : `Show ${lb.overall.length - 10} More`}
                           </button>
-                        ) : null}
+                        )}
                       </>
                     )}
                   </div>
                 ) : (
-                  <div className="mt-4 sm:mt-5 space-y-2 sm:space-y-3">
+                  <div className="mt-5 space-y-3">
                     {lb.events.length === 0 ? (
-                      <div className="rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-3 sm:p-4 text-xs sm:text-sm text-white/70">
-                        No events found.
-                      </div>
+                      <div className="text-sm text-white/60 text-center">No events found.</div>
                     ) : (
                       lb.events.map((ev) => {
-                        const open = openEventId === ev.id;
-                        const myPodium =
-                          myTeamId &&
-                          ev.results.find((r) => r.team.id === myTeamId);
-
+                        const isOpen = openEventId === ev.id;
+                        const myPodium = myTeamId && ev.results.find(r => r.team.id === myTeamId);
                         return (
-                          <div
-                            key={ev.id}
-                            className="rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10"
-                          >
+                          <div key={ev.id} className="rounded-2xl bg-black/35 ring-1 ring-white/10 overflow-hidden">
                             <button
-                              onClick={() =>
-                                setOpenEventId((cur) =>
-                                  cur === ev.id ? null : ev.id,
-                                )
-                              }
-                              className="w-full px-3 sm:px-4 py-3 sm:py-4 flex items-start justify-between gap-2 sm:gap-3 text-left"
+                              onClick={() => setOpenEventId(isOpen ? null : ev.id)}
+                              className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-white/5 transition"
                             >
                               <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                                  <p className="truncate text-xs sm:text-sm font-semibold text-white/90">
-                                    {ev.name}
-                                  </p>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="text-sm font-semibold text-white/90">{ev.name}</span>
                                   <Pill>{ev.category}</Pill>
-                                  {ev.declared ? (
-                                    <Pill tone="strong">Declared</Pill>
-                                  ) : (
-                                    <Pill>Pending</Pill>
-                                  )}
-                                  {myPodium ? (
-                                    <Pill tone="strong">
-                                      Your team: {medal(myPodium.rank)} #
-                                      {myPodium.rank}
-                                    </Pill>
-                                  ) : null}
+                                  {ev.declared ? <Pill tone="strong">Results In</Pill> : <Pill>Pending</Pill>}
+                                  {myPodium && <Pill tone="strong">{medal(myPodium.rank)} Rank #{myPodium.rank}</Pill>}
                                 </div>
-
-                                <p className="mt-1 text-[10px] sm:text-xs text-white/55 line-clamp-1">
-                                  {ev.date
-                                    ? `Date: ${fmtDate(ev.date)} • `
-                                    : ""}
-                                  Max Score: {ev.max_score}
-                                  {ev.location ? ` • ${ev.location}` : ""}
+                                <p className="mt-1 text-[10px] text-white/50">
+                                  {ev.date ? `${fmtDate(ev.date)} • ` : ""}Max: {ev.max_score}
                                 </p>
                               </div>
-
-                              <div className="shrink-0 mt-0.5 text-white/70">
-                                {open ? (
-                                  <ChevronUp size={16} className="sm:w-[18px] sm:h-[18px]" />
-                                ) : (
-                                  <ChevronDown size={16} className="sm:w-[18px] sm:h-[18px]" />
-                                )}
-                              </div>
+                              {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                             </button>
-
-                            <AnimatePresence initial={false}>
-                              {open ? (
+                            <AnimatePresence>
+                              {isOpen && (
                                 <motion.div
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: "auto", opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  transition={{
-                                    duration: 0.22,
-                                    ease: "easeOut",
-                                  }}
-                                  className="overflow-hidden"
+                                  initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }}
+                                  className="border-t border-white/5 bg-white/5 px-4 pb-4 pt-3"
                                 >
-                                  <div className="px-3 sm:px-4 pb-3 sm:pb-4">
-                                    {ev.description ? (
-                                      <div className="mb-2 sm:mb-3 text-xs sm:text-sm text-white/55 leading-relaxed">
-                                        {ev.description}
-                                      </div>
-                                    ) : null}
-
-                                    {ev.results.length === 0 ? (
-                                      <div className="rounded-xl md:rounded-2xl bg-black/30 ring-1 ring-white/10 p-3 sm:p-4 text-xs sm:text-sm text-white/70">
-                                        Results not declared yet.
-                                      </div>
-                                    ) : (
-                                      <div className="space-y-1.5 sm:space-y-2">
-                                        {ev.results.map((r) => {
-                                          const isMe =
-                                            !!myTeamId &&
-                                            r.team.id === myTeamId;
-                                          return (
-                                            <div
-                                              key={`${ev.id}-${r.team.id}-${r.rank}`}
-                                              className={cx(
-                                                "rounded-xl md:rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 ring-1",
-                                                isMe
-                                                  ? "bg-white/10 ring-white/25"
-                                                  : "bg-black/30 ring-white/10",
-                                              )}
-                                            >
-                                              <div className="flex items-center justify-between gap-2 sm:gap-3">
-                                                <div className="min-w-0 flex-1">
-                                                  <div className="flex items-center gap-1.5 sm:gap-2">
-                                                    <span className="text-sm sm:text-base shrink-0">
-                                                      {medal(r.rank)}
-                                                    </span>
-                                                    <span className="text-xs sm:text-sm font-semibold text-white/85 truncate">
-                                                      {r.team.name}
-                                                    </span>
-                                                    {isMe ? (
-                                                      <span className="text-[10px] sm:text-xs font-semibold text-white/70 shrink-0">
-                                                        (You)
-                                                      </span>
-                                                    ) : null}
-                                                  </div>
-                                                  <div className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-white/55">
-                                                    Rank #{r.rank}
-                                                    {r.declared_at
-                                                      ? ` • Declared: ${fmtDate(
-                                                          r.declared_at,
-                                                        )}`
-                                                      : ""}
-                                                  </div>
-                                                </div>
-
-                                                <div className="shrink-0 text-right">
-                                                  <div className="text-xs sm:text-sm font-semibold text-white/90">
-                                                    {r.marks}
-                                                  </div>
-                                                  <div className="text-[10px] sm:text-xs text-white/55">
-                                                    marks
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    )}
-                                  </div>
+                                  {ev.description && <p className="mb-4 text-xs text-white/50 leading-relaxed">{ev.description}</p>}
+                                  {ev.results.length === 0 ? (
+                                    <p className="text-center py-2 text-xs text-white/40 italic">Results not yet declared.</p>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      {ev.results.map(r => (
+                                        <div key={r.team.id} className={cx("flex items-center justify-between rounded-xl p-3", myTeamId === r.team.id ? "bg-white/10" : "bg-black/20")}>
+                                          <div className="flex items-center gap-2 text-sm">
+                                            <span>{medal(r.rank)}</span>
+                                            <span className="font-semibold text-white/85">{r.team.name}</span>
+                                          </div>
+                                          <div className="text-right">
+                                            <div className="text-sm font-bold text-white/90">{r.marks}</div>
+                                            <div className="text-[10px] text-white/40">marks</div>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
                                 </motion.div>
-                              ) : null}
+                              )}
                             </AnimatePresence>
                           </div>
                         );
