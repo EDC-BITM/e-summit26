@@ -9,6 +9,11 @@ export type EventFormData = {
   category: string;
   description: string | null;
   max_score: number;
+  date: string | null;
+  location: string | null;
+  image_url: string | null;
+  max_participants: number | null;
+  is_active: boolean;
 };
 
 export async function createEvent(data: EventFormData) {
@@ -24,6 +29,11 @@ export async function createEvent(data: EventFormData) {
         category: data.category,
         description: data.description,
         max_score: data.max_score,
+        date: data.date || null,
+        location: data.location || null,
+        image_url: data.image_url || null,
+        max_participants: data.max_participants || null,
+        is_active: data.is_active,
       })
       .select()
       .single();
@@ -57,6 +67,11 @@ export async function updateEvent(id: string, data: EventFormData) {
         category: data.category,
         description: data.description,
         max_score: data.max_score,
+        date: data.date || null,
+        location: data.location || null,
+        image_url: data.image_url || null,
+        max_participants: data.max_participants || null,
+        is_active: data.is_active,
       })
       .eq("id", id)
       .select()
