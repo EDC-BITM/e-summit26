@@ -248,12 +248,12 @@ export function ContactsDataTable({ contacts }: ContactsDataTableProps) {
   );
   const [detailsDialogOpen, setDetailsDialogOpen] = React.useState(false);
 
-  const handleViewDetails = (contact: Contact) => {
+  const handleViewDetails = React.useCallback((contact: Contact) => {
     setSelectedContact(contact);
     setDetailsDialogOpen(true);
-  };
+  }, []);
 
-  const columns = React.useMemo(() => createColumns(handleViewDetails), []);
+  const columns = React.useMemo(() => createColumns(handleViewDetails), [handleViewDetails]);
 
   const table = useReactTable({
     data: contacts,
