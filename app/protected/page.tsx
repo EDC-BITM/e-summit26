@@ -3,8 +3,9 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import DashboardClient from "./DashboardClient";
+import { User } from "@supabase/supabase-js";
 
-function deriveDisplayName(user: any) {
+function deriveDisplayName(user: User | null) {
   const md = user?.user_metadata ?? {};
   const raw =
     md.full_name ||

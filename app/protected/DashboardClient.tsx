@@ -275,6 +275,8 @@ export default function DashboardClient({
   const [overallExpanded, setOverallExpanded] = useState(false);
   const [openEventId, setOpenEventId] = useState<string | null>(null);
 
+  const [copied, setCopied] = useState(false);
+
   async function refresh() {
     setErr(null);
     setLoading(true);
@@ -312,25 +314,6 @@ export default function DashboardClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep your pending polling as-is
-  useEffect(() => {
-    if (teamState.membershipStatus === "pending") {
-      const t = setInterval(() => {
-        refresh();
-      }, 4000);
-      return () => clearInterval(t);
-    }
-  }, [teamState.membershipStatus]);
-
-  // Optional lightweight leaderboard polling when user is active on dashboard
-  useEffect(() => {
-    const t = setInterval(() => {
-      refreshLeaderboard();
-    }, 20000);
-    return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const isAccepted = teamState.membershipStatus === "accepted";
   const isLeader = isAccepted && teamState.membershipRole === "leader";
 
@@ -340,6 +323,27 @@ export default function DashboardClient({
     : false;
 
   const myTeamId = isAccepted ? teamState.team.id : null;
+
+  // Polling:
+  // 1. If pending, poll every 4s to see if approved
+  // 2. If leader, poll every 10s to see new join requests
+  useEffect(() => {
+    if (teamState.membershipStatus === "pending") {
+      const t = setInterval(() => refresh(), 4000);
+      return () => clearInterval(t);
+    }
+    if (isLeader) {
+      const t = setInterval(() => refresh(), 10000);
+      return () => clearInterval(t);
+    }
+  }, [teamState.membershipStatus, isLeader]);
+
+  // Optional lightweight leaderboard polling when user is active on dashboard
+  useEffect(() => {
+    const t = setInterval(() => refreshLeaderboard(), 20000);
+    return () => clearInterval(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const myOverallIndex = useMemo(() => {
     if (!lb || !myTeamId) return -1;
@@ -461,12 +465,84 @@ export default function DashboardClient({
                           {myOverallRow.bronzes}
                         </Pill>
                       </div>
+<<<<<<< HEAD
                     ) : (
                       <div className="mt-4">
                         <Pill>Join a team to appear on leaderboard</Pill>
                       </div>
                     )}
                   </div>
+=======
+                    </>
+                  ) : teamState.membershipStatus === "pending" ? (
+                    <>
+                      <p className="mt-2 text-lg font-semibold text-white/90">
+                        Request Pending to join &quot;{teamState.team?.name}&quot;
+                      </p>
+                      <p className="mt-2 text-sm text-white/55">
+                        Your join request is awaiting approval by the team leader.
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          onClick={async () => {
+                            try {
+                              setLoading(true);
+                              await api("/api/team/cancel", { method: "POST" });
+                              await refresh();
+                            } catch (e: unknown) {
+                              const msg =
+                                e instanceof Error ? e.message : "CANCEL_FAILED";
+                              setErr(msg);
+                            } finally {
+                              setLoading(false);
+                            }
+                          }}
+                          className="rounded-full bg-white/10 text-white px-4 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
+                        >
+                          Cancel Request
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="mt-2 text-lg font-semibold text-white/90">
+                        {teamState.team.name}
+                      </p>
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <Pill>Code: {teamState.team.slug}</Pill>
+                        <Pill>{acceptedCount}/5 members</Pill>
+                        {isEligible ? (
+                          <Pill tone="strong">Eligible</Pill>
+                        ) : (
+                          <Pill>Need 2+ members</Pill>
+                        )}
+                      </div>
+                      <p className="mt-2 text-sm text-white/55">
+                        Share the code for join requests. Leader approves requests from the dashboard.
+                      </p>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          onClick={async () => {
+                            if (teamState.membershipStatus === "accepted" && teamState.team.slug) {
+                              try {
+                                await navigator.clipboard.writeText(teamState.team.slug);
+                                setCopied(true);
+                                setTimeout(() => setCopied(false), 2000);
+                              } catch (err) {
+                                console.error("Failed to copy!", err);
+                              }
+                            }
+                          }}
+                          className={cx(
+                            "rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200",
+                            copied 
+                              ? "bg-green-600/20 text-green-400 ring-1 ring-green-600/30" 
+                              : "bg-white text-black hover:opacity-90"
+                          )}
+                        >
+                          {copied ? "Copied!" : "Copy Team Code"}
+                        </button>
+>>>>>>> 7a15da6 (feat: added refresh logic and any function)
 
                   <div className="rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 sm:p-5">
                     <p className="text-[10px] sm:text-xs uppercase tracking-wide text-white/45">
@@ -567,6 +643,7 @@ export default function DashboardClient({
                             Copy Team Code
                           </button>
 
+<<<<<<< HEAD
                           {!isLeader ? (
                             <button
                               onClick={async () => {
@@ -590,6 +667,172 @@ export default function DashboardClient({
                             >
                               Leave Team
                             </button>
+=======
+                              {isLeader ? (
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        setLoading(true);
+                                        await api("/api/team/approve", {
+                                          method: "POST",
+                                          body: JSON.stringify({
+                                            team_id: teamState.team.id,
+                                            user_id: m.user_id,
+                                          }),
+                                        });
+                                        await refresh();
+                                      } catch (e: unknown) {
+                                        const msg =
+                                          e instanceof Error
+                                            ? e.message
+                                            : "APPROVE_FAILED";
+                                        setErr(msg);
+                                      } finally {
+                                        setLoading(false);
+                                      }
+                                    }}
+                                    className="rounded-full bg-white text-black px-3 py-1.5 text-xs font-semibold hover:opacity-90 transition"
+                                  >
+                                    Accept
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      try {
+                                        setLoading(true);
+                                        await api("/api/team/reject", {
+                                          method: "POST",
+                                          body: JSON.stringify({
+                                            team_id: teamState.team.id,
+                                            user_id: m.user_id,
+                                          }),
+                                        });
+                                        await refresh();
+                                      } catch (e: unknown) {
+                                        const msg =
+                                          e instanceof Error
+                                            ? e.message
+                                            : "REJECT_FAILED";
+                                        setErr(msg);
+                                      } finally {
+                                        setLoading(false);
+                                      }
+                                    }}
+                                    className="rounded-full bg-white/10 text-white px-3 py-1.5 text-xs font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
+                                  >
+                                    Reject
+                                  </button>
+                                </div>
+                              ) : (
+                                <Pill>Pending</Pill>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="mt-6 flex flex-wrap gap-2">
+                <Link
+                  href="/"
+                  className="rounded-full bg-white/10 text-white px-5 py-2.5 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
+                >
+                  Back to Home
+                </Link>
+                <Link
+                  href="/protected/events"
+                  className="rounded-full bg-white text-black px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition"
+                >
+                  Register for Events
+                </Link>
+                <Link
+                  href="/contact"
+                  className="rounded-full bg-white/10 text-white px-5 py-2.5 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
+                >
+                  Support
+                </Link>
+              </div>
+            </Card>
+
+            {/* ---------- Leaderboard Card (wired) ---------- */}
+            <Card
+              title="Leaderboard"
+              subtitle="Overall standings + event-wise podiums (updates automatically when results are declared)."
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 rounded-full bg-black/30 ring-1 ring-white/10 p-1">
+                  <button
+                    onClick={() => setLbView("overall")}
+                    className={cx(
+                      "rounded-full px-4 py-2 text-sm font-semibold transition",
+                      lbView === "overall"
+                        ? "bg-white text-black"
+                        : "text-white/80 hover:bg-white/10"
+                    )}
+                  >
+                    Overall
+                  </button>
+                  <button
+                    onClick={() => setLbView("events")}
+                    className={cx(
+                      "rounded-full px-4 py-2 text-sm font-semibold transition",
+                      lbView === "events"
+                        ? "bg-white text-black"
+                        : "text-white/80 hover:bg-white/10"
+                    )}
+                  >
+                    Events
+                  </button>
+                </div>
+
+                <button
+                  onClick={refreshLeaderboard}
+                  className="rounded-full bg-white/10 text-white px-4 py-2 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
+                >
+                  Refresh
+                </button>
+              </div>
+
+              {lbLoading ? (
+                <div className="mt-5 text-sm text-white/60">
+                  Loading leaderboard…
+                </div>
+              ) : lbErr ? (
+                <div className="mt-5 rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 text-sm text-white/75">
+                  Error: {lbErr}
+                </div>
+              ) : !lb ? (
+                <div className="mt-5 text-sm text-white/60">No data.</div>
+              ) : lbView === "overall" ? (
+                <div className="mt-5">
+                  {lb.overall.length === 0 ? (
+                    <div className="rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 text-sm text-white/70">
+                      No overall results yet. This will appear once event results are declared.
+                    </div>
+                  ) : (
+                    <>
+                      {/* My row summary */}
+                      {isAccepted ? (
+                        <div className="mb-4 rounded-2xl bg-black/30 ring-1 ring-white/10 p-4">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Pill tone="strong">Your Team</Pill>
+                            <Pill>{teamState.team.name}</Pill>
+                            <Pill>
+                              Rank:{" "}
+                              {myOverallIndex >= 0
+                                ? `#${myOverallIndex + 1}`
+                                : "—"}
+                            </Pill>
+                            <Pill>Points: {points}</Pill>
+                          </div>
+                          {myOverallIndex < 0 ? (
+                            <p className="mt-2 text-sm text-white/55">
+                              Your team isn’t on the board yet (no declared scores for your team).
+                            </p>
+>>>>>>> 7a15da6 (feat: added refresh logic and any function)
                           ) : null}
                         </div>
                       </>
@@ -1191,6 +1434,29 @@ function JoinTeamModal({
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  if (success) {
+    return (
+      <ModalShell open={open} onClose={onClose} title="Request Sent!">
+        <div className="py-4 text-center">
+          <div className="mx-auto h-12 w-12 rounded-full bg-green-500/10 grid place-items-center mb-4">
+            <svg className="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="text-sm text-white/90 font-medium">Your request has been sent successfully.</p>
+          <p className="mt-2 text-xs text-white/55">The team leader will approve your request soon.</p>
+          <button
+            onClick={onClose}
+            className="mt-6 w-full rounded-full bg-white text-black px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition"
+          >
+            Close
+          </button>
+        </div>
+      </ModalShell>
+    );
+  }
 
   return (
     <ModalShell open={open} onClose={onClose} title="Join Team via Code">
@@ -1216,14 +1482,22 @@ function JoinTeamModal({
       <button
         disabled={busy}
         onClick={async () => {
+          const trimmed = code.trim();
+          if (!trimmed) {
+            setErr("Please enter a code");
+            return;
+          }
           setErr(null);
           setBusy(true);
           try {
             await api("/api/team/join", {
               method: "POST",
-              body: JSON.stringify({ code }),
+              body: JSON.stringify({ code: trimmed }),
             });
-            await onJoined();
+            setSuccess(true);
+            setTimeout(async () => {
+              await onJoined();
+            }, 1500);
           } catch (e: unknown) {
             const msg = e instanceof Error ? e.message : "JOIN_FAILED";
             setErr(msg);
