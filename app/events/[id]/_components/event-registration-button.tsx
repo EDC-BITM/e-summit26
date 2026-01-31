@@ -74,10 +74,9 @@ export function EventRegistrationButton({ event }: { event: Event }) {
         .eq("user_id", user.id)
         .eq("status", "accepted");
 
-      const teams =
-        (teamsData
-              ?.map((tm) => tm.teams)
-              .filter((t): t is Team => t !== null) as unknown as Team[]) || [];
+      const teams: Team[] =
+        teamsData?.map((tm: any) => tm.teams).filter((t: any) => t !== null) ||
+        [];
       setUserTeams(teams);
 
       // Fetch registrations for this event
