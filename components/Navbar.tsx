@@ -429,7 +429,9 @@ export default function Navbar() {
         )}
       </AnimatePresence>
 
-      <style jsx global>{`
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .rb-pill {
           position: relative;
           display: inline-flex;
@@ -550,7 +552,6 @@ export default function Navbar() {
           transform: scale(1);
         }
 
-        /* Touch improvements for mobile */
         @media (max-width: 640px) {
           .rb-pill {
             height: 2.5rem;
@@ -573,7 +574,9 @@ export default function Navbar() {
         html {
           scroll-behavior: smooth;
         }
-      `}</style>
+      `,
+        }}
+      />
     </>
   );
 }
