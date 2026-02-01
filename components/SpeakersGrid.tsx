@@ -1,6 +1,6 @@
 "use client";
 
-import { Instagram, Linkedin } from "lucide-react";
+import { Instagram, Linkedin, ArrowRight, Sparkles } from "lucide-react";
 
 // Adjust this import if your file lives elsewhere.
 // (In your earlier SpeakersSection you used "./AnimatedBlurText")
@@ -43,6 +43,9 @@ function SocialBadge({
 }
 
 export default function SpeakersGrid() {
+  // ✅ flip this to false when you're ready to reveal real speakers
+  const MASK_SPEAKERS = true;
+
   const speakers: Speaker[] = [
     {
       name: "Dr. Emma Parker",
@@ -117,60 +120,172 @@ export default function SpeakersGrid() {
           />
         </h2>
 
-        {/* Grid */}
-        <div className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
-          {speakers.map((sp) => (
-            <div key={sp.name} className="min-w-0">
-              {/* Card */}
-              <div
-                className={[
-                  "group relative overflow-hidden rounded-[28px]",
-                  "bg-white/3 ring-1 ring-white/10",
-                  "shadow-[0_28px_110px_rgba(0,0,0,0.75)]",
-                ].join(" ")}
-              >
-                <div className="relative w-full aspect-4/5">
-                  <Image
-                    height={300}
-                    width={300}
-                    src={sp.img}
-                    alt={sp.name}
-                    draggable={false}
-                    className={[
-                      "h-full w-full object-cover",
-                      "grayscale",
-                      "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                      "group-hover:grayscale-0 group-hover:saturate-[1.06]",
-                    ].join(" ")}
-                  />
+        {/* Grid (masked like your slider reference) */}
+        <div className="mt-12 relative">
+          {/* CONTENT LAYER (blur + disable interactions when masked) */}
+          <div
+            className={[
+              "relative",
+              MASK_SPEAKERS
+                ? "pointer-events-none opacity-85 blur-[16px] saturate-[1.05] scale-[1.01]"
+                : "",
+            ].join(" ")}
+          >
+            <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+              {speakers.map((sp, i) => {
+                const displayName = MASK_SPEAKERS ? `Speaker ${i + 1}` : sp.name;
+                const displayTitle = MASK_SPEAKERS
+                  ? "Revealing soon"
+                  : sp.title;
 
-                  {/* subtle inner vignette */}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-
-                  {/* socials (always visible like the reference) */}
-                  <div className="absolute bottom-4 right-4 flex items-center gap-2">
-                    <SocialBadge
-                      href={sp.instagramHref ?? "#"}
-                      label="Instagram"
+                return (
+                  <div key={sp.name} className="min-w-0">
+                    {/* Card */}
+                    <div
+                      className={[
+                        "group relative overflow-hidden rounded-[28px]",
+                        "bg-white/3 ring-1 ring-white/10",
+                        "shadow-[0_28px_110px_rgba(0,0,0,0.75)]",
+                      ].join(" ")}
                     >
-                      <Instagram size={18} />
-                    </SocialBadge>
-                    <SocialBadge href={sp.linkedinHref ?? "#"} label="LinkedIn">
-                      <Linkedin size={18} />
-                    </SocialBadge>
+                      <div className="relative w-full aspect-4/5">
+                        <Image
+                          height={300}
+                          width={300}
+                          src={sp.img}
+                          alt={MASK_SPEAKERS ? "Speaker placeholder" : sp.name}
+                          draggable={false}
+                          className={[
+                            "h-full w-full object-cover",
+                            "grayscale",
+                            "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                            "group-hover:grayscale-0 group-hover:saturate-[1.06]",
+                          ].join(" ")}
+                        />
+
+                        {/* subtle inner vignette */}
+                        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+
+                        {/* socials (hidden when masked, like reference) */}
+                        <div
+                          className={[
+                            "absolute bottom-4 right-4 flex items-center gap-2",
+                            MASK_SPEAKERS ? "opacity-0" : "opacity-100",
+                          ].join(" ")}
+                        >
+                          <SocialBadge
+                            href={sp.instagramHref ?? "#"}
+                            label="Instagram"
+                          >
+                            <Instagram size={18} />
+                          </SocialBadge>
+                          <SocialBadge
+                            href={sp.linkedinHref ?? "#"}
+                            label="LinkedIn"
+                          >
+                            <Linkedin size={18} />
+                          </SocialBadge>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Text */}
+                    <div className="mt-4">
+                      <div className="text-base font-semibold tracking-tight text-white">
+                        {displayName}
+                      </div>
+                      <div className="mt-1 text-sm text-white/55">
+                        {displayTitle}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* GLOBAL MASK (one overlay for the whole grid area) */}
+          {MASK_SPEAKERS && (
+            <div className="absolute inset-0 z-20 flex items-center justify-center px-4">
+              <div className="w-full max-w-2xl">
+                <div className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.06] p-5 sm:p-7 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+                  {/* subtle glow + vignette inside the panel */}
+                  <div className="pointer-events-none absolute inset-0">
+                    <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-white/10 blur-[70px]" />
+                    <div className="absolute -right-20 -bottom-28 h-72 w-72 rounded-full bg-white/6 blur-[80px]" />
+                    <div className="absolute inset-0 [background:radial-gradient(120%_80%_at_50%_0%,rgba(255,255,255,0.10)_0%,transparent_55%,rgba(0,0,0,0.35)_100%)]" />
+                    <div className="absolute inset-0 rounded-[28px] ring-1 ring-white/10" />
+                  </div>
+
+                  <div className="relative">
+                    {/* top row */}
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2 text-[11px] font-semibold tracking-[0.26em] uppercase text-white/90">
+                        <span className="relative flex h-2 w-2">
+                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70 opacity-40" />
+                          <span className="relative inline-flex h-2 w-2 rounded-full bg-white/80" />
+                        </span>
+                        Lineup Revealing Soon
+                        <Sparkles size={14} className="opacity-90" />
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <a
+                          href="#"
+                          className="grid h-10 w-10 place-items-center rounded-2xl border border-white/12 bg-white/10 text-white/90 hover:bg-white/15"
+                          aria-label="Instagram"
+                        >
+                          <Instagram size={18} />
+                        </a>
+                        <a
+                          href="#"
+                          className="grid h-10 w-10 place-items-center rounded-2xl border border-white/12 bg-white/10 text-white/90 hover:bg-white/15"
+                          aria-label="LinkedIn"
+                        >
+                          <Linkedin size={18} />
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="mt-5 text-2xl sm:text-3xl font-semibold leading-tight tracking-tight">
+                      Speakers coming soon.
+                      <div className="text-white/75">
+                        Announcements rolling out shortly.
+                      </div>
+                    </div>
+
+                    {/* subtext */}
+                    <div className="mt-2 text-sm sm:text-base text-white/65 leading-relaxed">
+                      We’re curating a high-signal lineup across AI, startups,
+                      product, and growth. Follow along — the reveal starts
+                      soon.
+                    </div>
+
+                    {/* quick “teaser” blocks */}
+                    <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      {/* intentionally blank to match your reference */}
+                    </div>
+
+                    {/* CTA row */}
+                    <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+                      <a
+                        href="/speakers"
+                        className="
+                          inline-flex items-center gap-2 rounded-full
+                          bg-white/90 px-5 py-3 text-sm font-semibold text-black
+                          shadow-[0_18px_50px_rgba(0,0,0,0.35)]
+                          hover:bg-white
+                        "
+                      >
+                        Get updates
+                        <ArrowRight size={16} className="opacity-90" />
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
-
-              {/* Text */}
-              <div className="mt-4">
-                <div className="text-base font-semibold tracking-tight text-white">
-                  {sp.name}
-                </div>
-                <div className="mt-1 text-sm text-white/55">{sp.title}</div>
-              </div>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </section>
