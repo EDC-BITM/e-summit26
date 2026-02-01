@@ -221,8 +221,12 @@ export default function SpeakersSection() {
                   const scale = isActive ? "scale-[1.02]" : "scale-[0.98]";
                   const op = isActive ? "opacity-100" : "opacity-92";
 
-                  const displayName = MASK_SPEAKERS ? `Speaker ${i + 1}` : sp.name;
-                  const displayTitle = MASK_SPEAKERS ? "Revealing soon" : sp.title;
+                  const displayName = MASK_SPEAKERS
+                    ? `Speaker ${i + 1}`
+                    : sp.name;
+                  const displayTitle = MASK_SPEAKERS
+                    ? "Revealing soon"
+                    : sp.title;
 
                   return (
                     <div
@@ -375,16 +379,18 @@ export default function SpeakersSection() {
                       </div>
                     </div>
 
-                    {/* headline */}
                     <div className="mt-5 text-2xl sm:text-3xl font-semibold leading-tight tracking-tight">
-                      Speakers are being confirmed.
-                      <span className="text-white/75"> Announcements drop in phases.</span>
+                      Speakers coming soon.
+                      <div className="text-white/75">
+                        Announcements rolling out shortly.
+                      </div>
                     </div>
 
                     {/* subtext */}
                     <div className="mt-2 text-sm sm:text-base text-white/65 leading-relaxed">
-                      We’re curating a high-signal lineup across AI, startups, product, and growth.
-                      Follow along — the reveal starts soon.
+                      We’re curating a high-signal lineup across AI, startups,
+                      product, and growth. Follow along — the reveal starts
+                      soon.
                     </div>
 
                     {/* quick “teaser” blocks */}

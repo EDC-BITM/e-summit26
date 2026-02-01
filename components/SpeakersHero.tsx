@@ -1,22 +1,14 @@
 "use client";
 
-import Silk from "@/components/Silk";
 import GradientBlinds from "./GradientBlinds";
 import AnimatedBlurText from "@/components/AnimatedBlurText";
 import { cn } from "@/lib/utils";
-import { m, useInView, useReducedMotion } from "framer-motion";
+import { m, useReducedMotion } from "framer-motion";
 import { useRef } from "react";
-import { usePathname } from "next/navigation";
 
 export default function SpeakersHero() {
   const prefersReducedMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement | null>(null);
-  const pathname = usePathname();
-  const isInView = useInView(sectionRef, { amount: 0.6 });
-  const silkActive = pathname === "/speakers" && isInView;
-  const silkDpr: [number, number] = prefersReducedMotion ? [1, 1] : [1, 1.5];
-  const silkFrameloop = prefersReducedMotion ? "demand" : "always";
-  const silkMaxFps = prefersReducedMotion ? undefined : 30;
   const title = "SPEAKERS";
 
   const containerVariants = {
@@ -49,7 +41,7 @@ export default function SpeakersHero() {
       className="relative w-full overflow-hidden bg-black text-white"
     >
       {/* Responsive height: 1/4 on mobile, 3/4 on desktop */}
-      <div className="relative h-[100svh] w-full">
+      <div className="relative h-svh w-full">
         {/* Silk background */}
         <div className="absolute inset-0">
           <GradientBlinds
@@ -61,7 +53,7 @@ export default function SpeakersHero() {
             spotlightRadius={0.6}
             spotlightSoftness={1}
             spotlightOpacity={1}
-            mouseDampening={0.50}
+            mouseDampening={0.5}
             distortAmount={0}
             shineDirection="left"
             mixBlendMode="lighten"
@@ -69,7 +61,6 @@ export default function SpeakersHero() {
           />
         </div>
 
-        {/* Vignette + contrast overlays to match the screenshot feel */}
         <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/35 via-black/10 to-black/80" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(1200px_600px_at_78%_55%,rgba(255,255,255,0.22),transparent_60%)]" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(900px_520px_at_20%_70%,rgba(176,94,194,0.35),transparent_65%)]" />
@@ -92,7 +83,6 @@ export default function SpeakersHero() {
   "
             />
 
-
             {/* Main title */}
             <m.h1
               className={cn(
@@ -103,7 +93,7 @@ export default function SpeakersHero() {
                 "text-white",
                 "text-[clamp(48px,14vw,205px)]",
                 "leading-[0.82] md:leading-[0.84]",
-                "translate-y-1 md:translate-y-1.5"
+                "translate-y-1 md:translate-y-1.5",
               )}
               style={{
                 textShadow:
@@ -136,7 +126,6 @@ export default function SpeakersHero() {
           </div>
         </div>
 
-        {/* Hard bottom edge like screenshot (subtle) */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-linear-to-b from-transparent to-black" />
       </div>
     </section>

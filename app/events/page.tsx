@@ -46,8 +46,8 @@ export default function EventsPage() {
           <Navbar />
           <main>
             <EventsHero />
-            <EventSchedule />
             <EventsList />
+            <EventSchedule />
           </main>
           <FooterSection />
         </LazyMotion>
