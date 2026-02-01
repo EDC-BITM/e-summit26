@@ -45,7 +45,7 @@ interface EventFormDialogProps {
   trigger?: React.ReactNode;
 }
 
-const categories = ["technical", "management", "marketing", "design", "other"];
+const categories = ["formal", "informal", "networking & strategic"];
 
 export function EventFormDialog({
   event,
