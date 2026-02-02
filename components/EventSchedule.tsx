@@ -1,41 +1,14 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import AnimatedBlurText from "./AnimatedBlurText";
-import Image from "next/image";
 
-type Speaker = {
-  img: string;
-  name: string;
-  role: string;
+type EventItem = {
+  time: string;
+  kind: "simple" | "keynote";
+  title: string;
+  location: string;
 };
-
-type PanelPerson = {
-  img: string;
-  name: string;
-  role: string;
-  org: string;
-};
-
-type EventItem =
-  | {
-    time: string;
-    kind: "simple";
-    title: string;
-    desc: string;
-  }
-  | {
-    time: string;
-    kind: "keynote";
-    title: string;
-    desc: string;
-    speaker: Speaker;
-  }
-  | {
-    time: string;
-    kind: "panel";
-    title: string;
-    desc: string;
-    panel: PanelPerson[];
-  };
 
 type DayBlock = {
   left: string;
@@ -98,51 +71,6 @@ function DayStickyBar({
   );
 }
 
-function SpeakerChip({ img, name, role }: Speaker) {
-  return (
-    <div className="flex items-center gap-4">
-      <Image
-        height={100}
-        width={100}
-        src={img}
-        alt={name}
-        loading="lazy"
-        className="h-14 w-14 rounded-full object-cover ring-2 ring-white/15"
-      />
-      <div className="leading-tight">
-        <div className="text-lg font-bold text-white/95 font-sans">{name}</div>
-        <div className="text-sm text-white/65">{role}</div>
-      </div>
-    </div>
-  );
-}
-
-function PanelPeople({ people }: { people: PanelPerson[] }) {
-  return (
-    <div className="mt-8 flex flex-wrap items-center gap-x-10 gap-y-8">
-      {people.map((p) => (
-        <div key={p.name} className="flex items-center gap-4">
-          <Image
-            height={100}
-            width={100}
-            src={p.img}
-            alt={p.name}
-            loading="lazy"
-            className="h-14 w-14 rounded-xl object-cover ring-2 ring-white/15"
-          />
-          <div className="leading-tight">
-            <div className="text-base font-bold text-white/90 font-sans">
-              {p.name}
-            </div>
-            <div className="text-sm text-white/60">{p.role}</div>
-            <div className="text-sm text-white/45">{p.org}</div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function EventCard({ item }: { item: EventItem }) {
   return (
     <div
@@ -155,21 +83,31 @@ function EventCard({ item }: { item: EventItem }) {
         "backdrop-blur-sm",
       ].join(" ")}
     >
-      <div className="text-white/95 font-bold tracking-tight text-xl sm:text-2xl font-sans">
-        {item.title}
+      <div className="flex items-start justify-between gap-4">
+        <div className="text-white/95 font-bold tracking-tight text-xl sm:text-2xl font-sans">
+          {item.title}
+        </div>
+
+        {item.kind === "keynote" ? (
+          <div
+            className={cn(
+              "shrink-0",
+              "rounded-full",
+              "border border-white/15",
+              "bg-white/5",
+              "px-3 py-1",
+              "text-xs font-semibold tracking-[0.14em] uppercase text-white/80"
+            )}
+          >
+            Keynote
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-4 text-white/70 text-base leading-relaxed max-w-3xl">
-        {item.desc}
+        <span className="text-white/60">Location:</span>{" "}
+        <span className="text-white/80">{item.location}</span>
       </div>
-
-      {item.kind === "keynote" ? (
-        <div className="mt-8">
-          <SpeakerChip {...item.speaker} />
-        </div>
-      ) : null}
-
-      {item.kind === "panel" ? <PanelPeople people={item.panel} /> : null}
     </div>
   );
 }
@@ -177,141 +115,105 @@ function EventCard({ item }: { item: EventItem }) {
 export default function EventSchedule() {
   const days: DayBlock[] = [
     {
-      left: "Kickoff",
-      right: "Day 1 : Opening Ceremony",
+      left: "Day 1",
+      right: "13th February 2026",
       items: [
         {
-          time: "09.30-10.30 AM",
+          time: "5:30 PM",
           kind: "simple",
-          title: "Opening Remarks",
-          desc: "Welcome to the E-Summit. Kick off the day with an introduction from the event organizers and a sneak peek of what's in store.",
+          title: "Inauguration by Principal Secretary, Gov of Jharkhand",
+          location: "CAT HALL",
         },
         {
-          time: "10.30-11.30 AM",
+          time: "6:00 PM - 7:30 PM",
           kind: "keynote",
-          title: "Keynote Address: Revolutionizing the Future with AI",
-          desc: "By Dr. Emma Parker, Chief AI Scientist at InnovateX Labs. Explore the transformative impact of AI on industries and society.",
-          speaker: {
-            img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=500&q=80",
-            name: "Dr. Emma Parker",
-            role: "CEO, Zecon AI",
-          },
-        },
-        {
-          time: "12.30-01.30 AM",
-          kind: "panel",
-          title: "Panel Discussion: AI in Action: Real-World Applications",
-          desc: "A lively discussion on how AI is being implemented in sectors like healthcare, finance, and logistics, with industry experts.",
-          panel: [
-            {
-              img: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=300&q=80",
-              name: "Sara Williams",
-              role: "AI Strategist",
-              org: "InnovateTech",
-            },
-            {
-              img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
-              name: "Ravi Singh",
-              role: "Lead AI Engineer",
-              org: "MedTech Solutions",
-            },
-            {
-              img: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=300&q=80",
-              name: "James Turner",
-              role: "Senior Data Scientist",
-              org: "Quantum Analytics",
-            },
-            {
-              img: "https://images.unsplash.com/photo-1550525811-e5869dd03032?auto=format&fit=crop&w=300&q=80",
-              name: "Emily Roberts",
-              role: "Director, AI Applications",
-              org: "Nexa Systems",
-            },
-          ],
+          title: "Keynote Session",
+          location: "CAT HALL",
         },
       ],
     },
     {
-      left: "Main Day",
-      right: "Day 2 : Deep Dive Sessions",
+      left: "Day 2",
+      right: "14th February 2026",
       items: [
         {
-          time: "09.30-10.30 AM",
+          time: "10:00 AM TO 1:00 PM",
           kind: "simple",
-          title: "Morning Networking Coffee",
-          desc: "Catch up with fellow attendees over coffee before diving into another exciting day of learning.",
+          title: "Investor’s Summit",
+          location: "SEMINAR HALL 1",
         },
         {
-          time: "11.30-12.30 PM",
+          time: "11:00 AM TO 1:00 PM",
+          kind: "simple",
+          title: "Maze of Markets",
+          location: "LH1",
+        },
+        {
+          time: "11:00 PM TO 1:00 PM",
+          kind: "simple",
+          title: "Fault Lines",
+          location: "LH2",
+        },
+        {
+          time: "2:00 PM TO 4:00 PM",
+          kind: "simple",
+          title: "Workshop by INC42",
+          location: "CAT HALL",
+        },
+        {
+          time: "3:00 PM TO 5:00 PM",
+          kind: "simple",
+          title: "Ad-venture",
+          location: "LH2",
+        },
+        {
+          time: "5:30 PM TO 7:00 PM",
           kind: "keynote",
-          title: "Keynote Address: The Intersection of AI and Blockchain",
-          desc: "By John Mitchell, Co-Founder & CEO at AI Solutions Corp. Understand how AI and blockchain can work together to create innovative solutions.",
-          speaker: {
-            img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=500&q=80",
-            name: "John Mitchell",
-            role: "Co-Founder at AI Corp",
-          },
-        },
-        {
-          time: "2.30-04.30 PM",
-          kind: "panel",
-          title: "Panel Discussion: AI and Automation in Industry 4.0",
-          desc: "Panelists explore how AI-powered automation is driving the future of manufacturing and supply chain.",
-          panel: [
-            {
-              img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80",
-              name: "Dr. Lisa White",
-              role: "Chief Innovation Officer",
-              org: "TechFlow",
-            },
-            {
-              img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=300&q=80",
-              name: "Mark Johnson",
-              role: "Director, AI Solutions",
-              org: "RoboTech",
-            },
-            {
-              img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=300&q=80",
-              name: "Priya Patel",
-              role: "Head, Digital Transformation",
-              org: "NovaWorks",
-            },
-            {
-              img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=80",
-              name: "David Collins",
-              role: "VP, Automation & Robotics",
-              org: "Forge Labs",
-            },
-          ],
+          title: "Keynote Session",
+          location: "CAT HALL",
         },
       ],
     },
     {
-      left: "Sumup",
-      right: "Day 3 : Networking Day",
+      left: "Day 3",
+      right: "15th February 2026",
       items: [
         {
-          time: "09.30-11.30 AM",
+          time: "10:00 AM TO 1:00 PM",
           kind: "simple",
-          title: "Workshop: Driving ROI with Data",
-          desc: "Learn how businesses can use AI to optimize operations, increase profitability, and drive growth.",
+          title: "B-Plan",
+          location: "SEMINAR HALL 1",
         },
         {
-          time: "02.30-03.30 PM",
+          time: "10:00 AM TO 1:00 PM",
+          kind: "simple",
+          title: "Reverse Shark Tank",
+          location: "LH1",
+        },
+        {
+          time: "1:30 PM TO 3:00 PM",
           kind: "keynote",
-          title: "Fireside Chat: The Future of AI in Consumer Products",
-          desc: "Join Olivia Reynolds, Principal Engineer at AlphaTech, as she discusses the role of AI in creating personalized consumer experiences.",
-          speaker: {
-            img: "https://images.unsplash.com/photo-1524502397800-2eeaad7c3fe5?auto=format&fit=crop&w=500&q=80",
-            name: "Olivia Reynolds",
-            role: "Engineer at Alpha Tech",
-          },
+          title: "Keynote Session",
+          location: "CAT HALL",
         },
         {
-          time: "04.30-05.30 PM",
+          time: "2:00 PM TO 4:00 PM",
           kind: "simple",
-          title: "Closing Remarks & Thank You",
-          desc: "A final wrap-up of the E-Summit, with acknowledgments to all speakers, sponsors, and attendees. Looking forward to seeing you next year!",
+          title: "UI/UX Arena",
+          location: "CLASSROOM",
+        },
+        {
+          time: "2:00 PM TO 4:00 PM",
+          kind: "simple",
+          title: "Intelligent Investor",
+          location: "LH1",
+        },
+        {
+          time: "5:30 PM TO 7:00 PM",
+          kind: "simple",
+          title:
+            "Podcast Session + Prize Distribution + Closing Ceremony",
+          location: "GP BIRLA AUDITORIUM / CAT HALL",
         },
       ],
     },
