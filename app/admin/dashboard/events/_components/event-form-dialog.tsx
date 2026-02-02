@@ -37,6 +37,7 @@ type Event = {
   date: string | null;
   location: string | null;
   image_url: string | null;
+  doc: string | null;
   max_participants: number | null;
   is_active: boolean;
 };
@@ -68,6 +69,7 @@ export function EventFormDialog({
     date: event?.date || "",
     location: event?.location || "",
     image_url: event?.image_url || "",
+    doc: event?.doc || "",
     max_participants: event?.max_participants || null,
     is_active: event?.is_active ?? true,
   });
@@ -134,8 +136,8 @@ export function EventFormDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[525px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[525px] max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>
             {mode === "create" ? "Create New Event" : "Edit Event"}
           </DialogTitle>
@@ -145,8 +147,8 @@ export function EventFormDialog({
               : "Update event details"}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="grid gap-4 py-4 overflow-y-auto flex-1 px-1">
             <div className="grid gap-2">
               <Label htmlFor="name">Event Name</Label>
               <Input
@@ -250,6 +252,22 @@ export function EventFormDialog({
             </div>
 
             <div className="grid gap-2">
+              <Label htmlFor="doc">Document URL (Optional)</Label>
+              <Input
+                id="doc"
+                value={formData.doc || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, doc: e.target.value })
+                }
+                placeholder="https://example.com/event-document.pdf"
+                type="url"
+              />
+              <p className="text-xs text-muted-foreground">
+                Link to event rulebook, guidelines, or documentation
+              </p>
+            </div>
+
+            <div className="grid gap-2">
               <Label htmlFor="date">Date & Time (Optional)</Label>
               <Input
                 id="date"
@@ -313,7 +331,7 @@ export function EventFormDialog({
               </Label>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-shrink-0 pt-4 border-t mt-4">
             <Button
               type="button"
               variant="outline"

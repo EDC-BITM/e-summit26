@@ -16,6 +16,7 @@ interface Event {
   date: string | null;
   location: string | null;
   image_url: string | null;
+  doc: string | null;
   max_participants: number | null;
   max_score: number;
   is_active: boolean;

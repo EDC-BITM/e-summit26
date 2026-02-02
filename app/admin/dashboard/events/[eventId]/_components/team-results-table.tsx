@@ -196,12 +196,7 @@ export function TeamResultsTable({
         },
         cell: ({ row }) => {
           const team = row.original.teams;
-          return (
-            <div>
-              <div className="font-medium">{team.name}</div>
-              <div className="text-sm text-muted-foreground">@{team.slug}</div>
-            </div>
-          );
+          return <div className="font-medium">{team.name}</div>;
         },
       },
       {
@@ -235,15 +230,33 @@ export function TeamResultsTable({
           const editingResult = editingResults[teamId];
 
           if (existingResult && !editingResult) {
-            const rankColor =
+            const rankConfig =
               existingResult.rank === 1
-                ? "text-yellow-600"
+                ? {
+                    bg: "bg-yellow-500/10",
+                    border: "border-yellow-500/30",
+                    text: "text-yellow-500",
+                    emoji: "🥇",
+                  }
                 : existingResult.rank === 2
-                ? "text-gray-400"
-                : "text-amber-700";
+                  ? {
+                      bg: "bg-gray-400/10",
+                      border: "border-gray-400/30",
+                      text: "text-gray-400",
+                      emoji: "🥈",
+                    }
+                  : {
+                      bg: "bg-amber-600/10",
+                      border: "border-amber-600/30",
+                      text: "text-amber-600",
+                      emoji: "🥉",
+                    };
             return (
-              <Badge variant="outline" className={rankColor}>
-                <Medal className="mr-1 h-4 w-4" />
+              <Badge
+                variant="outline"
+                className={`${rankConfig.bg} ${rankConfig.border} ${rankConfig.text} font-semibold`}
+              >
+                <span className="mr-1.5">{rankConfig.emoji}</span>
                 Rank {existingResult.rank}
               </Badge>
             );
@@ -287,7 +300,10 @@ export function TeamResultsTable({
 
           if (existingResult && !editingResult) {
             return (
-              <Badge variant="secondary">
+              <Badge
+                variant="secondary"
+                className="font-semibold bg-green-500/10 text-green-500 border-green-500/30"
+              >
                 {existingResult.marks} / {maxScore}
               </Badge>
             );
@@ -401,12 +417,12 @@ export function TeamResultsTable({
         },
       },
     ],
-    []
+    [],
   );
 
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -449,11 +465,14 @@ export function TeamResultsTable({
           className="max-w-sm"
         />
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-lg border border-white/10 overflow-hidden bg-white/5">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-white/5">
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow
+                key={headerGroup.id}
+                className="border-white/10 hover:bg-transparent"
+              >
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
@@ -461,7 +480,7 @@ export function TeamResultsTable({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -475,12 +494,13 @@ export function TeamResultsTable({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="border-white/10 hover:bg-white/5 transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

@@ -59,6 +59,7 @@ type Event = {
   date: string | null;
   location: string | null;
   image_url: string | null;
+  doc: string | null;
   max_participants: number | null;
   is_active: boolean;
 };
@@ -98,12 +99,7 @@ const columns: ColumnDef<Event>[] = [
       );
     },
     cell: ({ row }) => (
-      <div className="max-w-[200px]">
-        <div className="font-medium text-base">{row.getValue("name")}</div>
-        <div className="text-sm text-muted-foreground font-mono">
-          /{row.original.slug}
-        </div>
-      </div>
+      <div className="font-medium text-base">{row.getValue("name")}</div>
     ),
   },
   {
@@ -304,22 +300,22 @@ const columns: ColumnDef<Event>[] = [
             </Tooltip>
           </TooltipProvider>
 
-          <EventFormDialog
-            event={event}
-            mode="edit"
-            trigger={
-              <TooltipProvider>
-                <Tooltip>
+          <TooltipProvider>
+            <Tooltip>
+              <EventFormDialog
+                event={event}
+                mode="edit"
+                trigger={
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                       <Pencil className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Edit Event</TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            }
-          />
+                }
+              />
+              <TooltipContent>Edit Event</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <DeleteEventDialog eventId={event.id} eventName={event.name} />
         </div>
       );

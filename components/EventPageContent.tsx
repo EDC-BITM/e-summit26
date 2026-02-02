@@ -9,6 +9,7 @@ import {
   Sparkles,
   Award,
   Target,
+  FileText,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,6 +27,7 @@ interface Event {
   date: string | null;
   location: string | null;
   image_url: string | null;
+  doc: string | null;
   max_participants: number | null;
   max_score: number;
   is_active: boolean;
@@ -165,6 +167,23 @@ export default function EventPageContent({ event }: EventPageContentProps) {
                 ) : (
                   <Button size="lg" disabled>
                     Registration Closed
+                  </Button>
+                )}
+                {event.doc && (
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    asChild
+                    className="border-[#8F00AF]/30 text-[#8F00AF] hover:bg-[#8F00AF]/10"
+                  >
+                    <Link
+                      href={event.doc}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      View Event Details
+                    </Link>
                   </Button>
                 )}
                 <Button

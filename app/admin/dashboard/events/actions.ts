@@ -13,6 +13,7 @@ export type EventFormData = {
   date: string | null;
   location: string | null;
   image_url: string | null;
+  doc: string | null;
   max_participants: number | null;
   is_active: boolean;
 };
@@ -34,6 +35,7 @@ export async function createEvent(data: EventFormData) {
         date: data.date || null,
         location: data.location || null,
         image_url: data.image_url || null,
+        doc: data.doc || null,
         max_participants: data.max_participants || null,
         is_active: data.is_active,
       })
@@ -73,6 +75,7 @@ export async function updateEvent(id: string, data: EventFormData) {
         date: data.date || null,
         location: data.location || null,
         image_url: data.image_url || null,
+        doc: data.doc || null,
         max_participants: data.max_participants || null,
         is_active: data.is_active,
       })
