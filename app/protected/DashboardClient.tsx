@@ -9,6 +9,7 @@ import AnimatedBlurText from "@/components/AnimatedBlurText";
 import { LogoutButton } from "@/components/logout-button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Navbar from "@/components/Navbar";
+import { DashboardCards } from "./DashboardCards";
 
 // Memoize Silk to prevent rerenders
 const MemoizedSilk = memo(Silk);
@@ -31,6 +32,7 @@ type Team = {
   slug: string;
   team_leader_id: string;
   created_at: string;
+  event_id: string | null;
 };
 
 type MemberRow = {
@@ -256,6 +258,36 @@ function fmtDate(s?: string | null) {
   }
 }
 
+// User Teams Types
+type UserTeamData = {
+  team_id: string;
+  role: "leader" | "member";
+  status: "pending" | "accepted";
+  joined_at: string;
+  team: Team;
+  event: {
+    id: string;
+    name: string;
+    category: string;
+    date: string | null;
+    location: string | null;
+    image_url: string | null;
+  } | null;
+  registrations: Array<{
+    team_id: string;
+    event_id: string;
+    registered_at: string;
+  }>;
+  memberCount: number;
+};
+
+type UserTeamsResponse = {
+  teams: UserTeamData[];
+  totalTeams: number;
+  acceptedTeams: number;
+  pendingTeams: number;
+};
+
 export default function DashboardClient({
   user,
   profile,
@@ -263,13 +295,8 @@ export default function DashboardClient({
   user: UserDTO;
   profile: ProfileDTO;
 }) {
-  const [teamState, setTeamState] = useState<TeamState>({
-    membershipStatus: "none",
-  });
+  const [userTeams, setUserTeams] = useState<UserTeamsResponse | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const [createOpen, setCreateOpen] = useState(false);
-  const [joinOpen, setJoinOpen] = useState(false);
 
   const [err, setErr] = useState<string | null>(null);
 
@@ -281,33 +308,18 @@ export default function DashboardClient({
   const [overallExpanded, setOverallExpanded] = useState(false);
   const [openEventId, setOpenEventId] = useState<string | null>(null);
 
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<Record<string, boolean>>({});
 
-  // ---------- Team Events state ----------
-  type TeamEventRegistration = {
-    event_id: string;
-    team_id: string;
-    registered_at: string;
-  };
-  type EventDetails = {
-    id: string;
-    name: string;
-    category: string;
-    date: string | null;
-    location: string | null;
-    description: string | null;
-  };
-  const [teamEvents, setTeamEvents] = useState<EventDetails[]>([]);
-  const [, setTeamEventsLoading] = useState(true);
-
-  async function refresh() {
+  async function refreshUserTeams() {
     setErr(null);
     setLoading(true);
     try {
-      const data = await api<TeamState>("/api/team/me", { method: "GET" });
-      setTeamState(data);
+      const data = await api<UserTeamsResponse>("/api/user/teams", {
+        method: "GET",
+      });
+      setUserTeams(data);
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "FAILED_TO_LOAD_TEAM";
+      const msg = e instanceof Error ? e.message : "FAILED_TO_LOAD_TEAMS";
       setErr(msg);
     } finally {
       setLoading(false);
@@ -331,101 +343,39 @@ export default function DashboardClient({
     }
   }
 
-  async function refreshTeamEvents(teamId: string) {
-    try {
-      const registrations = await api<{ data: TeamEventRegistration[] }>(
-        `/api/events/registrations?teamId=${teamId}`,
-        { method: "GET" },
-      );
-
-      if (registrations.data.length > 0) {
-        // Fetch event details for all registered events
-        const eventIds = registrations.data.map((r) => r.event_id);
-        const allEvents = await api<{ events: LbEvent[] }>(
-          "/api/leaderboard?activeOnly=false&includeOverall=false",
-          { method: "GET" },
-        );
-
-        const participatedEvents = allEvents.events.filter((ev) =>
-          eventIds.includes(ev.id),
-        );
-        setTeamEvents(participatedEvents);
-      } else {
-        setTeamEvents([]);
-      }
-    } catch (e: unknown) {
-      console.error("Failed to fetch team events:", e);
-      setTeamEvents([]);
-    } finally {
-      setTeamEventsLoading(false);
-    }
-  }
-
-  const isAccepted = teamState.membershipStatus === "accepted";
-  const isLeader = isAccepted && teamState.membershipRole === "leader";
-
-  const acceptedCount = isAccepted ? teamState.acceptedMembers.length : 0;
-  const isEligible = isAccepted
-    ? acceptedCount >= teamState.minEligibleSize
-    : false;
-
-  const myTeamId = isAccepted ? teamState.team.id : null;
+  // Get all user's team IDs for leaderboard comparison
+  const userTeamIds = useMemo(() => {
+    return (
+      userTeams?.teams
+        .filter((t) => t.status === "accepted")
+        .map((t) => t.team_id) || []
+    );
+  }, [userTeams]);
 
   useEffect(() => {
-    refresh();
+    refreshUserTeams();
     refreshLeaderboard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch team events when team is accepted
-  useEffect(() => {
-    if (myTeamId) {
-      refreshTeamEvents(myTeamId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [myTeamId]);
+  // Calculate total points from all user teams
+  const totalPoints = useMemo(() => {
+    if (!lb || !userTeamIds.length) return 0;
+    return userTeamIds.reduce((sum, teamId) => {
+      const teamRow = lb.overall.find((r) => r.team.id === teamId);
+      return sum + (teamRow?.total_marks || 0);
+    }, 0);
+  }, [lb, userTeamIds]);
 
-  // Polling:
-  // 1. If pending, poll every 4s to see if approved
-  // 2. If leader, poll every 10s to see new join requests
-  useEffect(() => {
-    if (teamState.membershipStatus === "pending") {
-      const t = setInterval(() => refresh(), 4000);
-      return () => clearInterval(t);
-    }
-    if (isLeader) {
-      const t = setInterval(() => refresh(), 10000);
-      return () => clearInterval(t);
-    }
-  }, [teamState.membershipStatus, isLeader]);
+  // Calculate stats
+  const stats = useMemo(() => {
+    const accepted = userTeams?.acceptedTeams || 0;
+    const pending = userTeams?.pendingTeams || 0;
+    const registered =
+      userTeams?.teams.filter((t) => t.registrations.length > 0).length || 0;
 
-  // Optional lightweight leaderboard polling when user is active on dashboard
-  useEffect(() => {
-    const t = setInterval(() => refreshLeaderboard(), 20000);
-    return () => clearInterval(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Poll team events every 15 seconds when team is accepted
-  useEffect(() => {
-    if (myTeamId) {
-      const t = setInterval(() => refreshTeamEvents(myTeamId), 15000);
-      return () => clearInterval(t);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [myTeamId]);
-
-  const myOverallIndex = useMemo(() => {
-    if (!lb || !myTeamId) return -1;
-    return lb.overall.findIndex((r) => r.team.id === myTeamId);
-  }, [lb, myTeamId]);
-
-  const myOverallRow = useMemo(() => {
-    if (!lb || myOverallIndex < 0) return null;
-    return lb.overall[myOverallIndex] ?? null;
-  }, [lb, myOverallIndex]);
-
-  const points = myOverallRow?.total_marks ?? 0;
+    return { accepted, pending, registered };
+  }, [userTeams]);
 
   return (
     <>
@@ -486,9 +436,9 @@ export default function DashboardClient({
                 liteText={user.displayName}
               />
               <p className="mt-2 sm:mt-3 max-w-2xl text-xs sm:text-sm leading-relaxed text-white/55">
-                Manage your E-Summit team, track points, and view leaderboards.
-                Team creation uses a short code that others can request to join,
-                and leaders approve requests.
+                Manage your E-Summit participation, track points, and view
+                leaderboards. Teams are now event-specific - create or join
+                teams from individual event pages.
               </p>
             </div>
           </div>
@@ -505,854 +455,201 @@ export default function DashboardClient({
             transition={{ duration: 0.6, delay: 0.08, ease: "easeOut" }}
             className="mt-6 md:mt-10"
           >
-            <div className="space-y-6">
-              {/* Card 1: Points & Team Status */}
-              <Card
-                title="Points & Team"
-                subtitle="Create a team, join via code, and compete across challenges."
-              >
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  {/* Team Points Column */}
-                  <div className="rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 sm:p-5">
-                    <p className="text-[10px] sm:text-xs uppercase tracking-wide text-white/45">
-                      Team Points
-                    </p>
-                    <p className="mt-2 text-2xl sm:text-3xl font-semibold text-white/90">
-                      {points}
-                    </p>
-                    <p className="mt-2 text-xs sm:text-sm text-white/55">
-                      Points are computed from overall event results.
-                    </p>
+            {loading ? (
+              <div className="py-16 text-center">
+                <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto" />
+                <p className="mt-4 text-white/70 text-sm">
+                  Loading your data...
+                </p>
+              </div>
+            ) : (
+              <DashboardCards
+                teams={userTeams?.teams || []}
+                totalPoints={totalPoints}
+                stats={stats}
+              />
+            )}
+          </motion.div>
 
-                    {isAccepted && myOverallRow ? (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        <Pill tone="strong">
-                          Rank:{" "}
-                          {myOverallIndex >= 0 ? `#${myOverallIndex + 1}` : "—"}
-                        </Pill>
-                        <Pill>
-                          Podiums: {myOverallRow.podiums} • 🥇
-                          {myOverallRow.golds} 🥈
-                          {myOverallRow.silvers} 🥉{myOverallRow.bronzes}
-                        </Pill>
-                      </div>
-                    ) : (
-                      <div className="mt-4">
-                        <Pill>Join a team to appear on leaderboard</Pill>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Team Status Column */}
-                  <div className="rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 sm:p-5">
-                    <p className="text-[10px] sm:text-xs uppercase tracking-wide text-white/45">
-                      Team Status
-                    </p>
-
-                    {teamState.membershipStatus === "none" ? (
-                      <>
-                        <p className="mt-2 text-base sm:text-lg font-semibold text-white/90">
-                          Not in a team
-                        </p>
-                        <p className="mt-2 text-xs sm:text-sm text-white/55">
-                          Create a team or join using code.
-                        </p>
-                        <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
-                          <button
-                            onClick={() => setCreateOpen(true)}
-                            className="rounded-full bg-white text-black px-4 py-2 text-xs sm:text-sm font-semibold hover:opacity-90 transition w-full sm:w-auto"
-                          >
-                            Create Team
-                          </button>
-                          <button
-                            onClick={() => setJoinOpen(true)}
-                            className="rounded-full bg-white/10 text-white px-4 py-2 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition w-full sm:w-auto"
-                          >
-                            Join via Code
-                          </button>
-                        </div>
-                      </>
-                    ) : teamState.membershipStatus === "pending" ? (
-                      <>
-                        <p className="mt-2 text-base sm:text-lg font-semibold text-white/90">
-                          Join Request Sent
-                        </p>
-                        <p className="mt-2 text-xs sm:text-sm text-white/55">
-                          Awaiting approval from &quot;{teamState.team?.name}
-                          &quot; leader.
-                        </p>
-                        <div className="mt-3 sm:mt-4">
-                          <button
-                            onClick={async () => {
-                              try {
-                                setLoading(true);
-                                await api("/api/team/cancel", {
-                                  method: "POST",
-                                });
-                                await refresh();
-                              } catch (e: unknown) {
-                                setErr(
-                                  e instanceof Error
-                                    ? e.message
-                                    : "CANCEL_FAILED",
-                                );
-                              } finally {
-                                setLoading(false);
-                              }
-                            }}
-                            className="rounded-full bg-white/10 text-white px-4 py-2 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition w-full sm:w-auto"
-                          >
-                            Cancel Request
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <p className="mt-2 text-base sm:text-lg font-semibold text-white/90">
-                          {teamState.team.name}
-                        </p>
-                        <div className="mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                          <Pill>Code: {teamState.team.slug}</Pill>
-                          <Pill>{acceptedCount}/5 members</Pill>
-                          {isEligible ? (
-                            <Pill tone="strong">Eligible</Pill>
-                          ) : (
-                            <Pill>Need 2+ members</Pill>
-                          )}
-                        </div>
-                        <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2">
-                          <button
-                            onClick={async () => {
-                              try {
-                                await navigator.clipboard.writeText(
-                                  teamState.team.slug,
-                                );
-                                setCopied(true);
-                                setTimeout(() => setCopied(false), 2000);
-                              } catch {}
-                            }}
-                            className={cx(
-                              "rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition w-full sm:w-auto",
-                              copied
-                                ? "bg-green-500/20 text-green-400 ring-1 ring-green-500/30"
-                                : "bg-white text-black hover:opacity-90",
-                            )}
-                          >
-                            {copied ? "Copied!" : "Copy Code"}
-                          </button>
-                          {!isLeader && (
-                            <button
-                              onClick={async () => {
-                                try {
-                                  setLoading(true);
-                                  await api("/api/team/leave", {
-                                    method: "POST",
-                                  });
-                                  await refresh();
-                                } catch (e: unknown) {
-                                  setErr(
-                                    e instanceof Error
-                                      ? e.message
-                                      : "LEAVE_FAILED",
-                                  );
-                                } finally {
-                                  setLoading(false);
-                                }
-                              }}
-                              className="rounded-full bg-white/10 text-white px-4 py-2 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition w-full sm:w-auto"
-                            >
-                              Leave Team
-                            </button>
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className="mt-6 flex flex-wrap gap-2">
-                  <Link
-                    href="/"
-                    className="rounded-full bg-white/10 text-white px-5 py-2.5 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition text-center w-full sm:w-auto"
-                  >
-                    Back to Home
-                  </Link>
-                  <Link
-                    href="/protected/events"
-                    className="rounded-full bg-white text-black px-5 py-2.5 text-xs sm:text-sm font-semibold hover:opacity-90 transition text-center w-full sm:w-auto"
-                  >
-                    Register for Events
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className="rounded-full bg-white/10 text-white px-5 py-2.5 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition text-center w-full sm:w-auto"
-                  >
-                    Support
-                  </Link>
-                </div>
-              </Card>
-
-              {/* Card 2: Team Events Participated */}
-              {isAccepted && teamEvents.length > 0 && (
-                <Card
-                  title="Team Events"
-                  subtitle={`Your team has participated in ${teamEvents.length} event${teamEvents.length !== 1 ? "s" : ""}`}
-                >
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    {teamEvents.map((ev) => {
-                      const myResult = lb?.events
-                        .find((e) => e.id === ev.id)
-                        ?.results.find((r) => r.team.id === myTeamId);
-                      return (
-                        <motion.div
-                          key={ev.id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="group rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 sm:p-5 hover:bg-black/40 hover:ring-white/15 transition-all duration-300 h-full flex flex-col"
-                        >
-                          <div className="flex items-start justify-between gap-3 flex-1">
-                            <div className="min-w-0 flex-1">
-                              <p className="text-sm sm:text-base font-semibold text-white/90 leading-snug">
-                                {ev.name}
-                              </p>
-                              <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wide">
-                                  {ev.category}
-                                </span>
-                                {ev.date && (
-                                  <>
-                                    <span className="h-1 w-1 rounded-full bg-white/30" />
-                                    <span className="text-[10px] sm:text-xs text-white/40">
-                                      {fmtDate(ev.date)}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                            <div className="shrink-0">
-                              {myResult ? (
-                                <Pill tone="strong">
-                                  <span className="text-sm">
-                                    {medal(myResult.rank)}
-                                  </span>{" "}
-                                  #{myResult.rank}
-                                </Pill>
-                              ) : (
-                                <Pill>Registered</Pill>
-                              )}
-                            </div>
-                          </div>
-                          {myResult && (
-                            <div className="mt-auto pt-4 border-t border-white/10">
-                              <div className="flex items-baseline gap-2">
-                                <span className="text-[10px] sm:text-xs uppercase tracking-wide text-white/40">
-                                  Score
-                                </span>
-                                <span className="text-lg sm:text-xl font-bold text-white/90">
-                                  {myResult.marks}
-                                </span>
-                                <span className="text-[10px] sm:text-xs text-white/50">
-                                  marks
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </motion.div>
-                      );
-                    })}
-                  </div>
-                </Card>
-              )}
-
-              {/* Card 3: Team Members & Requests (if accepted) */}
-              {isAccepted && (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="rounded-[20px] md:rounded-[24px] bg-[#111114] ring-1 ring-white/10 p-5 md:p-7">
-                    <p className="text-sm font-medium text-white/85">
-                      Team Members
-                    </p>
-                    <div className="mt-4 space-y-3">
-                      {teamState.acceptedMembers.map((m) => (
-                        <div
-                          key={m.user_id}
-                          className="flex items-center justify-between gap-3"
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-9 w-9 shrink-0 rounded-full bg-white/10 ring-1 ring-white/15 grid place-items-center text-xs font-semibold text-white/80">
-                              {initialsFromProfile(m.profile)}
-                            </div>
-                            <div className="min-w-0">
-                              <p className="text-sm text-white/85 truncate">
-                                {m.profile?.first_name
-                                  ? `${m.profile.first_name} ${m.profile.last_name || ""}`
-                                  : m.profile?.roll_no || m.user_id.slice(0, 8)}
-                                {m.role === "leader" && (
-                                  <span className="ml-1 text-white/50">
-                                    (Leader)
-                                  </span>
-                                )}
-                              </p>
-                              <p className="text-xs text-white/45 truncate">
-                                {m.profile?.roll_no || "—"} •{" "}
-                                {m.profile?.branch || "—"}
-                              </p>
-                            </div>
-                          </div>
-                          <Pill>{m.role}</Pill>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="rounded-[20px] md:rounded-[24px] bg-[#111114] ring-1 ring-white/10 p-5 md:p-7">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-white/85">
-                        Join Requests
-                      </p>
-                      <Pill>{teamState.pendingMembers.length}</Pill>
-                    </div>
-                    <p className="mt-1 text-xs text-white/55">
-                      {isLeader
-                        ? "Approve or reject pending requests."
-                        : "Only leader can approve."}
-                    </p>
-                    <div className="mt-4 space-y-3">
-                      {teamState.pendingMembers.length === 0 ? (
-                        <p className="text-xs text-white/45">
-                          No pending requests.
-                        </p>
-                      ) : (
-                        teamState.pendingMembers.map((m) => (
-                          <div
-                            key={m.user_id}
-                            className="rounded-xl bg-black/35 ring-1 ring-white/10 p-3"
-                          >
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="text-sm font-semibold text-white/85 truncate">
-                                  {m.profile?.first_name ||
-                                    m.profile?.roll_no ||
-                                    "User"}
-                                </p>
-                                <p className="text-xs text-white/50">
-                                  {m.profile?.roll_no} • {m.profile?.branch}
-                                </p>
-                              </div>
-                              {isLeader ? (
-                                <div className="flex gap-2 shrink-0">
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        setLoading(true);
-                                        await api("/api/team/approve", {
-                                          method: "POST",
-                                          body: JSON.stringify({
-                                            team_id: teamState.team.id,
-                                            user_id: m.user_id,
-                                          }),
-                                        });
-                                        await refresh();
-                                      } catch (e: unknown) {
-                                        setErr(
-                                          e instanceof Error
-                                            ? e.message
-                                            : "APPROVE_FAILED",
-                                        );
-                                      } finally {
-                                        setLoading(false);
-                                      }
-                                    }}
-                                    className="rounded-full bg-white text-black px-3 py-1.5 text-xs font-semibold hover:opacity-90 transition"
-                                  >
-                                    Accept
-                                  </button>
-                                  <button
-                                    onClick={async () => {
-                                      try {
-                                        setLoading(true);
-                                        await api("/api/team/reject", {
-                                          method: "POST",
-                                          body: JSON.stringify({
-                                            team_id: teamState.team.id,
-                                            user_id: m.user_id,
-                                          }),
-                                        });
-                                        await refresh();
-                                      } catch (e: unknown) {
-                                        setErr(
-                                          e instanceof Error
-                                            ? e.message
-                                            : "REJECT_FAILED",
-                                        );
-                                      } finally {
-                                        setLoading(false);
-                                      }
-                                    }}
-                                    className="rounded-full bg-white/10 text-white px-3 py-1.5 text-xs font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
-                                  >
-                                    Reject
-                                  </button>
-                                </div>
-                              ) : (
-                                <Pill>Pending</Pill>
-                              )}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Card 4: Leaderboard */}
+          {/* Leaderboard Section */}
+          {lb && (
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.16, ease: "easeOut" }}
+              className="mt-6"
+            >
               <Card
                 title="Leaderboard"
-                subtitle="Overall standings and event-wise results (updates automatically)."
+                subtitle="View rankings and results across all events"
               >
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 rounded-full bg-black/30 ring-1 ring-white/10 p-1">
+                <div className="space-y-4">
+                  <div className="flex gap-2">
                     <button
                       onClick={() => setLbView("overall")}
-                      className={cx(
-                        "rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition",
+                      className={`px-4 py-2 rounded-full text-xs font-semibold transition ${
                         lbView === "overall"
                           ? "bg-white text-black"
-                          : "text-white/80 hover:bg-white/10",
-                      )}
+                          : "bg-white/10 text-white hover:bg-white/15"
+                      }`}
                     >
-                      Overall
+                      Overall Rankings
                     </button>
                     <button
                       onClick={() => setLbView("events")}
-                      className={cx(
-                        "rounded-full px-4 py-1.5 text-xs sm:text-sm font-semibold transition",
+                      className={`px-4 py-2 rounded-full text-xs font-semibold transition ${
                         lbView === "events"
                           ? "bg-white text-black"
-                          : "text-white/80 hover:bg-white/10",
-                      )}
+                          : "bg-white/10 text-white hover:bg-white/15"
+                      }`}
                     >
-                      Events
+                      Event Results
                     </button>
                   </div>
-                  <button
-                    onClick={refreshLeaderboard}
-                    className="rounded-full bg-white/10 text-white px-4 py-2 text-xs sm:text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15 transition"
-                  >
-                    Refresh
-                  </button>
-                </div>
 
-                {lbErr ? (
-                  <div className="mt-5 rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 text-sm text-white/75">
-                    Error: {lbErr}
-                  </div>
-                ) : !lb ? (
-                  <div className="mt-5 text-sm text-white/60">No data.</div>
-                ) : lbView === "overall" ? (
-                  <div className="mt-5 space-y-4">
-                    {lb.overall.length === 0 ? (
-                      <div className="rounded-2xl bg-black/35 ring-1 ring-white/10 p-4 text-sm text-white/70 text-center">
-                        No results declared yet.
-                      </div>
-                    ) : (
-                      <>
-                        {isAccepted && (
-                          <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4 border-l-4 border-white">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-xs font-bold uppercase text-white/40">
-                                Your Team
-                              </span>
-                              <span className="text-sm font-semibold text-white/90">
-                                {teamState.team.name}
-                              </span>
-                              <Pill tone="strong">
-                                Rank:{" "}
-                                {myOverallIndex >= 0
-                                  ? `#${myOverallIndex + 1}`
-                                  : "—"}
-                              </Pill>
-                              <Pill>Points: {points}</Pill>
-                            </div>
-                          </div>
-                        )}
-                        <div className="space-y-2">
-                          {(overallExpanded
-                            ? lb.overall
-                            : lb.overall.slice(0, 10)
-                          ).map((row, idx) => (
-                            <div
-                              key={row.team.id}
-                              className={cx(
-                                "flex items-center justify-between rounded-2xl px-4 py-3 ring-1 transition",
-                                myTeamId === row.team.id
-                                  ? "bg-white/10 ring-white/20"
-                                  : "bg-black/35 ring-white/10 hover:bg-black/40",
-                              )}
-                            >
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-sm font-bold text-white/90">
-                                    #{idx + 1}
-                                  </span>
-                                  <span className="truncate text-sm font-semibold text-white/85">
-                                    {row.team.name}
-                                  </span>
-                                  {myTeamId === row.team.id && (
-                                    <span className="text-[10px] text-white/50">
-                                      (You)
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="mt-1 text-[10px] text-white/50">
-                                  🥇{row.golds} 🥈{row.silvers} 🥉{row.bronzes}{" "}
-                                  • Podiums: {row.podiums}
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="text-sm font-bold text-white/90">
-                                  {row.total_marks}
-                                </div>
-                                <div className="text-[10px] text-white/50">
-                                  pts
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        {lb.overall.length > 10 && (
-                          <button
-                            onClick={() => setOverallExpanded(!overallExpanded)}
-                            className="w-full py-3 text-xs font-semibold text-white/60 hover:text-white transition"
-                          >
-                            {overallExpanded
-                              ? "Show Less"
-                              : `Show ${lb.overall.length - 10} More`}
-                          </button>
-                        )}
-                      </>
-                    )}
-                  </div>
-                ) : (
-                  <div className="mt-5 space-y-3">
-                    {lb.events.length === 0 ? (
-                      <div className="text-sm text-white/60 text-center">
-                        No events found.
-                      </div>
-                    ) : (
-                      lb.events.map((ev) => {
-                        const isOpen = openEventId === ev.id;
-                        const myPodium =
-                          myTeamId &&
-                          ev.results.find((r) => r.team.id === myTeamId);
+                  {lbView === "overall" && (
+                    <div className="space-y-2">
+                      {(overallExpanded
+                        ? lb.overall
+                        : lb.overall.slice(0, 5)
+                      ).map((row, idx) => {
+                        const isUserTeam = userTeamIds.includes(row.team.id);
                         return (
                           <div
-                            key={ev.id}
-                            className="rounded-2xl bg-black/35 ring-1 ring-white/10 overflow-hidden"
+                            key={row.team.id}
+                            className={`flex items-center justify-between p-3 rounded-lg ${
+                              isUserTeam
+                                ? "bg-white/10 ring-1 ring-white/20"
+                                : "bg-black/35"
+                            }`}
                           >
-                            <button
-                              onClick={() =>
-                                setOpenEventId(isOpen ? null : ev.id)
-                              }
-                              className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-white/5 transition"
-                            >
-                              <div className="min-w-0 flex-1">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className="text-sm font-semibold text-white/90">
-                                    {ev.name}
-                                  </span>
-                                  <Pill>{ev.category}</Pill>
-                                  {ev.declared ? (
-                                    <Pill tone="strong">Results In</Pill>
-                                  ) : (
-                                    <Pill>Pending</Pill>
-                                  )}
-                                  {myPodium && (
-                                    <Pill tone="strong">
-                                      {medal(myPodium.rank)} Rank #
-                                      {myPodium.rank}
-                                    </Pill>
-                                  )}
-                                </div>
-                                <p className="mt-1 text-[10px] text-white/50">
-                                  {ev.date ? `${fmtDate(ev.date)} • ` : ""}Max:{" "}
-                                  {ev.max_score}
-                                </p>
+                            <div className="flex items-center gap-3">
+                              <span className="text-white/60 font-semibold w-8">
+                                #{idx + 1}
+                              </span>
+                              <span className="text-white font-medium">
+                                {row.team.name}
+                              </span>
+                              {isUserTeam && (
+                                <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded-full text-white/60">
+                                  Your Team
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <div className="text-white font-bold">
+                                {row.total_marks}
                               </div>
-                              {isOpen ? (
-                                <ChevronUp size={16} />
-                              ) : (
-                                <ChevronDown size={16} />
-                              )}
-                            </button>
-                            <AnimatePresence>
-                              {isOpen && (
-                                <motion.div
-                                  initial={{ height: 0 }}
-                                  animate={{ height: "auto" }}
-                                  exit={{ height: 0 }}
-                                  className="border-t border-white/5 bg-white/5 px-4 pb-4 pt-3"
-                                >
-                                  {ev.description && (
-                                    <p className="mb-4 text-xs text-white/50 leading-relaxed">
-                                      {ev.description}
-                                    </p>
-                                  )}
-                                  {ev.results.length === 0 ? (
-                                    <p className="text-center py-2 text-xs text-white/40 italic">
-                                      Results not yet declared.
-                                    </p>
-                                  ) : (
-                                    <div className="space-y-2">
-                                      {ev.results.map((r) => (
-                                        <div
-                                          key={r.team.id}
-                                          className={cx(
-                                            "flex items-center justify-between rounded-xl p-3",
-                                            myTeamId === r.team.id
-                                              ? "bg-white/10"
-                                              : "bg-black/20",
-                                          )}
-                                        >
-                                          <div className="flex items-center gap-2 text-sm">
-                                            <span>{medal(r.rank)}</span>
-                                            <span className="font-semibold text-white/85">
-                                              {r.team.name}
-                                            </span>
-                                          </div>
-                                          <div className="text-right">
-                                            <div className="text-sm font-bold text-white/90">
-                                              {r.marks}
-                                            </div>
-                                            <div className="text-[10px] text-white/40">
-                                              marks
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  )}
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
+                              <div className="text-[10px] text-white/40">
+                                points
+                              </div>
+                            </div>
                           </div>
                         );
-                      })
-                    )}
-                  </div>
-                )}
+                      })}
+                      {lb.overall.length > 5 && (
+                        <button
+                          onClick={() => setOverallExpanded(!overallExpanded)}
+                          className="w-full flex items-center justify-center gap-2 py-2 text-xs text-white/60 hover:text-white/80 transition"
+                        >
+                          {overallExpanded ? (
+                            <>
+                              Show Less <ChevronUp className="h-4 w-4" />
+                            </>
+                          ) : (
+                            <>
+                              Show All ({lb.overall.length}){" "}
+                              <ChevronDown className="h-4 w-4" />
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {lbView === "events" && (
+                    <div className="space-y-3">
+                      {lb.events.map((ev) => (
+                        <div key={ev.id} className="rounded-lg bg-black/35 p-3">
+                          <button
+                            onClick={() =>
+                              setOpenEventId(
+                                openEventId === ev.id ? null : ev.id,
+                              )
+                            }
+                            className="w-full flex items-center justify-between text-left"
+                          >
+                            <div>
+                              <p className="text-white font-medium">
+                                {ev.name}
+                              </p>
+                              <p className="text-[10px] text-white/40 uppercase">
+                                {ev.category}
+                              </p>
+                            </div>
+                            <ChevronDown
+                              className={`h-4 w-4 text-white/60 transition ${
+                                openEventId === ev.id ? "rotate-180" : ""
+                              }`}
+                            />
+                          </button>
+
+                          <AnimatePresence>
+                            {openEventId === ev.id && (
+                              <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="mt-3 space-y-2">
+                                  {ev.results.map((r) => {
+                                    const isUserTeam = userTeamIds.includes(
+                                      r.team.id,
+                                    );
+                                    return (
+                                      <div
+                                        key={r.team.id}
+                                        className={`flex items-center justify-between p-2 rounded ${
+                                          isUserTeam
+                                            ? "bg-white/10"
+                                            : "bg-white/5"
+                                        }`}
+                                      >
+                                        <div className="flex items-center gap-2 text-sm">
+                                          <span>{medal(r.rank)}</span>
+                                          <span className="text-white/85">
+                                            {r.team.name}
+                                          </span>
+                                          {isUserTeam && (
+                                            <span className="text-[8px] bg-white/10 px-1.5 py-0.5 rounded-full text-white/60">
+                                              YOU
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="text-sm font-bold text-white/90">
+                                          {r.marks}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </Card>
-            </div>
-          </motion.div>
+            </motion.div>
+          )}
         </div>
-
-        {/* Create Team Modal */}
-        <CreateTeamModal
-          open={createOpen}
-          onClose={() => setCreateOpen(false)}
-          onCreated={async () => {
-            setCreateOpen(false);
-            await refresh();
-            await refreshLeaderboard();
-          }}
-        />
-
-        {/* Join Team Modal */}
-        <JoinTeamModal
-          open={joinOpen}
-          onClose={() => setJoinOpen(false)}
-          onJoined={async () => {
-            setJoinOpen(false);
-            await refresh();
-            await refreshLeaderboard();
-          }}
-        />
       </section>
     </>
   );
 }
-
-function CreateTeamModal({
-  open,
-  onClose,
-  onCreated,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onCreated: () => Promise<void>;
-}) {
-  const [name, setName] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-
-  return (
-    <ModalShell open={open} onClose={onClose} title="Create Team">
-      {err ? (
-        <div className="mb-4 rounded-2xl bg-black/35 ring-1 ring-white/10 p-3 text-sm text-white/75">
-          {err}
-        </div>
-      ) : null}
-
-      <label className="block text-xs uppercase tracking-wide text-white/45">
-        Team name
-      </label>
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="e.g., Night Owls"
-        className={cx(
-          "mt-2 w-full rounded-2xl bg-black/40 px-4 py-3 text-sm text-white/90 outline-none",
-          "ring-1 ring-white/10 focus:ring-white/25",
-        )}
-      />
-
-      <button
-        disabled={busy}
-        onClick={async () => {
-          setErr(null);
-          setBusy(true);
-          try {
-            await api("/api/team/create", {
-              method: "POST",
-              body: JSON.stringify({ name }),
-            });
-            await onCreated();
-          } catch (e: unknown) {
-            const msg = e instanceof Error ? e.message : "CREATE_FAILED";
-            setErr(msg);
-          } finally {
-            setBusy(false);
-          }
-        }}
-        className={cx(
-          "mt-5 w-full rounded-full px-5 py-3 text-sm font-semibold transition",
-          busy
-            ? "bg-white/20 text-white/60"
-            : "bg-white text-black hover:opacity-90",
-        )}
-      >
-        {busy ? "Creating…" : "Create Team"}
-      </button>
-
-      <p className="mt-4 text-sm text-white/55">
-        After creation, you’ll get a code (slug) to share. Members will request
-        to join; you approve them from your dashboard.
-      </p>
-    </ModalShell>
-  );
-}
-
-function JoinTeamModal({
-  open,
-  onClose,
-  onJoined,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onJoined: () => Promise<void>;
-}) {
-  const [code, setCode] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
-  if (success) {
-    return (
-      <ModalShell open={open} onClose={onClose} title="Request Sent!">
-        <div className="py-4 text-center">
-          <div className="mx-auto h-12 w-12 rounded-full bg-green-500/10 grid place-items-center mb-4">
-            <svg
-              className="h-6 w-6 text-green-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <p className="text-sm text-white/90 font-medium">
-            Your request has been sent successfully.
-          </p>
-          <p className="mt-2 text-xs text-white/55">
-            The team leader will approve your request soon.
-          </p>
-          <button
-            onClick={onClose}
-            className="mt-6 w-full rounded-full bg-white text-black px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition"
-          >
-            Close
-          </button>
-        </div>
-      </ModalShell>
-    );
-  }
-
-  return (
-    <ModalShell open={open} onClose={onClose} title="Join Team via Code">
-      {err ? (
-        <div className="mb-3 sm:mb-4 rounded-xl md:rounded-2xl bg-black/35 ring-1 ring-white/10 p-2.5 sm:p-3 text-xs sm:text-sm text-white/75">
-          {err}
-        </div>
-      ) : null}
-
-      <label className="block text-[10px] sm:text-xs uppercase tracking-wide text-white/45">
-        Team code
-      </label>
-      <input
-        value={code}
-        onChange={(e) => setCode(e.target.value.toUpperCase())}
-        placeholder="e.g., A7KQ2Z"
-        className={cx(
-          "mt-2 w-full rounded-xl md:rounded-2xl bg-black/40 px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white/90 outline-none",
-          "ring-1 ring-white/10 focus:ring-white/25 tracking-[0.18em]",
-        )}
-      />
-
-      <button
-        disabled={busy}
-        onClick={async () => {
-          const trimmed = code.trim();
-          if (!trimmed) {
-            setErr("Please enter a code");
-            return;
-          }
-          setErr(null);
-          setBusy(true);
-          try {
-            await api("/api/team/join", {
-              method: "POST",
-              body: JSON.stringify({ code: trimmed }),
-            });
-            setSuccess(true);
-            setTimeout(async () => {
-              await onJoined();
-            }, 1500);
-          } catch (e: unknown) {
-            const msg = e instanceof Error ? e.message : "JOIN_FAILED";
-            setErr(msg);
-          } finally {
-            setBusy(false);
-          }
-        }}
-        className={cx(
-          "mt-4 sm:mt-5 w-full rounded-full px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold transition",
-          busy
-            ? "bg-white/20 text-white/60"
-            : "bg-white text-black hover:opacity-90",
-        )}
-      >
-        {busy ? "Requesting…" : "Request to Join"}
-      </button>
-
-      <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-white/55 leading-relaxed">
-        Your request will be pending until the team leader approves it. Teams
-        have a maximum of 5 accepted members.
-      </p>
-    </ModalShell>
-  );
+{
+  /* Team Points Column */
 }

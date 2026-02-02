@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,10 +25,12 @@ import {
 import { createEvent, updateEvent, type EventFormData } from "../actions";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Plus, Pencil } from "lucide-react";
+import { generateSlug } from "@/lib/utils/slug";
 
 type Event = {
   id: string;
   name: string;
+  slug: string;
   category: string;
   description: string | null;
   max_score: number;
@@ -59,6 +61,7 @@ export function EventFormDialog({
 
   const [formData, setFormData] = useState<EventFormData>({
     name: event?.name || "",
+    slug: event?.slug || "",
     category: event?.category || "",
     description: event?.description || "",
     max_score: event?.max_score || 100,
@@ -68,6 +71,14 @@ export function EventFormDialog({
     max_participants: event?.max_participants || null,
     is_active: event?.is_active ?? true,
   });
+
+  // Auto-generate slug from event name when creating a new event
+  useEffect(() => {
+    if (mode === "create" && formData.name && !formData.slug) {
+      const generatedSlug = generateSlug(formData.name);
+      setFormData((prev) => ({ ...prev, slug: generatedSlug }));
+    }
+  }, [formData.name, formData.slug, mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,6 +158,29 @@ export function EventFormDialog({
                 placeholder="Enter event name"
                 required
               />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="slug">Slug (URL-friendly identifier)</Label>
+              <Input
+                id="slug"
+                value={formData.slug}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    slug: e.target.value
+                      .toLowerCase()
+                      .replace(/[^a-z0-9-]/g, "-")
+                      .replace(/-+/g, "-"),
+                  })
+                }
+                placeholder="event-slug"
+                required
+                pattern="[a-z0-9-]+"
+              />
+              <p className="text-xs text-muted-foreground">
+                Only lowercase letters, numbers, and hyphens
+              </p>
             </div>
 
             <div className="grid gap-2">

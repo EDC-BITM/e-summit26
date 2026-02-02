@@ -15,20 +15,52 @@ export async function POST(req: Request) {
 
   const body = await req.json().catch(() => ({}));
   const name = String(body?.name ?? "").trim();
+  const event_id = body?.event_id ?? null; // Optional event_id for event-specific teams
 
   if (name.length < 3 || name.length > 40) {
     return NextResponse.json({ error: "NAME_INVALID" }, { status: 400 });
   }
 
-  // Ensure user has no active team (pending/accepted)
-  const { data: active } = await supabase
-    .from("team_members")
-    .select("team_id,status")
-    .eq("user_id", user.id)
-    .in("status", ["pending", "accepted"])
-    .maybeSingle();
+  // If event_id is provided, verify the event exists and is active
+  if (event_id) {
+    const { data: event, error: eventErr } = await supabase
+      .from("events")
+      .select("id, is_active")
+      .eq("id", event_id)
+      .single();
 
-  if (active) return NextResponse.json({ error: "ALREADY_IN_TEAM_OR_PENDING" }, { status: 409 });
+    if (eventErr || !event) {
+      return NextResponse.json({ error: "EVENT_NOT_FOUND" }, { status: 404 });
+    }
+
+    if (!event.is_active) {
+      return NextResponse.json({ error: "EVENT_NOT_ACTIVE" }, { status: 400 });
+    }
+  }
+
+  // Ensure user has no active team for this event (or general team if no event_id)
+  // For event-specific teams, check if user already has a team for this event
+  let activeQuery = supabase
+    .from("team_members")
+    .select("team_id, status, teams!inner(event_id)")
+    .eq("user_id", user.id)
+    .in("status", ["pending", "accepted"]);
+
+  if (event_id) {
+    // Check if user already has a team for this specific event
+    activeQuery = activeQuery.eq("teams.event_id", event_id);
+  } else {
+    // For general teams, check if user has any general team (event_id is null)
+    activeQuery = activeQuery.is("teams.event_id", null);
+  }
+
+  const { data: active } = await activeQuery.maybeSingle();
+
+  if (active) {
+    return NextResponse.json({ 
+      error: event_id ? "ALREADY_IN_EVENT_TEAM" : "ALREADY_IN_TEAM_OR_PENDING" 
+    }, { status: 409 });
+  }
 
   // Try slug/code insert with retry on collision
   let lastErr: { message?: string; code?: string } | null = null;
@@ -36,10 +68,14 @@ export async function POST(req: Request) {
   for (let attempt = 0; attempt < 8; attempt++) {
     const slug = makeCode(6);
 
+    const teamData = event_id 
+      ? { name, slug, team_leader_id: user.id, event_id }
+      : { name, slug, team_leader_id: user.id };
+
     const { data: team, error: teamErr } = await supabase
       .from("teams")
-      .insert({ name, slug, team_leader_id: user.id })
-      .select("id,name,slug,team_leader_id,created_at")
+      .insert(teamData)
+      .select("id,name,slug,team_leader_id,created_at,event_id")
       .single();
 
     if (teamErr) {

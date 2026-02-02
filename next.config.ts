@@ -25,6 +25,12 @@ const nextConfig: NextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "plus.unsplash.com",
+        port: "",
+        pathname: "/**",
+      }
     ],
   },
   // Rewrites to support PostHog ingestion and assets

@@ -24,7 +24,7 @@ export async function GET() {
 
     const { data: team } = await supabase
         .from("teams")
-        .select("id, name, slug, team_leader_id, created_at")
+        .select("id, name, slug, team_leader_id, created_at, event_id")
         .eq("id", membership.team_id)
         .single();
 
@@ -74,7 +74,7 @@ export async function GET() {
             team,
             acceptedMembers: decorate(acceptedMembers ?? []),
             pendingMembers: decorate(pendingMembers ?? []),
-            maxSize: 5,
+            maxSize: 4,
             minEligibleSize: 2,
         },
         {

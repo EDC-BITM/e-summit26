@@ -20,10 +20,12 @@ import {
   CheckCircle2,
   Loader2,
   AlertCircle,
+  ArrowRight,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Dialog,
   DialogContent,
@@ -48,6 +50,7 @@ import AnimatedBlurText from "./AnimatedBlurText";
 interface Event {
   id: string;
   name: string;
+  slug: string;
   category: string;
   description: string;
   date: string | null;
@@ -442,87 +445,114 @@ export default function EventsList() {
                   return (
                     <Card
                       key={event.id}
-                      className="bg-black/40 backdrop-blur-xl border-white/10 overflow-hidden group hover:border-[#733080]/50 transition-all duration-300"
+                      className="bg-black/60 backdrop-blur-xl border-white/20 overflow-hidden group hover:border-[#733080]/70 hover:shadow-2xl hover:shadow-[#733080]/20 transition-all duration-300 flex flex-col h-full"
                     >
-                      {event.image_url && (
-                        <div className="relative h-48 overflow-hidden">
-                          <Image
-                            src={event.image_url}
-                            alt={event.name}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent" />
-                        </div>
-                      )}
-                      <CardHeader>
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <CardTitle className="text-xl text-white">
+                      <Link
+                        href={`/events/${event.slug}`}
+                        className="block flex-grow"
+                      >
+                        {event.image_url && (
+                          <div className="relative h-56 overflow-hidden">
+                            <Image
+                              src={event.image_url}
+                              alt={event.name}
+                              fill
+                              className="object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                            <div className="absolute top-3 right-3">
+                              <Badge
+                                variant="outline"
+                                className={`uppercase text-[9px] md:text-[10px] font-semibold backdrop-blur-md bg-black/50 border-white/30 ${getCategoryColor(event.category)}`}
+                              >
+                                {event.category}
+                              </Badge>
+                            </div>
+                          </div>
+                        )}
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-xl md:text-2xl text-white font-bold group-hover:text-[#9000b1] transition-colors line-clamp-2">
                             {event.name}
                           </CardTitle>
-                          <Badge
-                            variant="outline"
-                            className={`uppercase text-[7.5px] md:text-[10px] ${getCategoryColor(event.category)}`}
-                          >
-                            {event.category}
-                          </Badge>
-                        </div>
-                        <CardDescription className="text-gray-400">
-                          {event.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="space-y-2 text-sm">
-                          {event.date && (
-                            <div className="flex items-center gap-2 text-gray-300">
-                              <Calendar className="h-4 w-4 text-[#733080]" />
-                              <span>{formatDate(event.date)}</span>
-                            </div>
-                          )}
-                          {event.location && (
-                            <div className="flex items-center gap-2 text-gray-300">
-                              <MapPin className="h-4 w-4 text-[#733080]" />
-                              <span>{event.location}</span>
-                            </div>
-                          )}
-                          {event.max_participants && (
-                            <div className="flex items-center gap-2 text-gray-300">
-                              <Users className="h-4 w-4 text-[#733080]" />
-                              <span>
-                                Max {event.max_participants} participants
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {registered ? (
-                          <Button
-                            className="w-full bg-green-600 hover:bg-green-700 text-white"
-                            disabled
-                          >
-                            <CheckCircle2 className="h-4 w-4 mr-2" />
-                            Registered
-                          </Button>
-                        ) : (
-                          <Button
-                            onClick={() => handleRegisterClick(event.id)}
-                            disabled={
-                              isRegistering ||
-                              !user ||
-                              eligibleTeams.length === 0
-                            }
-                            className="w-full bg-[#9000b1] hover:bg-[#800099] text-white"
-                          >
-                            {isRegistering ? (
-                              <>
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                Registering...
-                              </>
-                            ) : (
-                              "Register Now"
+                          <CardDescription className="text-gray-400 text-sm line-clamp-2 mt-2">
+                            {event.description}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3 pb-4">
+                          <div className="space-y-2.5 text-sm">
+                            {event.date && (
+                              <div className="flex items-center gap-2.5 text-gray-300 bg-white/5 rounded-lg px-3 py-2">
+                                <Calendar className="h-4 w-4 text-[#9000b1] flex-shrink-0" />
+                                <span className="text-sm">
+                                  {formatDate(event.date)}
+                                </span>
+                              </div>
                             )}
-                          </Button>
-                        )}
+                            {event.location && (
+                              <div className="flex items-center gap-2.5 text-gray-300 bg-white/5 rounded-lg px-3 py-2">
+                                <MapPin className="h-4 w-4 text-[#9000b1] flex-shrink-0" />
+                                <span className="text-sm truncate">
+                                  {event.location}
+                                </span>
+                              </div>
+                            )}
+                            {event.max_participants && (
+                              <div className="flex items-center gap-2.5 text-gray-300 bg-white/5 rounded-lg px-3 py-2">
+                                <Users className="h-4 w-4 text-[#9000b1] flex-shrink-0" />
+                                <span className="text-sm">
+                                  Max {event.max_participants} participants
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Link>
+                      <CardContent className="pt-0 pb-4 mt-auto">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/events/${event.slug}`}
+                            className="flex-1"
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full cursor-pointer border-[#733080]/40 text-white hover:bg-[#733080]/20 hover:border-[#733080]/60 hover:text-white transition-all"
+                            >
+                              View Details
+                              <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
+                            </Button>
+                          </Link>
+                          {registered ? (
+                            <Button
+                              size="sm"
+                              className="flex-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-600/20"
+                              disabled
+                            >
+                              <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
+                              Registered
+                            </Button>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => handleRegisterClick(event.id)}
+                              disabled={
+                                isRegistering ||
+                                !user ||
+                                eligibleTeams.length === 0
+                              }
+                              className="flex-1 bg-gradient-to-r from-[#9000b1] to-[#733080] hover:from-[#800099] hover:to-[#5a2666] text-white shadow-lg shadow-purple-600/20 transition-all"
+                            >
+                              {isRegistering ? (
+                                <>
+                                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                                  Registering...
+                                </>
+                              ) : (
+                                "Register Now"
+                              )}
+                            </Button>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   );

@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 
 export type EventFormData = {
   name: string;
+  slug: string;
   category: string;
   description: string | null;
   max_score: number;
@@ -26,6 +27,7 @@ export async function createEvent(data: EventFormData) {
       .from("events")
       .insert({
         name: data.name,
+        slug: data.slug,
         category: data.category,
         description: data.description,
         max_score: data.max_score,
@@ -64,6 +66,7 @@ export async function updateEvent(id: string, data: EventFormData) {
       .from("events")
       .update({
         name: data.name,
+        slug: data.slug,
         category: data.category,
         description: data.description,
         max_score: data.max_score,
