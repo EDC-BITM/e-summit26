@@ -16,7 +16,7 @@ export async function  POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { event_id, team_id } = body;
+    const { event_id, team_id, presentation_url, product_photos_url, achievements } = body;
 
     if (!event_id || !team_id) {
       return NextResponse.json(
@@ -86,6 +86,9 @@ export async function  POST(req: NextRequest) {
         user_id: user.id, // many schemas track who did the registration
         status: "confirmed", // default status
         registered_at: new Date().toISOString(),
+        presentation_url,
+        product_photos_url,
+        achievements,
       })
       .select()
       .maybeSingle();
