@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Instagram, Linkedin, ArrowRight, Sparkles } from "lucide-react";
 import AnimatedBlurText from "./AnimatedBlurText";
 import Image from "next/image";
@@ -56,7 +56,7 @@ export default function SpeakersSection() {
     startScrollLeft: 0,
   });
 
-  const updateActive = () => {
+  const updateActive = useCallback(() => {
     const scroller = scrollerRef.current;
     if (!scroller) return;
 
@@ -75,12 +75,12 @@ export default function SpeakersSection() {
     });
 
     setActiveIdx(bestIdx);
-  };
+  }, []);
 
-  const scheduleUpdate = () => {
+  const scheduleUpdate = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(updateActive);
-  };
+  }, [updateActive]);
 
   const snapToNearest = () => {
     const scroller = scrollerRef.current;
@@ -111,7 +111,7 @@ export default function SpeakersSection() {
       cancelAnimationFrame(rafRef.current);
       clearTimeout(timeout);
     };
-  }, []);
+  }, [scheduleUpdate, updateActive]);
 
   return (
     <section className="relative w-full overflow-hidden text-white">

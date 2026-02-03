@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { headers } from "next/headers";
 
 export async function GET() {
+  await headers();
   const supabase = await createClient();
 
   const {
@@ -50,7 +52,7 @@ export async function GET() {
     .map((t) => t.team?.event_id)
     .filter((id): id is string => !!id);
 
-  let eventsMap = new Map();
+  const eventsMap = new Map();
   if (eventIds.length > 0) {
     const { data: events } = await supabase
       .from("events")
@@ -62,7 +64,7 @@ export async function GET() {
 
   // Fetch registrations for each team
   const teamIds = teams.map((t) => t.team_id);
-  let registrationsMap = new Map();
+  const registrationsMap = new Map();
   if (teamIds.length > 0) {
     const { data: registrations } = await supabase
       .from("event_registrations")
@@ -78,7 +80,7 @@ export async function GET() {
   }
 
   // Fetch member counts for each team
-  let memberCountsMap = new Map();
+  const memberCountsMap = new Map();
   if (teamIds.length > 0) {
     const { data: memberCounts } = await supabase
       .from("team_members")
