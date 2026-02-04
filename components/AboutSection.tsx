@@ -1,8 +1,34 @@
+"use client";
+
+import { useRef, useEffect } from "react";
 import Image from "next/image";
 import AnimatedBlurText from "./AnimatedBlurText";
 import { cn } from "@/lib/utils";
+import { motion, useScroll, useTransform, useInView } from "framer-motion";
 
 export default function AboutSection() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Trigger for starting the video
+  const isInView = useInView(containerRef, { amount: 0.3, once: true });
+
+  // Scroll animation for the banner scaling
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"],
+  });
+
+  const scale = useTransform(scrollYProgress, [0, 0.4], [0.85, 1]);
+  const opacity = useTransform(scrollYProgress, [0, 0.3], [0, 1]);
+
+  // Handle Playback on Scroll
+  useEffect(() => {
+    if (isInView && videoRef.current) {
+      videoRef.current.play().catch((err) => console.error("Video play failed", err));
+    }
+  }, [isInView]);
+
   const icons = [
     { img: "/Triangle.png", alt: "Triangle" },
     { img: "/Cube.png", alt: "Cube" },
@@ -84,25 +110,29 @@ export default function AboutSection() {
           </div>
         </div>
 
-        {/* Banner */}
-        <div
+        {/* Banner - 10X Optimized Cloudinary Video */}
+        <motion.div
+          ref={containerRef}
+          style={{ scale, opacity }}
           className={cn(
             "mt-12 overflow-hidden rounded-2xl sticky top-0",
             "border border-white/10 bg-white/4",
-            "shadow-[0_30px_120px_rgba(0,0,0,0.55)]",
-            "transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            "shadow-[0_30px_120px_rgba(0,0,0,0.55)]"
           )}
-          style={{ transitionDelay: "720ms" }}
         >
-          <Image
-            src="/photo-1507525428034-b723cf961d3e.avif"
-            alt="E-Summit banner"
-            width={2000}
-            height={800}
-            className="w-full object-cover h-64 sm:h-80 md:h-96"
-            loading="lazy"
-          />
-        </div>
+          <div className="relative w-full h-64 sm:h-80 md:h-[500px] overflow-hidden bg-black">
+            <video
+              ref={videoRef}
+              // Cloudinary Direct URL with Auto-Format (f_auto) and Auto-Quality (q_auto)
+              src="https://res.cloudinary.com/dvkv8ekia/video/upload/q_auto,f_auto/logo_animation_1_znetfy.mp4"
+              muted
+              playsInline
+              preload="auto"
+              className="w-full h-full object-cover"
+              style={{ filter: "brightness(0.9)" }}
+            />
+          </div>
+        </motion.div>
       </div>
     </section>
   );
