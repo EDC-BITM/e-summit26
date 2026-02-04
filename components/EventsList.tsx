@@ -136,16 +136,7 @@ export default function EventsList() {
       setEvents(eventsData || []);
 
       if (user) {
-        // Fetch user's registrations
-        const { data: regsData, error: regsError } = await supabase
-          .from("event_registrations")
-          .select("event_id, team_id, status")
-          .eq("user_id", user.id);
-
-        if (regsError) throw regsError;
-        setRegistrations(regsData || []);
-
-        // Fetch user's teams with accepted member count
+        // Fetch user's teams first
         const { data: teamsData, error: teamsError } = await supabase
           .from("team_members")
           .select(
@@ -165,11 +156,14 @@ export default function EventsList() {
 
         // Get member counts for each team
         const teamsWithCounts: Team[] = [];
+        const teamIds: string[] = [];
 
         for (const teamData of teamsData || []) {
           const team = Array.isArray(teamData.teams)
             ? teamData.teams[0]
             : teamData.teams;
+
+          teamIds.push(team.id);
 
           const { count } = await supabase
             .from("team_members")
@@ -186,6 +180,19 @@ export default function EventsList() {
         }
 
         setUserTeams(teamsWithCounts);
+
+        // Fetch registrations for all user's teams
+        if (teamIds.length > 0) {
+          const { data: regsData, error: regsError } = await supabase
+            .from("event_registrations")
+            .select("event_id, team_id, status")
+            .in("team_id", teamIds);
+
+          if (regsError) throw regsError;
+          setRegistrations(regsData || []);
+        } else {
+          setRegistrations([]);
+        }
       }
     } catch (error) {
       console.error("Error fetching data:", error);

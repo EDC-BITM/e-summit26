@@ -120,7 +120,7 @@ export default function AboutSection() {
             "shadow-[0_30px_120px_rgba(0,0,0,0.55)]"
           )}
         >
-          <div className="relative w-full h-64 sm:h-80 md:h-[500px] overflow-hidden bg-black">
+          <div className="relative border-0 w-full h-64 sm:h-80 md:h-125 overflow-hidden bg-black">
             <video
               ref={videoRef}
               // Cloudinary Direct URL with Auto-Format (f_auto) and Auto-Quality (q_auto)
