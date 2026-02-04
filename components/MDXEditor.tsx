@@ -184,7 +184,7 @@ export default function MDXEditor({
     <div className="border rounded-lg overflow-hidden bg-background h-full flex flex-col">
       <Tabs
         value={activeTab}
-        onValueChange={(v) => setActiveTab(v as any)}
+        onValueChange={(v) => setActiveTab(v as "write" | "preview")}
         className="flex flex-col h-full"
       >
         <div className="border-b bg-muted/50 px-4 py-2 flex items-center justify-between flex-shrink-0">
