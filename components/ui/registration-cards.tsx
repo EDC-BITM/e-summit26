@@ -104,6 +104,14 @@ export function RegistrationCards({
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                {isRegistered && (
+                  <div className="absolute inset-0 bg-purple-500/10 flex items-center justify-center backdrop-blur-[2px]">
+                    <div className="bg-green-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2">
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      REGISTERED
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
