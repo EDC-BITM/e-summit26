@@ -215,7 +215,7 @@ export default function Hero() {
           rel="noreferrer"
           aria-label="E-Summit 2026 brochure"
           className={cn(
-            "mt-7 inline-flex w-full sm:w-auto items-center justify-center",
+            "mt-2 inline-flex w-full sm:w-auto items-center justify-center",
             "relative group overflow-hidden rounded-full",
             "p-[1px]",
             "bg-gradient-to-r from-[#8F00AF]/70 via-white/15 to-[#B05EC2]/70",

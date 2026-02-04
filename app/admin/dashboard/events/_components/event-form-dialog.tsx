@@ -45,6 +45,7 @@ type Event = {
   min_team_size: number | null;
   max_team_size: number | null;
   is_active: boolean;
+  whatsapp_group_link: string | null;
 };
 
 interface EventFormDialogProps {
@@ -81,6 +82,7 @@ export function EventFormDialog({
     min_team_size: event?.min_team_size ?? 2,
     max_team_size: event?.max_team_size ?? 4,
     is_active: event?.is_active ?? true,
+    whatsapp_group_link: event?.whatsapp_group_link || "",
   });
 
   // Auto-generate slug from event name when creating a new event
@@ -324,6 +326,27 @@ export function EventFormDialog({
                 }
                 placeholder="Enter event location"
               />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="whatsapp_group_link">
+                WhatsApp Group Link (Optional)
+              </Label>
+              <Input
+                id="whatsapp_group_link"
+                value={formData.whatsapp_group_link || ""}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    whatsapp_group_link: e.target.value,
+                  })
+                }
+                placeholder="https://chat.whatsapp.com/..."
+                type="url"
+              />
+              <p className="text-xs text-muted-foreground">
+                This link will be shown to users after they register
+              </p>
             </div>
 
             <div className="grid gap-2">

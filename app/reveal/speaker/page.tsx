@@ -43,7 +43,7 @@ export default function SpeakerRevealPage() {
   const router = useRouter();
   const { width, height } = useWindowSize();
 
-  const TARGET_CLICKS = 2;
+  const TARGET_CLICKS = 1000;
   const EVENT_DATE = new Date("2026-02-13T00:00:00");
 
   useEffect(() => {

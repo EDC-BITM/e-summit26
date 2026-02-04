@@ -29,38 +29,29 @@ export async function POST(req: Request) {
 
   console.log("[JOIN] Team found:", team.id, "Event:", team.event_id);
 
-  // Check if user already has ANY active team membership
-  // The database has a constraint preventing multiple active memberships
-  const { data: existingMembership } = await supabase
+  // Check if user already has a team for THIS SPECIFIC event
+  const { data: existingMemberships } = await supabase
     .from("team_members")
     .select("team_id, status, teams!inner(id, name, event_id)")
     .eq("user_id", user.id)
-    .in("status", ["pending", "accepted"])
-    .maybeSingle();
+    .in("status", ["pending", "accepted"]);
 
-  console.log("[JOIN] Existing team check:", existingMembership ? "Found" : "None", existingMembership);
+  console.log("[JOIN] Existing memberships:", existingMemberships);
 
-  if (existingMembership) {
-    const existingTeam = Array.isArray(existingMembership.teams) 
-      ? existingMembership.teams[0] 
-      : existingMembership.teams;
-    const existingEventId = existingTeam?.event_id;
-    
-    // If trying to join a team for the same event
-    if (team.event_id && existingEventId === team.event_id) {
-      return NextResponse.json({ 
-        error: "ALREADY_IN_EVENT_TEAM",
-        message: `You already have a team for this event: ${existingTeam?.name}`
-      }, { status: 409 });
+  if (existingMemberships && existingMemberships.length > 0) {
+    // Check if user already has a team for this specific event
+    for (const membership of existingMemberships) {
+      const existingTeam = Array.isArray(membership.teams) 
+        ? membership.teams[0] 
+        : membership.teams;
+      
+      if (existingTeam && existingTeam.event_id === team.event_id) {
+        return NextResponse.json({ 
+          error: "ALREADY_IN_EVENT_TEAM",
+          message: `You already have a team for this event: ${existingTeam.name}`
+        }, { status: 409 });
+      }
     }
-    
-    // User has an active team membership for a different event or general team
-    // They need to leave their current team first
-    return NextResponse.json({ 
-      error: "ALREADY_IN_ANOTHER_TEAM",
-      message: `You are already in team "${existingTeam?.name}". Please leave that team first before joining another.`,
-      currentTeam: existingTeam
-    }, { status: 409 });
   }
 
   // Team full check (accepted only)

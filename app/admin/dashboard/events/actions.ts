@@ -18,6 +18,7 @@ export type EventFormData = {
   min_team_size: number | null;
   max_team_size: number | null;
   is_active: boolean;
+  whatsapp_group_link: string | null;
 };
 
 export async function createEvent(data: EventFormData) {
@@ -42,6 +43,7 @@ export async function createEvent(data: EventFormData) {
         min_team_size: data.min_team_size ?? 2,
         max_team_size: data.max_team_size ?? 4,
         is_active: data.is_active,
+        whatsapp_group_link: data.whatsapp_group_link || null,
       })
       .select()
       .single();
@@ -84,6 +86,7 @@ export async function updateEvent(id: string, data: EventFormData) {
         min_team_size: data.min_team_size ?? 2,
         max_team_size: data.max_team_size ?? 4,
         is_active: data.is_active,
+        whatsapp_group_link: data.whatsapp_group_link || null,
       })
       .eq("id", id)
       .select()
