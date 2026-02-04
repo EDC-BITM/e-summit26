@@ -4,5 +4,5 @@ import { connection } from "next/server";
 export default async function Page() {
   await connection();
 
-  redirect("/admin/dashboard/default");
+  return redirect("/admin/dashboard/default");
 }

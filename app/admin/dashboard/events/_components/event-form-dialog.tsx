@@ -24,8 +24,11 @@ import {
 } from "@/components/ui/select";
 import { createEvent, updateEvent, type EventFormData } from "../actions";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Pencil } from "lucide-react";
+import { Loader2, Plus, Pencil, Eye, Copy, Maximize2 } from "lucide-react";
 import { generateSlug } from "@/lib/utils/slug";
+import { EVENT_MDX_TEMPLATE } from "@/lib/templates/event-mdx-template";
+import MDXEditor from "@/components/MDXEditor";
+import FullScreenMDXEditor from "@/components/FullScreenMDXEditor";
 
 type Event = {
   id: string;
@@ -57,6 +60,8 @@ export function EventFormDialog({
 }: EventFormDialogProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [fullScreenEditor, setFullScreenEditor] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -252,18 +257,40 @@ export function EventFormDialog({
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="doc">Document URL (Optional)</Label>
-              <Input
-                id="doc"
+              <div className="flex items-center justify-between">
+                <Label htmlFor="doc">Event Documentation (MDX)</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setFormData({ ...formData, doc: EVENT_MDX_TEMPLATE })
+                    }
+                  >
+                    <Copy className="h-3 w-3 mr-1" />
+                    Load Template
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFullScreenEditor(true)}
+                  >
+                    <Maximize2 className="h-3 w-3 mr-1" />
+                    Full Screen
+                  </Button>
+                </div>
+              </div>
+              <MDXEditor
                 value={formData.doc || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, doc: e.target.value })
-                }
-                placeholder="https://example.com/event-document.pdf"
-                type="url"
+                onChange={(value) => setFormData({ ...formData, doc: value })}
+                placeholder="# Event Title&#10;&#10;## Introduction&#10;Write your event documentation in **MDX** format...&#10;&#10;Use the toolbar buttons to format your text and insert components."
               />
               <p className="text-xs text-muted-foreground">
-                Link to event rulebook, guidelines, or documentation
+                Write event info, rules, and guidelines in MDX format. Use the
+                toolbar for formatting and the component buttons to insert Info,
+                Success, Warning, and Card components.
               </p>
             </div>
 
@@ -347,6 +374,16 @@ export function EventFormDialog({
           </DialogFooter>
         </form>
       </DialogContent>
+
+      {/* Full Screen Editor */}
+      {fullScreenEditor && (
+        <FullScreenMDXEditor
+          value={formData.doc || ""}
+          onChange={(value) => setFormData({ ...formData, doc: value })}
+          onClose={() => setFullScreenEditor(false)}
+          eventName={formData.name}
+        />
+      )}
     </Dialog>
   );
 }

@@ -38,21 +38,67 @@ type Registration = {
 export async function getAdminStats() {
   const supabase = await createServiceClient();
 
-  // Total onboarded users - count profiles where onboarding is completed
-
+  // Get admin and moderator count
   const { count: AdminOrModeratorCount } = await supabase
     .from("user_role")
     .select("user_id", { count: "exact", head: true })
     .or("role_id.eq.2,role_id.eq.1");
-  
-  
-  const {count: totalOnboardingCount} = await supabase
+
+  // Get all users from auth
+  const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+
+  if (usersError || !users) {
+    console.error("Error fetching users:", usersError);
+  }
+
+  // Get all profiles with onboarding status
+  const { data: profiles, error: profilesError } = await supabase
     .from("profiles")
-    .select("id", { count: "exact", head: true })
-    .eq("onboarding_completed", true)
+    .select("id, onboarding_completed");
+
+  if (profilesError) {
+    console.error("Error fetching profiles:", profilesError);
+  }
+
+  // Create a map of user_id to onboarding status
+  const profilesMap = new Map(
+    (profiles || []).map((profile) => [
+      profile.id,
+      profile.onboarding_completed || false,
+    ])
+  );
+
+  // Get admin/moderator user IDs
+  const { data: adminModUsers } = await supabase
+    .from("user_role")
+    .select("user_id")
+    .or("role_id.eq.2,role_id.eq.1");
+
+  const adminModUserIds = new Set(adminModUsers?.map(u => u.user_id) || []);
+
+  // Count users who have a profile AND completed onboarding (excluding admin/moderator)
+  // Also count ALL users to show total, including those without profile entries
+  let onboardedCount = 0;
+  let totalNonAdminUsers = 0;
   
-    
-  const onboardedCount  = (totalOnboardingCount ?? 0) - (AdminOrModeratorCount ?? 0)
+  if (users) {
+    users.forEach((user) => {
+      // Skip admin/moderator users
+      if (adminModUserIds.has(user.id)) {
+        return;
+      }
+
+      totalNonAdminUsers++;
+
+      const hasProfile = profilesMap.has(user.id);
+      const completedOnboarding = hasProfile ? profilesMap.get(user.id)! : false;
+      
+      // Count as onboarded only if they have a profile AND completed onboarding
+      if (hasProfile && completedOnboarding) {
+        onboardedCount++;
+      }
+    });
+  }
 
   // Total registrations
   const { count: registrationsCount } = await supabase

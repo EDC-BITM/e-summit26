@@ -6,17 +6,14 @@ import {
   MapPin,
   Users,
   Trophy,
-  Sparkles,
-  Award,
-  Target,
   FileText,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import EventTeamManager from "@/components/EventTeamManager";
+import MDXRenderer from "@/components/MDXRenderer";
 
 interface Event {
   id: string;
@@ -176,14 +173,10 @@ export default function EventPageContent({ event }: EventPageContentProps) {
                     asChild
                     className="border-[#8F00AF]/30 text-[#8F00AF] hover:bg-[#8F00AF]/10"
                   >
-                    <Link
-                      href={event.doc}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                    <a href="#event-info">
                       <FileText className="mr-2 h-4 w-4" />
-                      View Event Details
-                    </Link>
+                      View Event Info
+                    </a>
                   </Button>
                 )}
                 <Button
@@ -223,6 +216,32 @@ export default function EventPageContent({ event }: EventPageContentProps) {
                 eventName={event.name}
                 eventSlug={event.slug}
               />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Event Documentation Section */}
+      {event.doc && (
+        <section
+          id="event-info"
+          className="py-16 md:py-24 bg-black border-t border-white/5"
+        >
+          <div className="container mx-auto px-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold mb-3 text-white flex items-center gap-3">
+                  <FileText className="h-8 w-8 text-[#8F00AF]" />
+                  Event Information
+                </h2>
+                <p className="text-gray-400">
+                  Everything you need to know about {event.name}
+                </p>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-xl p-6 md:p-8">
+                <MDXRenderer content={event.doc} />
+              </div>
             </div>
           </div>
         </section>

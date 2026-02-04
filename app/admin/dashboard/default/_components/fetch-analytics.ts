@@ -3,17 +3,56 @@ import { createServiceClient } from "@/lib/supabase/server";
 export async function fetchAnalyticsData() {
   const supabase = await createServiceClient();
 
+  // Get all auth users
+  const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+
+  if (usersError || !users) {
+    console.error("Error fetching users:", usersError);
+  }
+
   // Fetch all profiles with user data
   const { data: profiles } = await supabase
     .from("profiles")
-    .select("id, branch, onboarding_completed, created_at")
+    .select("id, branch, gender, college, onboarding_completed, created_at")
     .order("created_at", { ascending: true });
 
   const profilesList = profiles || [];
 
-  // Calculate user stats
-  const onboardedCount = profilesList.filter((p) => p.onboarding_completed).length;
-  const totalUsers = profilesList.length;
+  // Get admin/moderator user IDs to exclude them
+  const { data: adminModUsers } = await supabase
+    .from("user_role")
+    .select("user_id")
+    .or("role_id.eq.2,role_id.eq.1");
+
+  const adminModUserIds = new Set(adminModUsers?.map(u => u.user_id) || []);
+
+  // Create a map of user_id to profile data
+  const profilesMap = new Map(
+    profilesList.map((profile) => [profile.id, profile])
+  );
+
+  // Calculate user stats (excluding admin/moderator)
+  let onboardedCount = 0;
+  let totalUsers = 0;
+
+  if (users) {
+    users.forEach((user) => {
+      // Skip admin/moderator users
+      if (adminModUserIds.has(user.id)) {
+        return;
+      }
+
+      totalUsers++;
+
+      const profile = profilesMap.get(user.id);
+      const hasProfile = !!profile;
+      const completedOnboarding = hasProfile ? (profile.onboarding_completed || false) : false;
+
+      if (hasProfile && completedOnboarding) {
+        onboardedCount++;
+      }
+    });
+  }
   
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -51,6 +90,34 @@ export async function fetchAnalyticsData() {
 
   const branchDistribution = Array.from(branchMap.entries())
     .map(([branch, count]) => ({ branch, count }))
+    .sort((a, b) => b.count - a.count);
+
+  // Calculate gender distribution
+  const genderMap = new Map<string, number>();
+  profilesList.forEach((profile) => {
+    if (profile.gender) {
+      const gender = profile.gender.toLowerCase();
+      genderMap.set(gender, (genderMap.get(gender) || 0) + 1);
+    }
+  });
+
+  const genderDistribution = Array.from(genderMap.entries())
+    .map(([gender, count]) => ({ 
+      gender: gender.charAt(0).toUpperCase() + gender.slice(1), 
+      count 
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  // Calculate college distribution
+  const collegeMap = new Map<string, number>();
+  profilesList.forEach((profile) => {
+    if (profile.college) {
+      collegeMap.set(profile.college, (collegeMap.get(profile.college) || 0) + 1);
+    }
+  });
+
+  const collegeDistribution = Array.from(collegeMap.entries())
+    .map(([college, count]) => ({ college, count }))
     .sort((a, b) => b.count - a.count);
 
   // Calculate user growth data (last 30 days)
@@ -122,6 +189,8 @@ export async function fetchAnalyticsData() {
   return {
     userGrowthData,
     branchDistribution,
+    genderDistribution,
+    collegeDistribution,
     hourlyActivity,
     stats: {
       onboardedCount,

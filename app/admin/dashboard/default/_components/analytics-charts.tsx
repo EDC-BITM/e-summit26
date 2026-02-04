@@ -34,6 +34,8 @@ import { TrendingUp, TrendingDown, Users, Clock } from "lucide-react";
 interface AnalyticsChartsProps {
   userGrowthData: Array<{ date: string; count: number }>;
   branchDistribution: Array<{ branch: string; count: number }>;
+  genderDistribution: Array<{ gender: string; count: number }>;
+  collegeDistribution: Array<{ college: string; count: number }>;
   hourlyActivity: Array<{ hour: number; count: number }>;
   stats: {
     onboardedCount: number;
@@ -48,6 +50,8 @@ interface AnalyticsChartsProps {
 export function AnalyticsCharts({
   userGrowthData,
   branchDistribution,
+  genderDistribution,
+  collegeDistribution,
   hourlyActivity,
   stats,
 }: AnalyticsChartsProps) {
@@ -135,7 +139,44 @@ export function AnalyticsCharts({
 
   const totalBranchCount = branchDistribution.reduce(
     (acc, item) => acc + item.count,
-    0
+    0,
+  );
+
+  // Gender Distribution Config
+  const genderConfig = {
+    count: {
+      label: "Users",
+    },
+    Male: {
+      label: "Male",
+      color: "hsl(var(--chart-1))",
+    },
+    Female: {
+      label: "Female",
+      color: "hsl(var(--chart-3))",
+    },
+    Other: {
+      label: "Other",
+      color: "hsl(var(--chart-4))",
+    },
+  } satisfies ChartConfig;
+
+  const totalGenderCount = genderDistribution.reduce(
+    (acc, item) => acc + item.count,
+    0,
+  );
+
+  // College Distribution Config
+  const collegeConfig = {
+    count: {
+      label: "Students",
+      color: "hsl(var(--chart-2))",
+    },
+  } satisfies ChartConfig;
+
+  const totalCollegeCount = collegeDistribution.reduce(
+    (acc, item) => acc + item.count,
+    0,
   );
 
   return (
@@ -295,6 +336,170 @@ export function AnalyticsCharts({
         </CardFooter>
       </Card>
 
+      {/* Gender Distribution */}
+      <Card className="@container/chart">
+        <CardHeader>
+          <CardTitle>Gender Distribution</CardTitle>
+          <CardDescription>User demographics by gender</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 pb-0">
+          <ChartContainer
+            config={genderConfig}
+            className="mx-auto aspect-square max-h-[300px]"
+          >
+            <PieChart>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Pie
+                data={genderDistribution.map((item) => ({
+                  ...item,
+                  fill:
+                    genderConfig[item.gender as keyof typeof genderConfig]
+                      ?.color || "hsl(var(--chart-5))",
+                }))}
+                dataKey="count"
+                nameKey="gender"
+                innerRadius={60}
+                strokeWidth={5}
+              >
+                <Label
+                  content={({ viewBox }) => {
+                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                      return (
+                        <text
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                        >
+                          <tspan
+                            x={viewBox.cx}
+                            y={viewBox.cy}
+                            className="fill-foreground text-3xl font-bold"
+                          >
+                            {totalGenderCount}
+                          </tspan>
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 24}
+                            className="fill-muted-foreground"
+                          >
+                            Total
+                          </tspan>
+                        </text>
+                      );
+                    }
+                  }}
+                />
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+        </CardContent>
+        <CardFooter className="flex-col gap-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            {genderDistribution.map((item) => (
+              <div key={item.gender} className="flex items-center gap-1">
+                <div
+                  className="h-3 w-3 rounded-sm"
+                  style={{
+                    backgroundColor:
+                      genderConfig[item.gender as keyof typeof genderConfig]
+                        ?.color || "hsl(var(--chart-5))",
+                  }}
+                />
+                <span className="text-muted-foreground">
+                  {item.gender}: {item.count} (
+                  {totalGenderCount > 0
+                    ? Math.round((item.count / totalGenderCount) * 100)
+                    : 0}
+                  %)
+                </span>
+              </div>
+            ))}
+          </div>
+        </CardFooter>
+      </Card>
+
+      {/* College Distribution */}
+      <Card className="@container/chart">
+        <CardHeader>
+          <CardTitle>College Distribution</CardTitle>
+          <CardDescription>Student enrollment by institution</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1 pb-0">
+          <ChartContainer
+            config={collegeConfig}
+            className="mx-auto aspect-square max-h-[300px]"
+          >
+            <PieChart>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Pie
+                data={collegeDistribution.map((item, index) => ({
+                  ...item,
+                  fill: chartColors[index % chartColors.length],
+                }))}
+                dataKey="count"
+                nameKey="college"
+                innerRadius={60}
+                strokeWidth={5}
+              >
+                <Label
+                  content={({ viewBox }) => {
+                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                      return (
+                        <text
+                          x={viewBox.cx}
+                          y={viewBox.cy}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                        >
+                          <tspan
+                            x={viewBox.cx}
+                            y={viewBox.cy}
+                            className="fill-foreground text-3xl font-bold"
+                          >
+                            {totalCollegeCount}
+                          </tspan>
+                          <tspan
+                            x={viewBox.cx}
+                            y={(viewBox.cy || 0) + 24}
+                            className="fill-muted-foreground"
+                          >
+                            Students
+                          </tspan>
+                        </text>
+                      );
+                    }
+                  }}
+                />
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+        </CardContent>
+        <CardFooter className="flex-col gap-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            {collegeDistribution.map((item, index) => (
+              <div key={item.college} className="flex items-center gap-1">
+                <div
+                  className="h-3 w-3 rounded-sm"
+                  style={{
+                    backgroundColor: chartColors[index % chartColors.length],
+                  }}
+                />
+                <span className="text-muted-foreground">
+                  {item.college}: {item.count}
+                </span>
+              </div>
+            ))}
+          </div>
+        </CardFooter>
+      </Card>
+
       {/* Onboarding Progress */}
       <Card className="@container/chart">
         <CardHeader>
@@ -323,7 +528,7 @@ export function AnalyticsCharts({
                       const completionRate =
                         stats.totalUsers > 0
                           ? Math.round(
-                              (stats.onboardedCount / stats.totalUsers) * 100
+                              (stats.onboardedCount / stats.totalUsers) * 100,
                             )
                           : 0;
                       return (
@@ -414,7 +619,7 @@ export function AnalyticsCharts({
             {hourlyActivity.length > 0
               ? `${
                   hourlyActivity.reduce((max, item) =>
-                    item.count > max.count ? item : max
+                    item.count > max.count ? item : max,
                   ).hour
                 }:00`
               : "No data"}

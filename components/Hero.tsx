@@ -252,7 +252,7 @@ export default function Hero() {
 
       {/* Bottom dates */}
       <div className="pointer-events-none absolute bottom-6 sm:bottom-6 left-0 right-0 z-10">
-        <div className="w-full px-6 sm:px-10 md:px-16 lg:px-24">
+        <div className="w-full px-6 sm:px-6">
           <div className="grid grid-cols-1 sm:grid-cols-[max-content_1fr_max-content_1fr_max-content] items-center gap-2 sm:gap-4 md:gap-6">
             <ShinyText
               text="13th February 2026"

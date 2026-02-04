@@ -134,7 +134,6 @@ export default function Sponsorship() {
                       object-contain 
                       grayscale invert contrast-[1.2] brightness-[1.5]
                       transition-all duration-500
-                      group-hover:grayscale-0 group-hover:invert-0 group-hover:brightness-100 group-hover:contrast-100
                     "
                     sizes="(max-width: 640px) 120px, (max-width: 768px) 140px, 180px"
                   />

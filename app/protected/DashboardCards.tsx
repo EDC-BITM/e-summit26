@@ -20,6 +20,7 @@ type UserTeamData = {
   event: {
     id: string;
     name: string;
+    slug: string;
     category: string;
     date: string | null;
     location: string | null;
@@ -246,7 +247,7 @@ export function DashboardCards({
                       )}
                       {teamData.event && (
                         <Link
-                          href={`/events/${teamData.event.id}`}
+                          href={`/events/${teamData.event.slug}`}
                           className="rounded-full bg-white text-black px-3 py-1.5 text-xs font-semibold hover:opacity-90 transition"
                         >
                           View Event

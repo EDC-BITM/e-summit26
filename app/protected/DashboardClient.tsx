@@ -268,6 +268,7 @@ type UserTeamData = {
   event: {
     id: string;
     name: string;
+    slug: string;
     category: string;
     date: string | null;
     location: string | null;

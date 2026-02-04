@@ -56,7 +56,7 @@ export async function GET() {
   if (eventIds.length > 0) {
     const { data: events } = await supabase
       .from("events")
-      .select("id, name, category, date, location, image_url")
+      .select("id, name, slug, category, date, location, image_url")
       .in("id", eventIds);
 
     (events || []).forEach((e) => eventsMap.set(e.id, e));
