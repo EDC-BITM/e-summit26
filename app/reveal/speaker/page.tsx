@@ -18,6 +18,7 @@ import { Loader2, Sparkles, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Confetti from "react-confetti";
 import { useWindowSize } from "@/hooks/use-window-size";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function SpeakerRevealPage() {
   const [user, setUser] = useState<User | null>(null);
@@ -34,13 +35,15 @@ export default function SpeakerRevealPage() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationPieces, setCelebrationPieces] = useState(200);
+  const [isShaking, setIsShaking] = useState(false);
 
   const supabase = createClient();
   const { toast } = useToast();
   const router = useRouter();
   const { width, height } = useWindowSize();
 
-  const TARGET_CLICKS = 500;
+  const TARGET_CLICKS = 2;
   const EVENT_DATE = new Date("2026-02-13T00:00:00");
 
   useEffect(() => {
@@ -115,15 +118,18 @@ export default function SpeakerRevealPage() {
   };
 
   const fetchClickCount = async () => {
-    const { count, error } = await supabase
+    const { data, error } = await supabase
       .from("speaker_reveal_clicks")
-      .select("*", { count: "exact", head: true });
+      .select("click_value");
 
-    if (!error && count !== null) {
-      setClickCount(count);
-      if (count >= TARGET_CLICKS) {
+    if (!error && data) {
+      const totalPoints = data.reduce((sum, row) => sum + (row.click_value || 1), 0);
+      setClickCount(totalPoints);
+      if (totalPoints >= TARGET_CLICKS) {
         setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 10000);
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 1000);
+        setTimeout(() => setShowConfetti(false), 20000); // 20 seconds of party!
       }
     }
   };
@@ -148,9 +154,13 @@ export default function SpeakerRevealPage() {
 
     setClicking(true);
     try {
+      const randomValue = Math.floor(Math.random() * 10) + 1;
       const { error } = await supabase
         .from("speaker_reveal_clicks")
-        .insert({ user_id: user.id });
+        .insert({ 
+          user_id: user.id,
+          click_value: randomValue 
+        });
 
       if (error) {
         if (error.code === "23505") {
@@ -164,14 +174,15 @@ export default function SpeakerRevealPage() {
         }
       } else {
         setHasClicked(true);
+        setCelebrationPieces(800);
         setShowCelebration(true);
-        setTimeout(() => setShowCelebration(false), 3000);
+        setTimeout(() => setShowCelebration(false), 5000);
 
         await fetchClickCount();
 
         toast({
           title: "Click Registered! ✨",
-          description: `${TARGET_CLICKS - clickCount - 1} clicks remaining to reveal the speakers!`,
+          description: "Thank you for contributing to the reveal!",
         });
       }
     } catch (error) {
@@ -203,15 +214,44 @@ export default function SpeakerRevealPage() {
     <>
       <Navbar />
       {showConfetti && (
-        <Confetti
-          width={width}
-          height={height}
-          recycle={false}
-          numberOfPieces={500}
-        />
+        <>
+          <Confetti
+            width={width}
+            height={height}
+            recycle={true}
+            numberOfPieces={400}
+            colors={['#733080', '#B05EC2', '#ffffff', '#FFD700', '#FF69B4']}
+            gravity={0.15}
+          />
+          <Confetti
+            width={width}
+            height={height}
+            recycle={true}
+            numberOfPieces={200}
+            colors={['#733080', '#FFD700']}
+            gravity={0.1}
+            initialVelocityY={30}
+          />
+          <Confetti
+            width={width}
+            height={height}
+            recycle={true}
+            numberOfPieces={200}
+            colors={['#B05EC2', '#ffffff']}
+            gravity={0.1}
+            initialVelocityY={30}
+          />
+        </>
       )}
 
-      <div className="min-h-screen bg-black relative overflow-hidden">
+      <motion.div 
+        animate={isShaking ? {
+          x: [-10, 10, -10, 10, 0],
+          y: [-10, 10, -10, 10, 0],
+        } : {}}
+        transition={{ duration: 0.5, repeat: 2 }}
+        className="min-h-screen bg-black relative overflow-hidden"
+      >
         <div className="absolute inset-0 bg-linear-to-br from-black via-[#0a0015] to-black" />
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#733080]/20 rounded-full blur-[120px] animate-pulse" />
         <div
@@ -296,7 +336,7 @@ export default function SpeakerRevealPage() {
 
               <p className="text-center text-gray-400 mb-6 text-sm sm:text-base">
                 {clickCount >= TARGET_CLICKS
-                  ? "🎉 Target Reached! Speakers will be revealed soon!"
+                  ? " "
                   : `${TARGET_CLICKS - clickCount} more ${TARGET_CLICKS - clickCount === 1 ? "click" : "clicks"} needed to unlock the reveal!`}
               </p>
 
@@ -334,13 +374,37 @@ export default function SpeakerRevealPage() {
 
             {/* Celebration Effect */}
             {showCelebration && (
-              <Confetti
-                width={width}
-                height={height}
-                recycle={false}
-                numberOfPieces={200}
-                gravity={0.3}
-              />
+              <>
+                <Confetti
+                  width={width}
+                  height={height}
+                  recycle={false}
+                  numberOfPieces={celebrationPieces}
+                  gravity={0.2}
+                  colors={['#733080', '#B05EC2', '#ffffff', '#FFD700', '#FF69B4']}
+                  initialVelocityY={20}
+                />
+                <Confetti
+                  width={width}
+                  height={height}
+                  recycle={false}
+                  numberOfPieces={celebrationPieces / 2}
+                  gravity={0.25}
+                  colors={['#733080', '#B05EC2', '#ffffff', '#FFD700', '#FF69B4']}
+                  initialVelocityY={30}
+                  initialVelocityX={10}
+                />
+                <Confetti
+                  width={width}
+                  height={height}
+                  recycle={false}
+                  numberOfPieces={celebrationPieces / 2}
+                  gravity={0.25}
+                  colors={['#733080', '#B05EC2', '#ffffff', '#FFD700', '#FF69B4']}
+                  initialVelocityY={30}
+                  initialVelocityX={-10}
+                />
+              </>
             )}
 
             {/* Speaker Reveal Preview */}
@@ -349,22 +413,68 @@ export default function SpeakerRevealPage() {
               <div className="relative bg-black/60 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden">
                 <div className="grid md:grid-cols-2 gap-0">
                   {/* Left: Image Section */}
-                  <div className="relative h-64 md:h-auto min-h-[300px]">
-                    <img
-                      src="/photo-1507525428034-b723cf961d3e.avif"
-                      alt="Speakers"
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t md:bg-linear-to-r from-black/80 via-black/50 to-transparent" />
+                  <div className="relative h-64 md:h-auto min-h-[300px] overflow-hidden group">
+                    <AnimatePresence mode="wait">
+                      {clickCount >= TARGET_CLICKS ? (
+                        <motion.div
+                          key="revealed"
+                          initial={{ opacity: 0, scale: 1.1, filter: "blur(10px)" }}
+                          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                          transition={{ duration: 1.5, ease: "easeOut" }}
+                          className="absolute inset-0"
+                        >
+                          <img
+                            src="/reveal/images/paritosh_anand2.jpeg"
+                            alt="Paritosh Anand"
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-linear-to-t from-black via-transparent to-transparent opacity-60" />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="hidden"
+                          initial={{ opacity: 1 }}
+                          exit={{ opacity: 0, scale: 0.95, filter: "blur(20px)" }}
+                          transition={{ duration: 0.8 }}
+                          className="absolute inset-0"
+                        >
+                          <img
+                            src="/reveal/images/paritosh_avatar.jpg"
+                            alt="Mystery Speaker"
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
                     {/* Floating badge */}
-                    <div className="absolute top-6 left-6">
-                      <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-full px-4 py-2 flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-[#B05EC2] animate-pulse" />
-                        <span className="text-white text-sm font-medium">
-                          Revealing Soon
+                    <div className="absolute top-6 left-6 z-20">
+                      <motion.div
+                        animate={clickCount < TARGET_CLICKS ? {
+                          y: [0, -4, 0],
+                          boxShadow: [
+                            "0 4px 20px rgba(176,94,194,0.2)",
+                            "0 4px 30px rgba(176,94,194,0.5)",
+                            "0 4px 20px rgba(176,94,194,0.2)"
+                          ]
+                        } : {}}
+                        transition={{ 
+                          duration: 2, 
+                          repeat: Infinity, 
+                          ease: "easeInOut" 
+                        }}
+                        className="backdrop-blur-xl bg-white/15 border border-white/30 rounded-full px-4 py-2 flex items-center gap-2 shadow-[0_4px_20px_rgba(176,94,194,0.3)]"
+                      >
+                        <div className="relative">
+                          <div className={`h-2 w-2 rounded-full ${clickCount >= TARGET_CLICKS ? "bg-green-400" : "bg-green-400"}`} />
+                          {clickCount < TARGET_CLICKS && (
+                            <div className="absolute inset-0 h-2 w-2 rounded-full bg-green-400 animate-ping opacity-75" />
+                          )}
+                        </div>
+                        <span className="text-white text-sm font-bold tracking-tight">
+                          {clickCount >= TARGET_CLICKS ? "Revealed!" : "REVEALING SOON"}
                         </span>
-                      </div>
+                      </motion.div>
                     </div>
                   </div>
 
@@ -372,44 +482,96 @@ export default function SpeakerRevealPage() {
                   <div className="p-8 sm:p-10 md:p-12 flex flex-col justify-center">
                     <div className="space-y-6">
                       <div>
-                        <h3 className="text-3xl sm:text-4xl font-bold text-white mb-3">
-                          Featured Speakers
+                        <h3 className="text-3xl sm:text-4xl font-bold text-white mb-3 tracking-tight">
+                          {clickCount >= TARGET_CLICKS ? (
+                            <motion.span
+                              initial={{ y: 20, opacity: 0 }}
+                              animate={{ y: 0, opacity: 1 }}
+                              transition={{ duration: 0.5, delay: 0.5 }}
+                              className="bg-linear-to-r from-[#B05EC2] to-[#733080] bg-clip-text text-transparent"
+                            >
+                              Paritosh Anand
+                            </motion.span>
+                          ) : (
+                            "Featured Speakers"
+                          )}
                         </h3>
                         <p className="text-gray-300 text-base sm:text-lg leading-relaxed">
-                          Industry leaders ready to share their insights at
-                          E-Summit 2026
+                          {clickCount >= TARGET_CLICKS 
+                            ? "Content Creator & Entrepreneur joining us at E-Summit 2026."
+                            : "Industry leaders ready to share their insights at E-Summit 2026"}
                         </p>
                       </div>
 
-                      {/* Stats Grid */}
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-                          <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
-                            {clickCount}
+                      {/* Stats Grid or Revealed Info */}
+                      {clickCount >= TARGET_CLICKS ? (
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5, delay: 0.8 }}
+                          className="space-y-4"
+                        >
+                          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 flex items-center shadow-inner group transition-colors duration-300 hover:bg-white/10">
+                            <div className="h-10 w-10 rounded-full bg-[#733080]/20 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                              <Sparkles className="h-5 w-5 text-[#B05EC2]" />
+                            </div>
+                            <div>
+                              <div className="text-white font-bold text-lg">13 Feb</div>
+                              <div className="text-gray-400 text-xs uppercase tracking-widest">Date</div>
+                            </div>
                           </div>
-                          <div className="text-xs sm:text-sm text-gray-400 uppercase tracking-wide">
-                            Total Clicks
+                          
+                          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 flex items-center shadow-inner group transition-colors duration-300 hover:bg-white/10">
+                            <div className="h-10 w-10 rounded-full bg-[#733080]/20 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                              <Loader2 className="h-5 w-5 text-[#B05EC2]" />
+                            </div>
+                            <div>
+                              <div className="text-white font-bold text-lg text-nowrap">6:00 PM - 7:30 PM</div>
+                              <div className="text-gray-400 text-xs uppercase tracking-widest text-nowrap">Time</div>
+                            </div>
                           </div>
-                        </div>
-                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
-                          <div className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-[#733080] to-[#B05EC2] bg-clip-text text-transparent mb-1">
-                            {TARGET_CLICKS - clickCount}
-                          </div>
-                          <div className="text-xs sm:text-sm text-gray-400 uppercase tracking-wide">
-                            Remaining
-                          </div>
-                        </div>
-                      </div>
 
-                      {/* Status Message */}
-                      <div className="flex items-center gap-3 p-4 bg-linear-to-r from-[#733080]/20 to-[#B05EC2]/20 border border-[#733080]/30 rounded-xl">
-                        <Sparkles className="h-5 w-5 text-[#B05EC2] flex-shrink-0" />
-                        <p className="text-white text-sm sm:text-base">
-                          {clickCount >= TARGET_CLICKS
-                            ? "Target reached! Speakers will be revealed soon."
-                            : `Be part of the reveal — ${TARGET_CLICKS - clickCount} ${TARGET_CLICKS - clickCount === 1 ? "click" : "clicks"} to go!`}
-                        </p>
-                      </div>
+                          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 flex items-center shadow-inner group transition-colors duration-300 hover:bg-white/10">
+                            <div className="h-10 w-10 rounded-full bg-[#733080]/20 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                              <Users className="h-5 w-5 text-[#B05EC2]" />
+                            </div>
+                            <div>
+                              <div className="text-white font-bold text-lg">CAT Hall, BIT Mesra</div>
+                              <div className="text-gray-400 text-xs uppercase tracking-widest">Venue</div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <>
+                          {/* Stats Grid */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                              <div className="text-2xl sm:text-3xl font-bold text-white mb-1">
+                                {clickCount}
+                              </div>
+                              <div className="text-xs sm:text-sm text-gray-400 uppercase tracking-wide">
+                                Total Clicks
+                              </div>
+                            </div>
+                            <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4">
+                              <div className="text-2xl sm:text-3xl font-bold bg-linear-to-r from-[#733080] to-[#B05EC2] bg-clip-text text-transparent mb-1">
+                                {TARGET_CLICKS - clickCount}
+                              </div>
+                              <div className="text-xs sm:text-sm text-gray-400 uppercase tracking-wide">
+                                Remaining
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Status Message */}
+                          <div className="flex items-center gap-3 p-4 bg-linear-to-r from-[#733080]/20 to-[#B05EC2]/20 border border-[#733080]/30 rounded-xl">
+                            <Sparkles className="h-5 w-5 text-[#B05EC2] flex-shrink-0" />
+                            <p className="text-white text-sm sm:text-base">
+                              {`Be part of the reveal — ${TARGET_CLICKS - clickCount} ${TARGET_CLICKS - clickCount === 1 ? "click" : "clicks"} to go!`}
+                            </p>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -417,7 +579,7 @@ export default function SpeakerRevealPage() {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
         <DialogContent className="bg-black/95 border-white/10 text-white">
