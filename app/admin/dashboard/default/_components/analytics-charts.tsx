@@ -146,6 +146,7 @@ export function AnalyticsCharts({
   const genderConfig = {
     count: {
       label: "Users",
+      color: "hsl(var(--chart-5))",
     },
     Male: {
       label: "Male",
