@@ -64,6 +64,7 @@ type Event = {
   min_team_size: number | null;
   max_team_size: number | null;
   is_active: boolean;
+  whatsapp_group_link: string | null;
 };
 
 interface EventsDataTableProps {

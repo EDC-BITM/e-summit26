@@ -18,6 +18,7 @@ type Event = {
   image_url: string | null;
   max_participants: number | null;
   is_active: boolean | null;
+  whatsapp_group_link: string | null;
 };
 
 type TeamState = {
@@ -57,7 +58,7 @@ export default function EventsPage() {
   const [eventsLoading, setEventsLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [registeringEventId, setRegisteringEventId] = useState<string | null>(
-    null
+    null,
   );
 
   const isAccepted = teamState.membershipStatus === "accepted";
@@ -88,15 +89,15 @@ export default function EventsPage() {
       // Fetch active events
       const eventsData = await api<{ events: Event[] }>(
         "/api/leaderboard?activeOnly=true&includeOverall=false",
-        { method: "GET" }
+        { method: "GET" },
       );
       setEvents(eventsData.events || []);
 
       // Fetch user's registrations if they have a team
       if (myTeamId) {
-        const regsData = await api<
-          { data: Array<{ event_id: string; team_id: string }> }
-        >(`/api/events/registrations?teamId=${myTeamId}`, {
+        const regsData = await api<{
+          data: Array<{ event_id: string; team_id: string }>;
+        }>(`/api/events/registrations?teamId=${myTeamId}`, {
           method: "GET",
         }).catch(() => ({ data: [] }));
         setRegistrations(regsData.data || []);
@@ -148,7 +149,13 @@ export default function EventsPage() {
     <section className="relative min-h-[100svh] w-full overflow-x-hidden bg-black">
       {/* Background */}
       <div className="absolute inset-0 opacity-70">
-        <Silk speed={4} scale={1} color="#B05EC2" noiseIntensity={1.15} rotation={0} />
+        <Silk
+          speed={4}
+          scale={1}
+          color="#B05EC2"
+          noiseIntensity={1.15}
+          rotation={0}
+        />
       </div>
       <div className="pointer-events-none absolute inset-0 bg-black/55" />
       <div
@@ -170,7 +177,7 @@ export default function EventsPage() {
             href="/protected"
             className={cx(
               "inline-flex items-center gap-2 rounded-full bg-white/10 ring-1 ring-white/15",
-              "px-4 py-2 text-sm font-semibold text-white hover:bg-white/15 transition mb-6"
+              "px-4 py-2 text-sm font-semibold text-white hover:bg-white/15 transition mb-6",
             )}
           >
             <ArrowLeft className="h-4 w-4" />
@@ -214,7 +221,9 @@ export default function EventsPage() {
         >
           {loading ? (
             <div className="rounded-2xl bg-black/35 ring-1 ring-white/10 p-8 text-center">
-              <p className="text-sm text-white/60">Loading team information...</p>
+              <p className="text-sm text-white/60">
+                Loading team information...
+              </p>
             </div>
           ) : !isAccepted ? (
             <div className="rounded-2xl bg-orange-500/10 ring-1 ring-orange-500/20 p-6">
@@ -225,7 +234,8 @@ export default function EventsPage() {
                     No Team Found
                   </p>
                   <p className="text-sm text-orange-300/80">
-                    You need to join a team before registering for events. Visit the{" "}
+                    You need to join a team before registering for events. Visit
+                    the{" "}
                     <Link
                       href="/protected"
                       className="underline hover:text-orange-200"
