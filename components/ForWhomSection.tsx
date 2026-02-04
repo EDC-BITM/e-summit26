@@ -203,7 +203,7 @@ export default function ForWhomSection() {
         key: "biz",
         label: "Business Professionals",
         icon: BriefcaseBusiness,
-        desc: "Explore emerging opportunities, expand your network, and discover innovative solutions that can redefine how you lead and grow your organization.",
+        desc: "Explore emerging opportunities, expand your network, and discover innovative solutions that can redefine how you lead and grow your organization. Stay ahead of change by learning from industry pioneers, exchanging bold ideas, and turning insight into real-world impact.",
       },
       {
         key: "investors",

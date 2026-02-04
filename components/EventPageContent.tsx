@@ -206,7 +206,7 @@ export default function EventPageContent({ event }: EventPageContentProps) {
                   Form Your Team
                 </h2>
                 <p className="text-gray-400">
-                  Create or join a team of 2-4 members to compete in{" "}
+                  Create or join a team of 1-4 members to compete in{" "}
                   {event.name}
                 </p>
               </div>

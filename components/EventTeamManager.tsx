@@ -552,7 +552,7 @@ export default function EventTeamManager({
             </CardTitle>
             <p className="text-gray-400 text-sm">
               You need to create or join a team to register for {eventName}.
-              Teams must have 2-4 members to be eligible.
+              Teams must have 1-4 members to be eligible.
             </p>
           </CardHeader>
           <CardContent className="space-y-3">

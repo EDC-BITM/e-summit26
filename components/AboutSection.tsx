@@ -116,7 +116,7 @@ export default function AboutSection() {
           style={{ scale, opacity }}
           className={cn(
             "mt-12 overflow-hidden rounded-2xl sticky top-0",
-            "border border-white/10 bg-white/4",
+            "bg-white/4",
             "shadow-[0_30px_120px_rgba(0,0,0,0.55)]"
           )}
         >

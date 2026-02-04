@@ -483,7 +483,7 @@ export default function EventsList() {
               <div className="flex items-center gap-2 text-orange-400">
                 <AlertCircle className="h-5 w-5" />
                 <p>
-                  You need a team with 2-4 accepted members to register for
+                  You need a team with 1-4 accepted members to register for
                   events. Create or join a team first.
                 </p>
               </div>
