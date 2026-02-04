@@ -106,7 +106,7 @@ export default function EventsList() {
   const [presentationUrl, setPresentationUrl] = useState("");
   const [productPhotosUrl, setProductPhotosUrl] = useState("");
   const [achievements, setAchievements] = useState("");
-  
+
   // Upload states
   const [uploadingPresentation, setUploadingPresentation] = useState(false);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
@@ -274,23 +274,30 @@ export default function EventsList() {
     }
   };
 
-  const handleFileUpload = async (file: File, type: 'presentation' | 'photos', teamId: string) => {
-    const setUploading = type === 'presentation' ? setUploadingPresentation : setUploadingPhotos;
-    const setUrl = type === 'presentation' ? setPresentationUrl : setProductPhotosUrl;
-    
+  const handleFileUpload = async (
+    file: File,
+    type: "presentation" | "photos",
+    teamId: string,
+  ) => {
+    const setUploading =
+      type === "presentation" ? setUploadingPresentation : setUploadingPhotos;
+    const setUrl =
+      type === "presentation" ? setPresentationUrl : setProductPhotosUrl;
+
     setUploading(true);
     try {
       const url = await uploadFile(file, `teams/${teamId}/${type}`);
       setUrl(url);
       toast({
         title: "Upload Successful",
-        description: `${type === 'presentation' ? 'Presentation' : 'Product photos'} uploaded successfully.`,
+        description: `${type === "presentation" ? "Presentation" : "Product photos"} uploaded successfully.`,
       });
     } catch (error) {
       console.error(`Error uploading ${type}:`, error);
       toast({
         title: "Upload Failed",
-        description: error instanceof Error ? error.message : "Failed to upload file",
+        description:
+          error instanceof Error ? error.message : "Failed to upload file",
         variant: "destructive",
       });
     } finally {
@@ -389,11 +396,13 @@ export default function EventsList() {
   const eligibleTeams = getEligibleTeams();
 
   const currentEvent = useMemo(() => {
-    return events.find(e => e.id === currentEventId);
+    return events.find((e) => e.id === currentEventId);
   }, [events, currentEventId]);
 
   const isBPlan = currentEvent?.name.toLowerCase().includes("b plan");
-  const isInvestorSummit = currentEvent?.name.toLowerCase().includes("investor summit");
+  const isInvestorSummit = currentEvent?.name
+    .toLowerCase()
+    .includes("investor summit");
 
   // sort events to show Investor's Summit and B Plan first and cache the result
   const sortedEvents = useMemo(() => {
@@ -581,25 +590,17 @@ export default function EventsList() {
                               Registered
                             </Button>
                           ) : (
-                            <Button
-                              size="sm"
-                              onClick={() => handleRegisterClick(event.id)}
-                              disabled={
-                                isRegistering ||
-                                !user ||
-                                eligibleTeams.length === 0
-                              }
-                              className="flex-1 bg-gradient-to-r from-[#9000b1] to-[#733080] hover:from-[#800099] hover:to-[#5a2666] text-white shadow-lg shadow-purple-600/20 transition-all"
+                            <Link
+                              href={`/events/${event.slug}`}
+                              className="flex-1"
                             >
-                              {isRegistering ? (
-                                <>
-                                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                                  Registering...
-                                </>
-                              ) : (
-                                "Register Now"
-                              )}
-                            </Button>
+                              <Button
+                                size="sm"
+                                className="w-full bg-gradient-to-r from-[#9000b1] to-[#733080] hover:from-[#800099] hover:to-[#5a2666] text-white shadow-lg shadow-purple-600/20 transition-all"
+                              >
+                                Register Now
+                              </Button>
+                            </Link>
                           )}
                         </div>
                       </CardContent>
@@ -762,15 +763,18 @@ export default function EventsList() {
                           <h4 className="text-base sm:text-lg font-bold text-white mb-3">
                             Additional Information
                           </h4>
-                          
+
                           <div className="space-y-2">
                             <Label className="text-xs text-gray-400">
-                              Presentation/Pitch Deck (PDF or Link) <span className="text-red-500">*</span>
+                              Presentation/Pitch Deck (PDF or Link){" "}
+                              <span className="text-red-500">*</span>
                             </Label>
                             <div className="space-y-3">
                               <Input
                                 value={presentationUrl}
-                                onChange={(e) => setPresentationUrl(e.target.value)}
+                                onChange={(e) =>
+                                  setPresentationUrl(e.target.value)
+                                }
                                 placeholder="Paste link or upload PDF"
                                 className="bg-white/5 border-white/10 text-white text-sm"
                               />
@@ -782,18 +786,31 @@ export default function EventsList() {
                                   id={`presentation-upload-${selectedTeam?.id}`}
                                   onChange={(e) => {
                                     const file = e.target.files?.[0];
-                                    if (file && selectedTeam) handleFileUpload(file, 'presentation', selectedTeam.id);
+                                    if (file && selectedTeam)
+                                      handleFileUpload(
+                                        file,
+                                        "presentation",
+                                        selectedTeam.id,
+                                      );
                                   }}
                                 />
                                 <Button
                                   type="button"
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => document.getElementById(`presentation-upload-${selectedTeam?.id}`)?.click()}
+                                  onClick={() =>
+                                    document
+                                      .getElementById(
+                                        `presentation-upload-${selectedTeam?.id}`,
+                                      )
+                                      ?.click()
+                                  }
                                   className="border-white/10 w-full text-xs"
                                   disabled={uploadingPresentation}
                                 >
-                                  {uploadingPresentation ? "Uploading..." : "Upload from Device"}
+                                  {uploadingPresentation
+                                    ? "Uploading..."
+                                    : "Upload from Device"}
                                 </Button>
                               </div>
                             </div>
@@ -803,12 +820,15 @@ export default function EventsList() {
                             <>
                               <div className="space-y-2">
                                 <Label className="text-xs text-gray-400">
-                                  Product Photos <span className="text-red-500">*</span>
+                                  Product Photos{" "}
+                                  <span className="text-red-500">*</span>
                                 </Label>
                                 <div className="space-y-3">
                                   <Input
                                     value={productPhotosUrl}
-                                    onChange={(e) => setProductPhotosUrl(e.target.value)}
+                                    onChange={(e) =>
+                                      setProductPhotosUrl(e.target.value)
+                                    }
                                     placeholder="Photos link or upload"
                                     className="bg-white/5 border-white/10 text-white text-sm"
                                   />
@@ -820,18 +840,31 @@ export default function EventsList() {
                                       id={`photos-upload-${selectedTeam?.id}`}
                                       onChange={(e) => {
                                         const file = e.target.files?.[0];
-                                        if (file && selectedTeam) handleFileUpload(file, 'photos', selectedTeam.id);
+                                        if (file && selectedTeam)
+                                          handleFileUpload(
+                                            file,
+                                            "photos",
+                                            selectedTeam.id,
+                                          );
                                       }}
                                     />
                                     <Button
                                       type="button"
                                       variant="outline"
                                       size="sm"
-                                      onClick={() => document.getElementById(`photos-upload-${selectedTeam?.id}`)?.click()}
+                                      onClick={() =>
+                                        document
+                                          .getElementById(
+                                            `photos-upload-${selectedTeam?.id}`,
+                                          )
+                                          ?.click()
+                                      }
                                       className="border-white/10 w-full text-xs"
                                       disabled={uploadingPhotos}
                                     >
-                                      {uploadingPhotos ? "Uploading..." : "Upload from Device"}
+                                      {uploadingPhotos
+                                        ? "Uploading..."
+                                        : "Upload from Device"}
                                     </Button>
                                   </div>
                                 </div>
@@ -842,7 +875,9 @@ export default function EventsList() {
                                 </Label>
                                 <Input
                                   value={achievements}
-                                  onChange={(e) => setAchievements(e.target.value)}
+                                  onChange={(e) =>
+                                    setAchievements(e.target.value)
+                                  }
                                   placeholder="Key milestones/achievements"
                                   className="bg-white/5 border-white/10 text-white text-sm"
                                 />
@@ -873,7 +908,7 @@ export default function EventsList() {
                   <AlertDialogAction
                     onClick={handleConfirmRegistration}
                     disabled={
-                      registeringEventId !== null || 
+                      registeringEventId !== null ||
                       loadingTeamMembers ||
                       uploadingPresentation ||
                       uploadingPhotos ||
