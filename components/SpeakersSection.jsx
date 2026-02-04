@@ -382,7 +382,7 @@ export default function SpeakersSection() {
                     <div className="mt-5 text-2xl sm:text-3xl font-semibold leading-tight tracking-tight">
                       Speakers coming soon.
                       <div className="text-white/75">
-                        Announcements rolling out shortly.
+                        Announcements rolling.
                       </div>
                     </div>
 
@@ -424,7 +424,7 @@ export default function SpeakersSection() {
                     {/* CTA row */}
                     <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
                       <a
-                        href="/speakers"
+                        href="/reveal/speaker"
                         className="
                           inline-flex items-center gap-2 rounded-full
                           bg-white/90 px-5 py-3 text-sm font-semibold text-black
@@ -432,7 +432,7 @@ export default function SpeakersSection() {
                           hover:bg-white
                         "
                       >
-                        Get updates
+                        Reveal Speakers
                         <ArrowRight size={16} className="opacity-90" />
                       </a>
 
