@@ -176,11 +176,25 @@ export default function SpeakersSection() {
                 WebkitOverflowScrolling: "touch",
               }}
               onPointerDown={(e) => {
+                // ✅ FIX: if clicking an interactive element, DON'T start drag / pointer-capture
+                const target = e.target;
+                if (
+                  target instanceof HTMLElement &&
+                  target.closest(
+                    'a,button,input,textarea,select,[role="button"],[data-no-drag="true"]'
+                  )
+                ) {
+                  return;
+                }
+
                 const scroller = scrollerRef.current;
                 if (!scroller) return;
+
                 drag.current.down = true;
                 drag.current.startX = e.clientX;
                 drag.current.startScrollLeft = scroller.scrollLeft;
+
+                // only capture when dragging starts
                 scroller.setPointerCapture?.(e.pointerId);
               }}
               onPointerMove={(e) => {
@@ -206,14 +220,13 @@ export default function SpeakersSection() {
                   const scale = isActive ? "scale-[1.02]" : "scale-[0.98]";
                   const op = isActive ? "opacity-100" : "opacity-92";
 
-                  // mask ONLY non-first cards
                   const isMaskedCard = MASK_SPEAKERS && i !== 0;
 
                   const displayName = isMaskedCard ? `Speaker ${i + 1}` : sp.name;
                   const displayTitle = isMaskedCard ? "Revealing soon" : sp.title;
 
-                  const instagramHref = sp.instagramHref || "#";
-                  const linkedinHref = sp.linkedinHref || "#";
+                  const instagramHref = sp.instagramHref;
+                  const linkedinHref = sp.linkedinHref;
 
                   return (
                     <div
@@ -262,6 +275,8 @@ export default function SpeakersSection() {
                             href={instagramHref}
                             target="_blank"
                             rel="noreferrer"
+                            data-no-drag="true"
+                            onPointerDown={(e) => e.stopPropagation()} // ✅ extra-safe
                             className="grid h-10 w-10 place-items-center rounded-xl bg-white/90 text-black shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
                             aria-label="Instagram"
                           >
@@ -271,6 +286,8 @@ export default function SpeakersSection() {
                             href={linkedinHref}
                             target="_blank"
                             rel="noreferrer"
+                            data-no-drag="true"
+                            onPointerDown={(e) => e.stopPropagation()} // ✅ extra-safe
                             className="grid h-10 w-10 place-items-center rounded-xl bg-white/90 text-black shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
                             aria-label="LinkedIn"
                           >
@@ -310,9 +327,8 @@ export default function SpeakersSection() {
                   h-[390px] sm:h-[410px] md:h-[430px]
                 "
               >
-                <div className="pointer-events-auto h-full">
+                <div className="h-full">
                   <div className="relative h-full overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.06] p-6 sm:p-7 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
-                    {/* glow */}
                     <div className="pointer-events-none absolute inset-0">
                       <div className="absolute -left-28 -top-28 h-72 w-72 rounded-full bg-[#c046ff]/22 blur-[85px]" />
                       <div className="absolute -right-24 -bottom-28 h-80 w-80 rounded-full bg-[#ff4fd8]/14 blur-[95px]" />
@@ -357,10 +373,6 @@ export default function SpeakersSection() {
                           Reveal Speakers
                           <ArrowRight size={16} className="opacity-90" />
                         </a>
-
-                        {/* <div className="text-xs text-white/55">
-                          Covers 2 unrevealed cards
-                        </div> */}
                       </div>
                     </div>
                   </div>

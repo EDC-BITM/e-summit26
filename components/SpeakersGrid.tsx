@@ -27,6 +27,8 @@ function SocialBadge({
   return (
     <a
       href={href}
+      target={href === "#" ? undefined : "_blank"}
+      rel={href === "#" ? undefined : "noreferrer"}
       aria-label={label}
       className={[
         "grid place-items-center",
@@ -48,9 +50,12 @@ export default function SpeakersGrid() {
 
   const speakers: Speaker[] = [
     {
-      name: "Dr. Emma Parker",
-      title: "Senior Software Engineer",
-      img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1600&q=80",
+      name: "Paritosh Anand",
+      title: "Content Creator & Entrepreneur",
+      img: "/reveal/images/paritosh_anand2.jpeg",
+      instagramHref: "https://www.instagram.com/iamparitoshanand/?hl=en",
+      linkedinHref:
+        "https://www.linkedin.com/in/iamparitoshanand?originalSubdomain=in",
     },
     {
       name: "John Mitchell",
@@ -90,7 +95,7 @@ export default function SpeakersGrid() {
   ];
 
   return (
-    <section className="w-full bg-black text-white">
+    <section className="w-full bg-black text-white relative overflow-hidden">
       {/* subtle depth like the reference (NOT purple glow here) */}
       <div className="pointer-events-none absolute inset-0 -z-10 [background:radial-gradient(70%_70%_at_50%_20%,rgba(255,255,255,0.06),transparent_55%)]" />
 
@@ -120,26 +125,27 @@ export default function SpeakersGrid() {
           />
         </h2>
 
-        {/* Grid (masked like your slider reference) */}
+        {/* Grid */}
         <div className="mt-12 relative">
-          {/* CONTENT LAYER (blur + disable interactions when masked) */}
-          <div
-            className={[
-              "relative",
-              MASK_SPEAKERS
-                ? "pointer-events-none opacity-85 blur-[16px] saturate-[1.05] scale-[1.01]"
-                : "",
-            ].join(" ")}
-          >
+          {/* CONTENT LAYER */}
+          <div className="relative">
             <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
               {speakers.map((sp, i) => {
-                const displayName = MASK_SPEAKERS ? `Speaker ${i + 1}` : sp.name;
-                const displayTitle = MASK_SPEAKERS
-                  ? "Revealing soon"
-                  : sp.title;
+                const isMaskedCard = MASK_SPEAKERS && i !== 0;
+
+                const displayName = isMaskedCard ? `Speaker ${i + 1}` : sp.name;
+                const displayTitle = isMaskedCard ? "Revealing soon" : sp.title;
 
                 return (
-                  <div key={sp.name} className="min-w-0">
+                  <div
+                    key={sp.name}
+                    className={[
+                      "min-w-0",
+                      isMaskedCard
+                        ? "pointer-events-none opacity-85 blur-[16px] saturate-[1.05] scale-[1.01]"
+                        : "relative z-30",
+                    ].join(" ")}
+                  >
                     {/* Card */}
                     <div
                       className={[
@@ -153,11 +159,11 @@ export default function SpeakersGrid() {
                           height={300}
                           width={300}
                           src={sp.img}
-                          alt={MASK_SPEAKERS ? "Speaker placeholder" : sp.name}
+                          alt={isMaskedCard ? "Speaker placeholder" : sp.name}
                           draggable={false}
                           className={[
                             "h-full w-full object-cover",
-                            "grayscale",
+                            isMaskedCard ? "grayscale" : "",
                             "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
                             "group-hover:grayscale-0 group-hover:saturate-[1.06]",
                           ].join(" ")}
@@ -166,11 +172,11 @@ export default function SpeakersGrid() {
                         {/* subtle inner vignette */}
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-                        {/* socials (hidden when masked, like reference) */}
+                        {/* socials (only on revealed Paritosh card) */}
                         <div
                           className={[
-                            "absolute bottom-4 right-4 flex items-center gap-2",
-                            MASK_SPEAKERS ? "opacity-0" : "opacity-100",
+                            "absolute bottom-4 right-4 flex items-center gap-2 transition-opacity duration-300",
+                            isMaskedCard ? "opacity-0" : "opacity-100",
                           ].join(" ")}
                         >
                           <SocialBadge
@@ -204,10 +210,21 @@ export default function SpeakersGrid() {
             </div>
           </div>
 
-          {/* GLOBAL MASK (one overlay for the whole grid area) */}
+          {/* MASK PANEL — covers ONLY the other cards (not Paritosh) */}
           {MASK_SPEAKERS && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center px-4">
-              <div className="w-full max-w-2xl">
+            <div
+              className="
+                absolute z-20
+                right-0 top-0 bottom-0
+                w-[calc(100%-320px)]
+                sm:w-[calc(100%-340px)]
+                lg:w-[calc(100%-260px)]
+                flex items-center justify-center
+                px-4
+                pointer-events-none
+              "
+            >
+              <div className="w-full max-w-2xl pointer-events-auto">
                 <div className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.06] p-5 sm:p-7 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
                   {/* subtle glow + vignette inside the panel */}
                   <div className="pointer-events-none absolute inset-0">
@@ -259,11 +276,6 @@ export default function SpeakersGrid() {
                       We’re curating a high-signal lineup across AI, startups,
                       product, and growth. Follow along — the reveal starts
                       soon.
-                    </div>
-
-                    {/* quick “teaser” blocks */}
-                    <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      {/* intentionally blank to match your reference */}
                     </div>
 
                     {/* CTA row */}
