@@ -12,9 +12,12 @@ export default function SpeakersSection() {
   const speakers = useMemo(
     () => [
       {
-        name: "Dr. Emma Parker",
-        title: "Chief AI Scientist",
-        img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1600&q=80",
+        name: "Paritosh Anand",
+        title: "Content Creator & Entrepreneur",
+        img: "/reveal/images/paritosh_anand2.jpeg",
+        instagramHref: "https://www.instagram.com/iamparitoshanand/?hl=en",
+        linkedinHref:
+          "https://www.linkedin.com/in/iamparitoshanand?originalSubdomain=in",
       },
       {
         name: "John Mitchell",
@@ -100,8 +103,7 @@ export default function SpeakersSection() {
 
     const onScroll = () => scheduleUpdate();
     scroller.addEventListener("scroll", onScroll, { passive: true });
-    
-    // Defer initial update to avoid synchronous setState inside effect
+
     const timeout = setTimeout(() => {
       updateActive();
     }, 0);
@@ -115,31 +117,24 @@ export default function SpeakersSection() {
 
   return (
     <section className="relative w-full overflow-hidden text-white">
-      {/* Background: push the purple glow MUCH harder (to match your reference) */}
+      {/* Background */}
       <div className="pointer-events-none absolute inset-0 -z-10">
-        {/* base */}
         <div className="absolute inset-0 bg-[#040008]" />
 
-        {/* large soft fields */}
         <div className="absolute -left-[420px] -top-[360px] h-[980px] w-[980px] rounded-full bg-[#5b1ea6]/55 blur-[190px]" />
         <div className="absolute left-[10%] top-[-45%] h-[1100px] w-[1100px] rounded-full bg-[#7b2bd0]/40 blur-[210px]" />
         <div className="absolute left-[24%] top-[18%] h-[880px] w-[880px] rounded-full bg-[#8a35e6]/30 blur-[210px]" />
 
-        {/* bottom “hot” magenta/purple like the screenshot */}
         <div className="absolute left-1/2 bottom-[-55%] h-[1200px] w-[1200px] -translate-x-1/2 rounded-full bg-[#c046ff]/55 blur-[220px]" />
         <div className="absolute left-[55%] bottom-[-40%] h-[980px] w-[980px] rounded-full bg-[#ff4fd8]/20 blur-[220px]" />
 
-        {/* right side deep purple falloff */}
         <div className="absolute right-[-40%] top-[5%] h-[1100px] w-[1100px] rounded-full bg-[#220044]/60 blur-[230px]" />
 
-        {/* contrast + vignette */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/55" />
         <div className="absolute inset-0 [background:radial-gradient(80%_70%_at_50%_55%,transparent_0%,rgba(0,0,0,0.45)_70%,rgba(0,0,0,0.75)_100%)]" />
       </div>
 
-      {/* SINGLE wrapper so heading and slider share the same left edge */}
       <div className="mx-auto max-w-7xl px-6 pt-16 pb-10 md:pt-20">
-        {/* Eyebrow (match your other sections exactly) */}
         <div className="flex items-center gap-3 text-white/85">
           <span className="h-px w-10 bg-white/80" />
           <span className="text-xs font-semibold tracking-[0.22em] uppercase">
@@ -147,7 +142,6 @@ export default function SpeakersSection() {
           </span>
         </div>
 
-        {/* Heading (same alignment as cards below) */}
         <h2
           className="
             mt-6
@@ -164,17 +158,8 @@ export default function SpeakersSection() {
           />
         </h2>
 
-        {/* Slider */}
         <div className="mt-10 relative">
-          {/* CONTENT LAYER (blur + disable interactions when masked) */}
-          <div
-            className={[
-              "relative",
-              MASK_SPEAKERS
-                ? "pointer-events-none opacity-85 blur-[16px] saturate-[1.05] scale-[1.01]"
-                : "",
-            ].join(" ")}
-          >
+          <div className="relative">
             <div
               ref={scrollerRef}
               className="
@@ -221,12 +206,14 @@ export default function SpeakersSection() {
                   const scale = isActive ? "scale-[1.02]" : "scale-[0.98]";
                   const op = isActive ? "opacity-100" : "opacity-92";
 
-                  const displayName = MASK_SPEAKERS
-                    ? `Speaker ${i + 1}`
-                    : sp.name;
-                  const displayTitle = MASK_SPEAKERS
-                    ? "Revealing soon"
-                    : sp.title;
+                  // mask ONLY non-first cards
+                  const isMaskedCard = MASK_SPEAKERS && i !== 0;
+
+                  const displayName = isMaskedCard ? `Speaker ${i + 1}` : sp.name;
+                  const displayTitle = isMaskedCard ? "Revealing soon" : sp.title;
+
+                  const instagramHref = sp.instagramHref || "#";
+                  const linkedinHref = sp.linkedinHref || "#";
 
                   return (
                     <div
@@ -238,6 +225,9 @@ export default function SpeakersSection() {
                         lift,
                         scale,
                         op,
+                        isMaskedCard
+                          ? "pointer-events-none blur-[16px] opacity-80 saturate-[1.05] scale-[0.96]"
+                          : "relative z-30",
                       ].join(" ")}
                       style={{ scrollSnapAlign: "center" }}
                     >
@@ -246,14 +236,14 @@ export default function SpeakersSection() {
                           height={360}
                           width={360}
                           src={sp.img}
-                          alt={MASK_SPEAKERS ? "Speaker placeholder" : sp.name}
+                          alt={isMaskedCard ? "Speaker placeholder" : sp.name}
                           draggable={false}
-                          className="
-                            h-90 w-full object-cover
-                            grayscale
-                            transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]
-                            group-hover:grayscale-0 group-hover:saturate-[1.06]
-                          "
+                          className={[
+                            "h-90 w-full object-cover",
+                            isMaskedCard ? "grayscale" : "",
+                            "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                            "group-hover:grayscale-0 group-hover:saturate-[1.06]",
+                          ].join(" ")}
                         />
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent" />
 
@@ -261,7 +251,7 @@ export default function SpeakersSection() {
                         <div
                           className={[
                             "absolute bottom-4 right-4 flex items-center gap-2 transition-opacity duration-300",
-                            MASK_SPEAKERS
+                            isMaskedCard
                               ? "opacity-0"
                               : isActive
                                 ? "opacity-100"
@@ -269,14 +259,18 @@ export default function SpeakersSection() {
                           ].join(" ")}
                         >
                           <a
-                            href="#"
+                            href={instagramHref}
+                            target="_blank"
+                            rel="noreferrer"
                             className="grid h-10 w-10 place-items-center rounded-xl bg-white/90 text-black shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
                             aria-label="Instagram"
                           >
                             <Instagram size={18} />
                           </a>
                           <a
-                            href="#"
+                            href={linkedinHref}
+                            target="_blank"
+                            rel="noreferrer"
                             className="grid h-10 w-10 place-items-center rounded-xl bg-white/90 text-black shadow-[0_10px_30px_rgba(0,0,0,0.35)]"
                             aria-label="LinkedIn"
                           >
@@ -298,6 +292,81 @@ export default function SpeakersSection() {
                 })}
               </div>
             </div>
+
+            {/* BIG MASK PANEL (spans exactly 2 cards: middle + right), does NOT touch Paritosh */}
+            {MASK_SPEAKERS && (
+              <div
+                className="
+                  pointer-events-none
+                  absolute
+                  top-6
+                  z-20
+                  left-[calc(280px+40px)]
+                  w-[calc(280px*2+40px)]
+                  sm:left-[calc(320px+40px)]
+                  sm:w-[calc(320px*2+40px)]
+                  md:left-[calc(360px+56px)]
+                  md:w-[calc(360px*2+56px)]
+                  h-[390px] sm:h-[410px] md:h-[430px]
+                "
+              >
+                <div className="pointer-events-auto h-full">
+                  <div className="relative h-full overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.06] p-6 sm:p-7 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
+                    {/* glow */}
+                    <div className="pointer-events-none absolute inset-0">
+                      <div className="absolute -left-28 -top-28 h-72 w-72 rounded-full bg-[#c046ff]/22 blur-[85px]" />
+                      <div className="absolute -right-24 -bottom-28 h-80 w-80 rounded-full bg-[#ff4fd8]/14 blur-[95px]" />
+                      <div className="absolute inset-0 [background:radial-gradient(120%_80%_at_50%_0%,rgba(255,255,255,0.10)_0%,transparent_55%,rgba(0,0,0,0.40)_100%)]" />
+                      <div className="absolute inset-0 rounded-[28px] ring-1 ring-white/10" />
+                    </div>
+
+                    <div className="relative flex h-full flex-col justify-between">
+                      <div>
+                        <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.26em] uppercase text-white/90">
+                          <span className="relative flex h-2 w-2">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70 opacity-40" />
+                            <span className="relative inline-flex h-2 w-2 rounded-full bg-white/80" />
+                          </span>
+                          More Speakers Revealing Soon
+                          <Sparkles size={14} className="opacity-90" />
+                        </div>
+
+                        <div className="mt-6 text-2xl sm:text-3xl font-semibold leading-tight tracking-tight">
+                          Lineup is locked.
+                          <div className="text-white/75">
+                            Next announcements incoming.
+                          </div>
+                        </div>
+
+                        <div className="mt-3 text-sm sm:text-base text-white/65 leading-relaxed max-w-[46ch]">
+                          We’re rolling out the remaining speakers in drops. Stay
+                          tuned — the next two get revealed soon.
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-4">
+                        <a
+                          href="/reveal/speaker"
+                          className="
+                            inline-flex items-center gap-2 rounded-full
+                            bg-white/90 px-5 py-3 text-sm font-semibold text-black
+                            shadow-[0_18px_50px_rgba(0,0,0,0.35)]
+                            hover:bg-white
+                          "
+                        >
+                          Reveal Speakers
+                          <ArrowRight size={16} className="opacity-90" />
+                        </a>
+
+                        {/* <div className="text-xs text-white/55">
+                          Covers 2 unrevealed cards
+                        </div> */}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Bottom bar */}
             <div className="mt-10 pb-2">
@@ -335,121 +404,6 @@ export default function SpeakersSection() {
               </div>
             </div>
           </div>
-
-          {/* GLOBAL MASK (one overlay for the whole slider area) */}
-          {MASK_SPEAKERS && (
-            <div className="absolute inset-0 z-20 flex items-center justify-center px-4">
-              <div className="w-full max-w-2xl">
-                <div className="relative overflow-hidden rounded-[28px] border border-white/12 bg-white/[0.06] p-5 sm:p-7 shadow-[0_30px_120px_rgba(0,0,0,0.55)]">
-                  {/* subtle glow + vignette inside the panel */}
-                  <div className="pointer-events-none absolute inset-0">
-                    <div className="absolute -left-24 -top-24 h-64 w-64 rounded-full bg-[#c046ff]/20 blur-[70px]" />
-                    <div className="absolute -right-20 -bottom-28 h-72 w-72 rounded-full bg-[#ff4fd8]/12 blur-[80px]" />
-                    <div className="absolute inset-0 [background:radial-gradient(120%_80%_at_50%_0%,rgba(255,255,255,0.10)_0%,transparent_55%,rgba(0,0,0,0.35)_100%)]" />
-                    <div className="absolute inset-0 rounded-[28px] ring-1 ring-white/10" />
-                  </div>
-
-                  <div className="relative">
-                    {/* top row */}
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-2 text-[11px] font-semibold tracking-[0.26em] uppercase text-white/90">
-                        <span className="relative flex h-2 w-2">
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70 opacity-40" />
-                          <span className="relative inline-flex h-2 w-2 rounded-full bg-white/80" />
-                        </span>
-                        Lineup Revealing Soon
-                        <Sparkles size={14} className="opacity-90" />
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <a
-                          href="#"
-                          className="grid h-10 w-10 place-items-center rounded-2xl border border-white/12 bg-white/10 text-white/90 hover:bg-white/15"
-                          aria-label="Instagram"
-                        >
-                          <Instagram size={18} />
-                        </a>
-                        <a
-                          href="#"
-                          className="grid h-10 w-10 place-items-center rounded-2xl border border-white/12 bg-white/10 text-white/90 hover:bg-white/15"
-                          aria-label="LinkedIn"
-                        >
-                          <Linkedin size={18} />
-                        </a>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 text-2xl sm:text-3xl font-semibold leading-tight tracking-tight">
-                      Speakers coming soon.
-                      <div className="text-white/75">
-                        Announcements rolling.
-                      </div>
-                    </div>
-
-                    {/* subtext */}
-                    <div className="mt-2 text-sm sm:text-base text-white/65 leading-relaxed">
-                      We’re curating a high-signal lineup across AI, startups,
-                      product, and growth. Follow along — the reveal starts
-                      soon.
-                    </div>
-
-                    {/* quick “teaser” blocks */}
-                    <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      {/* <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
-                          Tracks
-                        </div>
-                        <div className="mt-1 text-sm font-medium text-white/85">
-                          AI • Product • Startups
-                        </div>
-                      </div>
-                      <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
-                          Format
-                        </div>
-                        <div className="mt-1 text-sm font-medium text-white/85">
-                          Keynotes • Panels • Firesides
-                        </div>
-                      </div>
-                      <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/55">
-                          Drop
-                        </div>
-                        <div className="mt-1 text-sm font-medium text-white/85">
-                          Rolling reveals
-                        </div>
-                      </div> */}
-                    </div>
-
-                    {/* CTA row */}
-                    <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-                      <a
-                        href="/reveal/speaker"
-                        className="
-                          inline-flex items-center gap-2 rounded-full
-                          bg-white/90 px-5 py-3 text-sm font-semibold text-black
-                          shadow-[0_18px_50px_rgba(0,0,0,0.35)]
-                          hover:bg-white
-                        "
-                      >
-                        Reveal Speakers
-                        <ArrowRight size={16} className="opacity-90" />
-                      </a>
-
-                      {/* <div className="text-xs text-white/55">
-                        Tip: announce 1–2 speakers weekly to build hype.
-                      </div> */}
-                    </div>
-                  </div>
-                </div>
-
-                {/* small footer hint (responsive)
-                <div className="mt-3 text-center text-xs text-white/50">
-                  ✦ Lineup preview is intentionally blurred — full reveal coming soon.
-                </div> */}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </section>
