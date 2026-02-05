@@ -47,7 +47,7 @@ export default function SpeakerRevealPage() {
 
   useEffect(() => {
     // ✅ Supabase disconnected — hardcode full progress + reveal
-    setClickCount(TARGET_CLICKS);
+    setClickCount(1527);
     setHasClicked(true);
 
     // optional: keep the original "party" behavior when target is reached
