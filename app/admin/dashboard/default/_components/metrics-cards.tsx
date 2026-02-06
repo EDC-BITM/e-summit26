@@ -26,8 +26,8 @@ export function MetricCard({
     ? trend.value > 0
       ? "up"
       : trend.value < 0
-      ? "down"
-      : "neutral"
+        ? "down"
+        : "neutral"
     : null;
 
   return (
@@ -55,7 +55,7 @@ export function MetricCard({
                 "text-xs font-medium",
                 trendDirection === "up" && "text-green-500",
                 trendDirection === "down" && "text-red-500",
-                trendDirection === "neutral" && "text-gray-500"
+                trendDirection === "neutral" && "text-gray-500",
               )}
             >
               {trend.value > 0 ? "+" : ""}
@@ -74,6 +74,7 @@ interface AdditionalMetricsProps {
     totalUsers: number;
     weekSignups: number;
     totalTeams: number;
+    totalTeamMembers: number;
     weekSignupsTrend: number;
     onboardingTrend: number;
     engagementTrend: number;
@@ -88,7 +89,7 @@ export function AdditionalMetrics({ stats }: AdditionalMetricsProps) {
 
   const avgTeamSize =
     stats.totalTeams > 0
-      ? (stats.totalUsers / stats.totalTeams).toFixed(1)
+      ? (stats.totalTeamMembers / stats.totalTeams).toFixed(1)
       : "0";
 
   return (
@@ -119,7 +120,7 @@ export function AdditionalMetrics({ stats }: AdditionalMetricsProps) {
       <MetricCard
         title="Active Rate"
         value={`${Math.round(
-          (stats.onboardedCount / Math.max(stats.totalUsers, 1)) * 100
+          (stats.onboardedCount / Math.max(stats.totalUsers, 1)) * 100,
         )}%`}
         description="User engagement metric"
         trend={{

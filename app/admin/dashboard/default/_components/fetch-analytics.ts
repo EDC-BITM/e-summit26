@@ -59,25 +59,26 @@ export async function fetchAnalyticsData() {
   const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
   const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   
+  // Filter out admin/moderator users from signup counts
   const weekSignups = profilesList.filter(
-    (p) => new Date(p.created_at) >= weekAgo
+    (p) => !adminModUserIds.has(p.id) && new Date(p.created_at) >= weekAgo
   ).length;
   
   const previousWeekSignups = profilesList.filter(
-    (p) => new Date(p.created_at) >= twoWeeksAgo && new Date(p.created_at) < weekAgo
+    (p) => !adminModUserIds.has(p.id) && new Date(p.created_at) >= twoWeeksAgo && new Date(p.created_at) < weekAgo
   ).length;
   
   const monthSignups = profilesList.filter(
-    (p) => new Date(p.created_at) >= monthAgo
+    (p) => !adminModUserIds.has(p.id) && new Date(p.created_at) >= monthAgo
   ).length;
 
-  // Calculate onboarding completion trend
+  // Calculate onboarding completion trend (excluding admin/moderator)
   const onboardedThisWeek = profilesList.filter(
-    (p) => p.onboarding_completed && new Date(p.created_at) >= weekAgo
+    (p) => !adminModUserIds.has(p.id) && p.onboarding_completed && new Date(p.created_at) >= weekAgo
   ).length;
   
   const onboardedPreviousWeek = profilesList.filter(
-    (p) => p.onboarding_completed && new Date(p.created_at) >= twoWeeksAgo && new Date(p.created_at) < weekAgo
+    (p) => !adminModUserIds.has(p.id) && p.onboarding_completed && new Date(p.created_at) >= twoWeeksAgo && new Date(p.created_at) < weekAgo
   ).length;
 
   // Calculate branch distribution
@@ -162,6 +163,14 @@ export async function fetchAnalyticsData() {
     (t) => new Date(t.created_at) >= twoWeeksAgo && new Date(t.created_at) < weekAgo
   ).length;
 
+  // Fetch team members count for average team size calculation
+  const { data: teamMembers } = await supabase
+    .from("team_members")
+    .select("user_id, status")
+    .eq("status", "accepted");
+
+  const totalTeamMembers = teamMembers?.length || 0;
+
   // Calculate trends (week over week percentage change)
   const weekSignupsTrend = previousWeekSignups > 0 
     ? Math.round(((weekSignups - previousWeekSignups) / previousWeekSignups) * 100)
@@ -171,12 +180,12 @@ export async function fetchAnalyticsData() {
     ? Math.round(((onboardedThisWeek - onboardedPreviousWeek) / onboardedPreviousWeek) * 100)
     : onboardedThisWeek > 0 ? 100 : 0;
 
-  // Calculate engagement/active rate trend
+  // Calculate engagement/active rate trend (excluding admin/moderator)
   const usersAsOfWeekAgo = profilesList.filter(
-    (p) => new Date(p.created_at) < weekAgo
+    (p) => !adminModUserIds.has(p.id) && new Date(p.created_at) < weekAgo
   ).length;
   const onboardedAsOfWeekAgo = profilesList.filter(
-    (p) => p.onboarding_completed && new Date(p.created_at) < weekAgo
+    (p) => !adminModUserIds.has(p.id) && p.onboarding_completed && new Date(p.created_at) < weekAgo
   ).length;
   
   const currentActiveRate = totalUsers > 0 ? (onboardedCount / totalUsers) * 100 : 0;
@@ -198,6 +207,7 @@ export async function fetchAnalyticsData() {
       weekSignups,
       monthSignups,
       totalTeams,
+      totalTeamMembers,
       teamsThisWeek,
       weekSignupsTrend,
       onboardingTrend,

@@ -84,7 +84,7 @@ interface UsersDataTableProps {
 const createColumns = (
   onViewDetails: (user: UserWithDetails) => void,
   onChangeRole: (user: UserWithDetails) => void,
-  currentUserRole?: string
+  currentUserRole?: string,
 ): ColumnDef<UserWithDetails>[] => [
   {
     accessorKey: "name",
@@ -149,8 +149,8 @@ const createColumns = (
         role === "admin"
           ? "destructive"
           : role === "moderator"
-          ? "default"
-          : "secondary";
+            ? "default"
+            : "secondary";
       return (
         <Badge variant={variant} className="capitalize">
           {role}
@@ -366,7 +366,7 @@ export function UsersDataTable({
   const router = useRouter();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -377,7 +377,7 @@ export function UsersDataTable({
   const [isDetailsOpen, setIsDetailsOpen] = React.useState(false);
   const [isRoleDialogOpen, setIsRoleDialogOpen] = React.useState(false);
   const [newRole, setNewRole] = React.useState<"admin" | "moderator" | "user">(
-    "user"
+    "user",
   );
   const [isUpdating, setIsUpdating] = React.useState(false);
 
@@ -426,7 +426,7 @@ export function UsersDataTable({
 
   const columns = React.useMemo(
     () => createColumns(handleViewDetails, handleChangeRole, currentUserRole),
-    [currentUserRole]
+    [currentUserRole],
   );
 
   const table = useReactTable({
@@ -466,16 +466,14 @@ export function UsersDataTable({
   });
 
   // Get unique values for filters
-  const roles = React.useMemo(() => {
-    const uniqueRoles = new Set(users.map((user) => user.role));
-    return Array.from(uniqueRoles);
-  }, [users]);
+  // Always show all possible roles in the filter dropdown
+  const roles = ["user", "moderator", "admin"];
 
   const teams = React.useMemo(() => {
     const uniqueTeams = new Set(
       users
         .map((user) => user.team)
-        .filter((team): team is string => team !== null)
+        .filter((team): team is string => team !== null),
     );
     return Array.from(uniqueTeams);
   }, [users]);
@@ -611,7 +609,7 @@ export function UsersDataTable({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   );
@@ -630,7 +628,7 @@ export function UsersDataTable({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -827,7 +825,7 @@ export function UsersDataTable({
                         month: "long",
                         day: "numeric",
                         year: "numeric",
-                      }
+                      },
                     )}
                   </p>
                 </div>
@@ -840,7 +838,7 @@ export function UsersDataTable({
                   <p className="text-sm">
                     {selectedUser.last_sign_in_at
                       ? new Date(
-                          selectedUser.last_sign_in_at
+                          selectedUser.last_sign_in_at,
                         ).toLocaleDateString("en-US", {
                           month: "long",
                           day: "numeric",
@@ -866,10 +864,10 @@ export function UsersDataTable({
                 <Button
                   onClick={() => {
                     const subject = encodeURIComponent(
-                      "Message from E-Summit 2026 Admin"
+                      "Message from E-Summit 2026 Admin",
                     );
                     const body = encodeURIComponent(
-                      `Hello ${selectedUser.name},\n\n`
+                      `Hello ${selectedUser.name},\n\n`,
                     );
                     window.location.href = `mailto:${selectedUser.email}?subject=${subject}&body=${body}`;
                   }}

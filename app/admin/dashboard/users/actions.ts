@@ -47,16 +47,34 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
   // Use service client to get all users
   const supabaseAdmin = await createServiceClient();
 
-  // Get all auth users
-  const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+  // Get all auth users with pagination (listUsers has a default limit of 50)
+  let allUsers: any[] = [];
+  let page = 1;
+  const perPage = 1000; // Max allowed by Supabase
+  
+  while (true) {
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers({
+      page,
+      perPage,
+    });
 
-  if (authError) {
-    console.error("Error fetching auth users:", authError);
-    throw new Error("Failed to fetch users");
+    if (authError) {
+      console.error("Error fetching auth users:", authError);
+      throw new Error("Failed to fetch users");
+    }
+
+    allUsers = allUsers.concat(authData.users);
+    
+    // If we got fewer users than perPage, we've reached the last page
+    if (authData.users.length < perPage) {
+      break;
+    }
+    
+    page++;
   }
 
   // Extract all user IDs
-  const userIds = authData.users.map(u => u.id);
+  const userIds = allUsers.map(u => u.id);
 
   // Batch fetch all user roles
   const { data: userRoles } = await supabaseAdmin
@@ -97,7 +115,7 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
   type RoleType = { id: string; name: string };
 
   // Map all users with their details
-  const users: UserWithDetails[] = authData.users.map(authUser => {
+  const users: UserWithDetails[] = allUsers.map(authUser => {
     const userRole = roleMap.get(authUser.id);
     const profile = profileMap.get(authUser.id);
     const teamMember = teamMap.get(authUser.id);
