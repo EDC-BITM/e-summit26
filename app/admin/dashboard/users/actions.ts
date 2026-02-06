@@ -55,44 +55,54 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
     throw new Error("Failed to fetch users");
   }
 
-  const users: UserWithDetails[] = [];
+  // Extract all user IDs
+  const userIds = authData.users.map(u => u.id);
 
-  for (const authUser of authData.users) {
-    // Get user role
-    const { data: userRole } = await supabaseAdmin
-      .from("user_role")
-      .select(`
-        role_id,
-        roles (
-          id,
-          name
-        )
-      `)
-      .eq("user_id", authUser.id)
-      .single();
+  // Batch fetch all user roles
+  const { data: userRoles } = await supabaseAdmin
+    .from("user_role")
+    .select(`
+      user_id,
+      role_id,
+      roles (
+        id,
+        name
+      )
+    `)
+    .in("user_id", userIds);
 
-    // Get user profile
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("roll_no, phone, branch, onboarding_completed")
-      .eq("id", authUser.id)
-      .single();
+  // Batch fetch all profiles
+  const { data: profiles } = await supabaseAdmin
+    .from("profiles")
+    .select("id, roll_no, phone, branch, onboarding_completed")
+    .in("id", userIds);
 
-    // Get user team (assuming there's a team_members table)
-    const { data: teamMember } = await supabaseAdmin
-      .from("team_members")
-      .select(`
-        teams (
-          name
-        )
-      `)
-      .eq("user_id", authUser.id)
-      .single();
+  // Batch fetch all team members
+  const { data: teamMembers } = await supabaseAdmin
+    .from("team_members")
+    .select(`
+      user_id,
+      teams (
+        name
+      )
+    `)
+    .in("user_id", userIds);
 
-    type TeamType = { name: string };
-    type RoleType = { id: string; name: string };
+  // Create lookup maps for O(1) access
+  const roleMap = new Map(userRoles?.map(ur => [ur.user_id, ur]) || []);
+  const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
+  const teamMap = new Map(teamMembers?.map(tm => [tm.user_id, tm]) || []);
 
-    users.push({
+  type TeamType = { name: string };
+  type RoleType = { id: string; name: string };
+
+  // Map all users with their details
+  const users: UserWithDetails[] = authData.users.map(authUser => {
+    const userRole = roleMap.get(authUser.id);
+    const profile = profileMap.get(authUser.id);
+    const teamMember = teamMap.get(authUser.id);
+
+    return {
       id: authUser.id,
       email: authUser.email || "",
       name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
@@ -106,8 +116,8 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
       phone: profile?.phone || null,
       branch: profile?.branch || null,
       team: (teamMember?.teams as unknown as TeamType | null)?.name || null,
-    });
-  }
+    };
+  });
 
   return users;
 }

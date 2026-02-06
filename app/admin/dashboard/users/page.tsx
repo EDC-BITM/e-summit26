@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { UsersDataTable } from "./_components/users-data-table";
 import { getAllUsersWithDetails } from "./actions";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/admin/current-user";
 
 export default async function UsersPage() {
   await connection();
@@ -17,32 +17,13 @@ export default async function UsersPage() {
     );
   }
 
-  const users = await getAllUsersWithDetails();
+  // Fetch users and current user role in parallel
+  const [users, currentUser] = await Promise.all([
+    getAllUsersWithDetails(),
+    getCurrentUser(),
+  ]);
 
-  // Get current user's role
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  let currentUserRole = "user";
-  if (user) {
-    const { data: userRole } = await supabase
-      .from("user_role")
-      .select(
-        `
-        roles!inner (
-          name
-        )
-      `,
-      )
-      .eq("user_id", user.id)
-      .single();
-
-    type Role = { name: string };
-    currentUserRole =
-      (userRole?.roles as unknown as Role | null)?.name || "user";
-  }
+  const currentUserRole = currentUser?.role || "user";
 
   return (
     <div className="@container/main flex flex-col gap-6">
