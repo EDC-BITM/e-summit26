@@ -37,6 +37,7 @@ interface AnalyticsChartsProps {
   genderDistribution: Array<{ gender: string; count: number }>;
   collegeDistribution: Array<{ college: string; count: number }>;
   hourlyActivity: Array<{ hour: number; count: number }>;
+  eventRegistrationsByEvent: Array<{ event: string; count: number }>;
   stats: {
     onboardedCount: number;
     totalUsers: number;
@@ -53,6 +54,7 @@ export function AnalyticsCharts({
   genderDistribution,
   collegeDistribution,
   hourlyActivity,
+  eventRegistrationsByEvent,
   stats,
 }: AnalyticsChartsProps) {
   // User Growth Chart Config
@@ -76,6 +78,13 @@ export function AnalyticsCharts({
     count: {
       label: "Signups",
       color: "hsl(var(--chart-3))",
+    },
+  } satisfies ChartConfig;
+
+  const eventRegistrationsConfig = {
+    count: {
+      label: "Registrations",
+      color: "hsl(var(--chart-4))",
     },
   } satisfies ChartConfig;
 
@@ -257,6 +266,69 @@ export function AnalyticsCharts({
             </div>
           </div>
         </CardFooter>
+      </Card>
+
+      {/* Event Registrations */}
+      <Card className="@container/chart">
+        <CardHeader>
+          <CardTitle>Event Registrations</CardTitle>
+          <CardDescription>Team registrations per event</CardDescription>
+        </CardHeader>
+        <CardContent className="h-[400px]">
+          {eventRegistrationsByEvent.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+              No event registrations yet
+            </div>
+          ) : (
+            <ChartContainer
+              config={eventRegistrationsConfig}
+              className="h-full w-full"
+            >
+              <BarChart
+                accessibilityLayer
+                data={eventRegistrationsByEvent}
+                margin={{
+                  left: 12,
+                  right: 12,
+                  top: 12,
+                  bottom: 60,
+                }}
+              >
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="event"
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  interval={0}
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                  tick={{ fontSize: 11 }}
+                  tickFormatter={(value) =>
+                    value.length > 15 ? `${value.slice(0, 15)}…` : value
+                  }
+                />
+                <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent indicator="line" />}
+                />
+                <Bar
+                  dataKey="count"
+                  fill="var(--color-count)"
+                  radius={[6, 6, 0, 0]}
+                >
+                  <LabelList
+                    position="top"
+                    offset={6}
+                    className="fill-muted-foreground text-xs"
+                  />
+                </Bar>
+              </BarChart>
+            </ChartContainer>
+          )}
+        </CardContent>
       </Card>
 
       {/* Branch Distribution */}

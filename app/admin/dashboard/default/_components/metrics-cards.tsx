@@ -79,9 +79,13 @@ interface AdditionalMetricsProps {
     onboardingTrend: number;
     engagementTrend: number;
   };
+  eventRegistrationsByEvent: Array<{ event: string; count: number }>;
 }
 
-export function AdditionalMetrics({ stats }: AdditionalMetricsProps) {
+export function AdditionalMetrics({
+  stats,
+  eventRegistrationsByEvent,
+}: AdditionalMetricsProps) {
   const onboardingRate =
     stats.totalUsers > 0
       ? Math.round((stats.onboardedCount / stats.totalUsers) * 100)
@@ -91,6 +95,12 @@ export function AdditionalMetrics({ stats }: AdditionalMetricsProps) {
     stats.totalTeams > 0
       ? (stats.totalTeamMembers / stats.totalTeams).toFixed(1)
       : "0";
+
+  // Find worst performing event (lowest registrations)
+  const worstEvent =
+    eventRegistrationsByEvent.length > 0
+      ? eventRegistrationsByEvent[eventRegistrationsByEvent.length - 1]
+      : null;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -128,6 +138,37 @@ export function AdditionalMetrics({ stats }: AdditionalMetricsProps) {
           label: "engagement",
         }}
       />
+      {worstEvent && (
+        <Card className="md:col-span-2 lg:col-span-4 border-red-500/50 bg-red-500/5">
+          <CardHeader>
+            <CardTitle className="text-sm font-medium text-red-600 dark:text-red-400">
+              Lowest Registered Event
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-2xl font-bold text-red-700 dark:text-red-300">
+                  {worstEvent.event}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Only {worstEvent.count} team
+                  {worstEvent.count !== 1 ? "s" : ""} registered
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-red-600/80 dark:text-red-400/80">
+                  Needs attention
+                </div>
+                <div className="text-lg font-semibold text-red-600 dark:text-red-400">
+                  {worstEvent.count} registration
+                  {worstEvent.count !== 1 ? "s" : ""}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

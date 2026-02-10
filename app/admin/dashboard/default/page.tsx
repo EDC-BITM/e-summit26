@@ -33,7 +33,10 @@ export default async function Page() {
         <h2 className="text-xl font-semibold tracking-tight mb-4">
           Key Metrics
         </h2>
-        <AdditionalMetrics stats={analyticsData.stats} />
+        <AdditionalMetrics
+          stats={analyticsData.stats}
+          eventRegistrationsByEvent={analyticsData.eventRegistrationsByEvent}
+        />
       </div>
       <div>
         <h2 className="text-2xl font-semibold tracking-tight mb-4">

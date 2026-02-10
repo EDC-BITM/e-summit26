@@ -171,6 +171,46 @@ export async function fetchAnalyticsData() {
 
   const totalTeamMembers = teamMembers?.length || 0;
 
+  // Fetch registrations per event
+  type EventRegistrationRow = {
+    event_id: string | null;
+    events:
+      | {
+          name: string | null;
+        }
+      | {
+          name: string | null;
+        }[]
+      | null;
+  };
+
+  const { data: eventRegistrations } = (await supabase
+    .from("event_registrations")
+    .select("event_id, events(name)")
+    .order("registered_at", { ascending: false })) as {
+    data: EventRegistrationRow[] | null;
+  };
+
+  const eventRegistrationMap = new Map<string, number>();
+  (eventRegistrations || []).forEach((reg) => {
+    const eventName = Array.isArray(reg.events)
+      ? reg.events[0]?.name
+      : reg.events?.name;
+
+    if (!eventName) return;
+
+    eventRegistrationMap.set(
+      eventName,
+      (eventRegistrationMap.get(eventName) || 0) + 1,
+    );
+  });
+
+  const eventRegistrationsByEvent = Array.from(
+    eventRegistrationMap.entries(),
+  )
+    .map(([event, count]) => ({ event, count }))
+    .sort((a, b) => b.count - a.count);
+
   // Calculate trends (week over week percentage change)
   const weekSignupsTrend = previousWeekSignups > 0 
     ? Math.round(((weekSignups - previousWeekSignups) / previousWeekSignups) * 100)
@@ -213,5 +253,6 @@ export async function fetchAnalyticsData() {
       onboardingTrend,
       engagementTrend,
     },
+    eventRegistrationsByEvent,
   };
 }
