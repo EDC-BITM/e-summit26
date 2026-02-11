@@ -110,7 +110,27 @@ export const IMAGES = {
       width: 866,
       height: 650,
     },
-  
+    {
+      publicId:
+        "vecteezy_puma-logo-black-symbol-with-name-clothes-design-icon_10994431_w1cjbv",
+      width: 1920,
+      height: 1571,
+    },
+    {
+      publicId: "subway-logo_iqwkad",
+      width: 866,
+      height: 400,
+    },
+    {
+      publicId: "rapido_idwf5q",
+      width: 76,
+      height: 32,
+    },
+    {
+      publicId: "angel_one_quri7v",
+      width: 384,
+      height: 100,
+    },
   ],
   misc: {
     placeholder: "",
