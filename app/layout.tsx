@@ -65,6 +65,16 @@ export const metadata: Metadata = {
   },
   description:
     "The official website of E-Summit 2026, organized by the Entrepreneurship Development Cell (EDC) of BIT Mesra. Join us for an exciting event filled with innovation, networking, and entrepreneurial opportunities.",
+  applicationName: "E-Summit 2026",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "E-Summit 2026",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  manifest: "/manifest.json",
   alternates: {
     canonical: "/",
   },
@@ -87,12 +97,31 @@ export const metadata: Metadata = {
     description:
       "The official website of E-Summit 2026, organized by the Entrepreneurship Development Cell (EDC) of BIT Mesra. Join us for an exciting event filled with innovation, networking, and entrepreneurial opportunities.",
     locale: "en_IN",
+    images: [
+      {
+        url: "/screenshot_desktop.png",
+        width: 2880,
+        height: 1800,
+        alt: "E-Summit 2026 - BIT Mesra",
+      },
+      {
+        url: "/screenshot_tablet.png",
+        width: 1024,
+        height: 768,
+        alt: "E-Summit 2026 - BIT Mesra",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "E-Summit 2026 | EDC BIT Mesra",
     description:
       "The official website of E-Summit 2026, organized by the Entrepreneurship Development Cell (EDC) of BIT Mesra.",
+    images: ["/screenshot_desktop.png"],
+  },
+  icons: {
+    icon: [{ url: "/E_Fav.svg" }, { url: "/favicon.ico" }],
+    apple: [{ url: "/esummit_logo.png" }],
   },
 };
 
@@ -103,6 +132,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
+        />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="mobile-web-app-capable" content="yes" />
+      </head>
       <body className={`${googleSans.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
