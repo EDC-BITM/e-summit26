@@ -4,14 +4,53 @@ import AnimatedBlurText from "./AnimatedBlurText";
 import { CldImage } from "next-cloudinary";
 import { IMAGES } from "@/lib/images";
 import { motion } from "framer-motion";
+import LogoLoop, { type LogoItem } from "./LogoLoop";
+import Image from "next/image";
 
 export default function Sponsorship() {
   const sponsors = IMAGES.sponsors;
+  const currentSponsors: LogoItem[] = [
+    {
+      src: "/sponsors/651b9c8fa3255cf8ca0c191f_EazyDiner Logo Text 1.png",
+      alt: "EazyDiner",
+    },
+    { src: "/sponsors/Balshali TMT English-02 1.png", alt: "Balshali TMT" },
+    { src: "/sponsors/Brown - 2 (1) 1.png", alt: "Brown" },
+    { src: "/sponsors/E-SUMMIT'26 EVENTS-10 1.png", alt: "E-Summit Events" },
+    { src: "/sponsors/EEBj409UYAAA6UC 1.png", alt: "Sponsor Logo" },
+    { src: "/sponsors/EaseMyTrip_Logo 1.png", alt: "EaseMyTrip" },
+    { src: "/sponsors/Groovenexus 1.png", alt: "Groovenexus" },
+    { src: "/sponsors/Salts-Future of Wellness 1.png", alt: "Salts" },
+    { src: "/sponsors/Samford Logo-06 1.png", alt: "Samford" },
+    {
+      src: "/sponsors/Screenshot 2026-02-08 at 5.15.40 PM 1.png",
+      alt: "Sponsor Logo",
+    },
+    {
+      src: "/sponsors/Screenshot 2026-02-08 at 5.16.03 PM 1.png",
+      alt: "Sponsor Logo",
+    },
+    { src: "/sponsors/Waffle_Co 1.png", alt: "Waffle Co" },
+    {
+      src: "/sponsors/WhatsApp Image 2026-02-07 at 00.46.44 1.png",
+      alt: "Sponsor Logo",
+    },
+    { src: "/sponsors/bmw 1.png", alt: "BMW" },
+    { src: "/sponsors/brew_truck 1.png", alt: "Brew Truck" },
+    { src: "/sponsors/cuku cafe 1.png", alt: "Cuku Cafe" },
+    { src: "/sponsors/image 57.png", alt: "Sponsor Logo" },
+    { src: "/sponsors/images-14 1.png", alt: "Sponsor Logo" },
+    { src: "/sponsors/inext 1.png", alt: "Inext" },
+    { src: "/sponsors/logo sy 4 1.png", alt: "Sponsor Logo" },
+    { src: "/sponsors/titanium 1.png", alt: "Titanium" },
+    { src: "/sponsors/unnamed (1) 1.png", alt: "Sponsor Logo" },
+    { src: "/sponsors/weebes 1.png", alt: "Weebes" },
+  ];
 
   return (
     <section id="sponsorship" className="w-full bg-black text-white">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 pt-14 pb-16 md:pt-18">
-        {/* Current Sponsors - Revealing Soon */}
+        {/* Current Sponsors */}
         <div className="mb-24">
           {/* Eyebrow */}
           <div className="flex items-center gap-3 text-white/85">
@@ -24,39 +63,41 @@ export default function Sponsorship() {
           {/* Heading */}
           <h2 className="mt-5 text-4xl sm:text-5xl md:text-6xl leading-[1.06] tracking-tight font-semibold">
             <AnimatedBlurText
-              lines={["Our sponsors will be ", "revealed "]}
-              liteText="very soon"
+              lines={["Meet our ", "current "]}
+              liteText="sponsors"
             />
           </h2>
 
-          {/* Revealing Soon Section */}
+          {/* Logo Loop */}
           <div className="mt-10 relative overflow-hidden rounded-[36px] border border-white/10 bg-linear-to-b from-white/6 to-white/2 shadow-[0_24px_90px_rgba(0,0,0,0.75)]">
             <div className="absolute inset-0 bg-linear-to-b from-white/10 via-transparent to-transparent opacity-60" />
 
-            {/* Animated gradient orbs */}
-            <div className="absolute top-1/2 left-1/4 w-64 h-64 bg-[#733080]/20 rounded-full blur-[120px] animate-pulse" />
-            <div
-              className="absolute top-1/2 right-1/4 w-64 h-64 bg-[#B05EC2]/20 rounded-full blur-[120px] animate-pulse"
-              style={{ animationDelay: "1s" }}
-            />
-
-            <div className="relative z-10 flex flex-col items-center justify-center py-24 px-6">
-              <motion.div
-                initial={{ scale: 0.9, opacity: 0 }}
-                whileInView={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                viewport={{ once: true }}
-                className="flex items-center gap-3 mb-6"
-              >
-                <span className="text-2xl sm:text-3xl md:text-4xl font-bold bg-linear-to-r from-[#733080] via-[#B05EC2] to-[#733080] bg-clip-text text-transparent">
-                  Revealing Soon
-                </span>
-              </motion.div>
-
-              <p className="text-white/60 text-center text-base sm:text-lg max-w-2xl">
-                We&apos;re partnering with incredible brands and organizations.
-                Stay tuned for the big reveal!
-              </p>
+            <div className="relative z-10 py-12 sm:py-16">
+              <LogoLoop
+                logos={currentSponsors}
+                speed={40}
+                logoHeight={100}
+                gap={48}
+                pauseOnHover
+                scaleOnHover
+                renderItem={(item) => {
+                  if ("src" in item) {
+                    return (
+                      <div className="flex items-center justify-center h-24 px-6">
+                        <Image
+                          src={item.src}
+                          alt={item.alt || "Sponsor"}
+                          width={200}
+                          height={100}
+                          className="h-16 w-auto object-contain mix-blend-screen opacity-90 hover:opacity-100 transition-all duration-300"
+                          style={{ filter: "brightness(1.2) contrast(1.1)" }}
+                        />
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
             </div>
           </div>
         </div>

@@ -163,8 +163,21 @@ body {
   }
 }
 
+@keyframes logo-loop {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 @layer utilities {
   .animate-shine {
     animation: shine 5s linear infinite;
+  }
+
+  .animate-logo-loop {
+    animation: logo-loop 28s linear infinite;
   }
 }
