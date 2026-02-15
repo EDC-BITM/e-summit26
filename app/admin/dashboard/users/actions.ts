@@ -41,7 +41,10 @@ export interface UserWithDetails {
 export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
   // Check if current user is admin or moderator
   const supabase = await createClient();
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
   if (userError || !user) {
     throw new Error("Unauthorized");
@@ -49,11 +52,13 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
 
   const { data: currentUserRole } = await supabase
     .from("user_role")
-    .select(`
+    .select(
+      `
       roles (
         name
       )
-    `)
+    `,
+    )
     .eq("user_id", user.id)
     .single();
 
@@ -83,12 +88,13 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
   let allUsers: AuthUser[] = [];
   let page = 1;
   const perPage = 1000;
-  
+
   while (true) {
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.listUsers({
-      page,
-      perPage,
-    });
+    const { data: authData, error: authError } =
+      await supabaseAdmin.auth.admin.listUsers({
+        page,
+        perPage,
+      });
 
     if (authError) {
       console.error("Error fetching auth users:", authError);
@@ -96,40 +102,45 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
     }
 
     allUsers = allUsers.concat(authData.users as unknown as AuthUser[]);
-    
+
     if (authData.users.length < perPage) {
       break;
     }
-    
+
     page++;
   }
 
   // Extract all user IDs
-  const userIds = allUsers.map(u => u.id);
+  const userIds = allUsers.map((u) => u.id);
 
   // Batch fetch all user roles
   const { data: userRoles } = await supabaseAdmin
     .from("user_role")
-    .select(`
+    .select(
+      `
       user_id,
       role_id,
       roles (
         id,
         name
       )
-    `)
+    `,
+    )
     .in("user_id", userIds);
 
   // Batch fetch all profiles
   const { data: profiles } = await supabaseAdmin
     .from("profiles")
-    .select("id, roll_no, phone, branch, onboarding_completed, gender, college, whatsapp_no, first_name, last_name")
+    .select(
+      "id, roll_no, phone, branch, onboarding_completed, gender, college, whatsapp_no, first_name, last_name",
+    )
     .in("id", userIds);
 
   // Batch fetch all team members with event info
   const { data: teamMembers } = await supabaseAdmin
     .from("team_members")
-    .select(`
+    .select(
+      `
       user_id,
       teams (
         id,
@@ -137,17 +148,22 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
         slug,
         event_id
       )
-    `)
+    `,
+    )
     .in("user_id", userIds);
 
-  // Get all unique event IDs
+  // Get all unique event IDs (teams can be object or array depending on relationship)
   const eventIds = new Set(
     (teamMembers || [])
-      .flatMap(tm => {
-        const teams = Array.isArray(tm.teams) ? tm.teams : tm.teams ? [tm.teams] : [];
-        return teams.map((t: TeamRow) => t.event_id);
+      .flatMap((tm) => {
+        const teams = Array.isArray(tm.teams)
+          ? (tm.teams as TeamRow[])
+          : tm.teams
+            ? ([tm.teams] as TeamRow[])
+            : [];
+        return teams.map((t) => t.event_id);
       })
-      .filter((id): id is string => id !== null && id !== undefined)
+      .filter((id): id is string => id !== null && id !== undefined),
   );
 
   // Batch fetch event names
@@ -156,26 +172,30 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
     .select("id, name")
     .in("id", Array.from(eventIds));
 
-  const eventMap = new Map((events || []).map(e => [e.id, e.name]));
+  const eventMap = new Map((events || []).map((e) => [e.id, e.name]));
 
   // Create lookup maps for O(1) access
-  const roleMap = new Map(userRoles?.map(ur => [ur.user_id, ur]) || []);
-  const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
-  
+  const roleMap = new Map(userRoles?.map((ur) => [ur.user_id, ur]) || []);
+  const profileMap = new Map(profiles?.map((p) => [p.id, p]) || []);
+
   // Group team members by user_id
   const userTeamsMap = new Map<string, UserTeam[]>();
-  (teamMembers || []).forEach(tm => {
-    const teams = Array.isArray(tm.teams) ? tm.teams : tm.teams ? [tm.teams] : [];
-    
+  (teamMembers || []).forEach((tm) => {
+    const teams = Array.isArray(tm.teams)
+      ? (tm.teams as TeamRow[])
+      : tm.teams
+        ? ([tm.teams] as TeamRow[])
+        : [];
+
     teams.forEach((team: TeamRow) => {
       const userTeam: UserTeam = {
         team_id: team.id,
         team_name: team.name,
         team_slug: team.slug,
         event_id: team.event_id || null,
-        event_name: team.event_id ? (eventMap.get(team.event_id) || null) : null,
+        event_name: team.event_id ? eventMap.get(team.event_id) || null : null,
       };
-      
+
       if (!userTeamsMap.has(tm.user_id)) {
         userTeamsMap.set(tm.user_id, []);
       }
@@ -186,7 +206,7 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
   type RoleType = { id: string; name: string };
 
   // Map all users with their details
-  const users: UserWithDetails[] = allUsers.map(authUser => {
+  const users: UserWithDetails[] = allUsers.map((authUser) => {
     const userRole = roleMap.get(authUser.id);
     const profile = profileMap.get(authUser.id);
     const userTeams = userTeamsMap.get(authUser.id) || [];
@@ -194,7 +214,10 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
     return {
       id: authUser.id,
       email: authUser.email || "",
-      name: authUser.user_metadata?.full_name || authUser.email?.split("@")[0] || "User",
+      name:
+        authUser.user_metadata?.full_name ||
+        authUser.email?.split("@")[0] ||
+        "User",
       avatar_url: authUser.user_metadata?.avatar_url || null,
       role: (userRole?.roles as unknown as RoleType | null)?.name || "user",
       last_sign_in_at: authUser.last_sign_in_at || null,
@@ -218,11 +241,14 @@ export async function getAllUsersWithDetails(): Promise<UserWithDetails[]> {
 
 export async function updateUserRole(
   userId: string,
-  newRole: "admin" | "moderator" | "user"
+  newRole: "admin" | "moderator" | "user",
 ): Promise<{ success: boolean; error?: string }> {
   // Check if current user is admin (only admins can change roles)
   const supabase = await createClient();
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
   if (userError || !user) {
     return { success: false, error: "Unauthorized" };
@@ -230,11 +256,13 @@ export async function updateUserRole(
 
   const { data: currentUserRole } = await supabase
     .from("user_role")
-    .select(`
+    .select(
+      `
       roles (
         name
       )
-    `)
+    `,
+    )
     .eq("user_id", user.id)
     .single();
 
@@ -242,7 +270,10 @@ export async function updateUserRole(
   const roleName = (currentUserRole?.roles as unknown as Role | null)?.name;
 
   if (!roleName || roleName !== "admin") {
-    return { success: false, error: "Unauthorized: Only admins can change user roles" };
+    return {
+      success: false,
+      error: "Unauthorized: Only admins can change user roles",
+    };
   }
 
   // Don't allow changing own role
