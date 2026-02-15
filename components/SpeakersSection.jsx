@@ -6,8 +6,8 @@ import AnimatedBlurText from "./AnimatedBlurText";
 import Image from "next/image";
 
 export default function SpeakersSection() {
-  // ✅ flip this to false when you're ready to reveal real speakers
-  const MASK_SPEAKERS = true;
+  // All speakers are released — disable masking and treat this slider as Past Speakers
+  const MASK_SPEAKERS = false;
 
   const speakers = useMemo(
     () => [
@@ -20,29 +20,24 @@ export default function SpeakersSection() {
           "https://www.linkedin.com/in/iamparitoshanand?originalSubdomain=in",
       },
       {
-        name: "John Mitchell",
-        title: "CEO, AI Solutions Corp",
-        img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1600&q=80",
+        name: "V. Vaidyanathan",
+        title: "IDFC First Bank",
+        img: "/Vaidya.jpg",
       },
       {
-        name: "Samantha Hayes",
-        title: "Senior Data Scientist",
-        img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1600&q=80",
+        name: "Madhur Garg",
+        title: "Inc42",
+        img: "/MadhurGarg.jpg",
       },
       {
-        name: "Aarav Mehta",
-        title: "Product Lead, GenAI",
-        img: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=1600&q=80",
+        name: "Ishan Sharma",
+        title: "Influencer",
+        img: "/IshanSharma.jpg",
       },
       {
-        name: "Noah Brooks",
-        title: "VC Partner",
-        img: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=1600&q=80",
-      },
-      {
-        name: "Priya Nair",
-        title: "Founder, DeepTech Studio",
-        img: "https://images.unsplash.com/photo-1550525811-e5869dd03032?auto=format&fit=crop&w=1600&q=80",
+        name: "Amit Kumar",
+        title: "Easebuzz",
+        img: "/AmitKumar.jpg",
       },
     ],
     [],
@@ -152,10 +147,7 @@ export default function SpeakersSection() {
             font-medium
           "
         >
-          <AnimatedBlurText
-            lines={["Meet Our Esteemed Speakers", "and "]}
-            liteText="E-Summit'26"
-          />
+          <AnimatedBlurText lines={["Past Speakers"]} liteText="E-Summit'26" />
         </h2>
 
         <div className="mt-6 sm:mt-8 md:mt-10 relative">
@@ -421,7 +413,7 @@ export default function SpeakersSection() {
                       "0 0 16px rgba(255,255,255,0.70), 0 0 46px rgba(176,94,194,0.45)",
                   }}
                 >
-                  6+ Speakers
+                  6+ Past Speakers
                 </div>
 
                 <div className="h-px flex-1 bg-white/25" />

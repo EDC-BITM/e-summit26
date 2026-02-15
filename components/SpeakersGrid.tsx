@@ -47,52 +47,34 @@ function SocialBadge({
 }
 
 export default function SpeakersGrid() {
-  // ✅ flip this to false when you're ready to reveal real speakers
-  const MASK_SPEAKERS = true;
+  // All speakers are released — disable masking and treat this grid as Past Speakers
+  const MASK_SPEAKERS = false;
 
   const speakers: Speaker[] = [
     {
       name: "Paritosh Anand",
       title: "Content Creator & Entrepreneur",
       img: "/reveal/images/paritosh_anand2.jpeg",
-      instagramHref: "https://www.instagram.com/iamparitoshanand/?hl=en",
-      linkedinHref:
-        "https://www.linkedin.com/in/iamparitoshanand?originalSubdomain=in",
     },
     {
-      name: "John Mitchell",
-      title: "Full Stack Developer",
-      img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1600&q=80",
+      name: "Vaidya",
+      title: "IDFC First Bank",
+      img: "/Vaidya.jpg",
     },
     {
-      name: "Samantha Hayes",
-      title: "Backend Architect",
-      img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=1600&q=80",
+      name: "Madhur Garg",
+      title: "Inc42",
+      img: "/MadhurGarg.jpg",
     },
     {
-      name: "James Turner",
-      title: "DevOps Specialist",
-      img: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=1600&q=80",
+      name: "Ishan Sharma",
+      title: "Influencer",
+      img: "/IshanSharma.jpg",
     },
     {
-      name: "Michael Anderson",
-      title: "Mobile App Engineer",
-      img: "https://images.unsplash.com/photo-1548946526-f69e2424cf45?auto=format&fit=crop&w=1600&q=80",
-    },
-    {
-      name: "Laura Chang",
-      title: "Cloud Solutions Expert",
-      img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1061&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    {
-      name: "Dr. Maya Bennett",
-      title: "AI/ML Engineer",
-      img: "https://images.unsplash.com/photo-1714508809994-d1f71099bf35?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    },
-    {
-      name: "Jonathan Reyes",
-      title: "Technical Lead – Web Platforms",
-      img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=1600&q=80",
+      name: "Amit Kumar",
+      title: "Easebuzz",
+      img: "/AmitKumar.jpg",
     },
   ];
 
@@ -122,7 +104,7 @@ export default function SpeakersGrid() {
           "
         >
           <AnimatedBlurText
-            lines={["Meet Our Esteemed Developers", "and "]}
+            lines={["Past Speakers"]}
             liteText="Technology Trailblazers"
           />
         </h2>
@@ -179,27 +161,25 @@ export default function SpeakersGrid() {
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                        {/* socials (only on revealed Paritosh card) */}
+                        {/* socials (only if links exist; Paritosh has them) */}
                         <div
                           className={[
                             "absolute bottom-4 right-4 flex items-center gap-2 transition-opacity duration-300",
                             isMaskedCard ? "opacity-0" : "opacity-100",
                           ].join(" ")}
                         >
-                          <SocialBadge
-                            href={sp.instagramHref ?? "#"}
-                            label="Instagram"
-                          >
-                            <Instagram size={16} className="sm:hidden" />
-                            <Instagram size={18} className="hidden sm:block" />
-                          </SocialBadge>
-                          <SocialBadge
-                            href={sp.linkedinHref ?? "#"}
-                            label="LinkedIn"
-                          >
-                            <Linkedin size={16} className="sm:hidden" />
-                            <Linkedin size={18} className="hidden sm:block" />
-                          </SocialBadge>
+                          {sp.instagramHref ? (
+                            <SocialBadge href={sp.instagramHref} label="Instagram">
+                              <Instagram size={16} className="sm:hidden" />
+                              <Instagram size={18} className="hidden sm:block" />
+                            </SocialBadge>
+                          ) : null}
+                          {sp.linkedinHref ? (
+                            <SocialBadge href={sp.linkedinHref} label="LinkedIn">
+                              <Linkedin size={16} className="sm:hidden" />
+                              <Linkedin size={18} className="hidden sm:block" />
+                            </SocialBadge>
+                          ) : null}
                         </div>
                       </div>
                     </div>
